@@ -1,0 +1,174 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { QuerySeed } from '@/lib/types';
+import { fetchSeeds, createSeed, deleteSeed } from '@/lib/api-client';
+
+export default function SeedsPage() {
+    const [seeds, setSeeds] = useState<QuerySeed[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showForm, setShowForm] = useState(false);
+    const [region, setRegion] = useState('Orange County');
+    const [keywords, setKeywords] = useState('');
+    const [source, setSource] = useState('web_search');
+    const [message, setMessage] = useState('');
+
+    const loadSeeds = async () => {
+        try {
+            const data = await fetchSeeds();
+            setSeeds(data);
+        } catch (err) {
+            console.error('Failed to load seeds:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => { loadSeeds(); }, []);
+
+    const handleAdd = async () => {
+        if (!keywords.trim()) {
+            setMessage('Enter at least one keyword');
+            return;
+        }
+        try {
+            await createSeed({
+                region,
+                keywords: keywords.split(',').map(k => k.trim()).filter(Boolean),
+                source,
+            });
+            setKeywords('');
+            setShowForm(false);
+            loadSeeds();
+            setMessage('Seed added');
+            setTimeout(() => setMessage(''), 3000);
+        } catch (err) {
+            setMessage('Failed to add seed');
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteSeed(id);
+            loadSeeds();
+        } catch (err) {
+            console.error('Failed to delete seed:', err);
+        }
+    };
+
+    // Group seeds by region
+    const grouped = seeds.reduce((acc, seed) => {
+        const key = seed.region || 'Unknown';
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(seed);
+        return acc;
+    }, {} as Record<string, QuerySeed[]>);
+
+    return (
+        <>
+            <header className="topbar">
+                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
+                    <div className="icon">⚙</div>
+                    <span>Query Seeds</span>
+                </Link>
+                <nav className="topbar-nav">
+                    <Link href="/leads" className="btn btn-ghost btn-sm">← Leads</Link>
+                    <button className="btn btn-primary btn-sm" onClick={() => setShowForm(!showForm)}>
+                        + Add Seed
+                    </button>
+                </nav>
+            </header>
+
+            <main className="main-content fade-in">
+                <div className="section-header">
+                    <div>
+                        <h2 className="section-title">Search Seeds</h2>
+                        <p className="section-subtitle">Configure what the Lead Finder searches for</p>
+                    </div>
+                </div>
+
+                {message && <div className="alert alert-success">{message}</div>}
+
+                {/* Add Form */}
+                {showForm && (
+                    <div className="card slide-up" style={{ marginBottom: '24px' }}>
+                        <h3 className="card-title">Add New Seed</h3>
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label className="form-label">Region</label>
+                                <select className="input" value={region} onChange={e => setRegion(e.target.value)}>
+                                    <option value="Orange County">Orange County</option>
+                                    <option value="Long Beach">Long Beach</option>
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Source</label>
+                                <select className="input" value={source} onChange={e => setSource(e.target.value)}>
+                                    <option value="web_search">Web Search</option>
+                                    <option value="google_maps">Google Maps</option>
+                                    <option value="event_platform">Event Platform</option>
+                                    <option value="instagram">Instagram</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">Keywords (comma-separated)</label>
+                            <input
+                                className="input"
+                                placeholder="e.g. nightclub, DJ night, rooftop bar"
+                                value={keywords}
+                                onChange={e => setKeywords(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && handleAdd()}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button className="btn btn-primary" onClick={handleAdd}>Add Seed</button>
+                            <button className="btn btn-ghost" onClick={() => setShowForm(false)}>Cancel</button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Seeds by Region */}
+                {loading ? (
+                    <div className="loading-overlay"><div className="spinner" /><span>Loading seeds...</span></div>
+                ) : (
+                    Object.entries(grouped).map(([regionName, regionSeeds]) => (
+                        <div key={regionName} style={{ marginBottom: '32px' }}>
+                            <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '12px', color: 'var(--text-accent)' }}>
+                                📍 {regionName}
+                                <span className="text-muted" style={{ fontSize: '13px', fontWeight: 400, marginLeft: '8px' }}>
+                                    {regionSeeds.length} seeds
+                                </span>
+                            </h3>
+                            <div className="seeds-grid">
+                                {regionSeeds.map(seed => (
+                                    <div key={seed.id} className="seed-card">
+                                        <div className="seed-keywords">
+                                            {seed.keywords.map((kw, i) => (
+                                                <span key={i} className="badge badge-draft">{kw}</span>
+                                            ))}
+                                        </div>
+                                        <div className="seed-meta">
+                                            <span className="badge badge-inquiry">{seed.source.replace(/_/g, ' ')}</span>
+                                            <span className={`badge ${seed.active ? 'badge-confirmed' : ''}`}>
+                                                {seed.active ? '● Active' : '○ Inactive'}
+                                            </span>
+                                        </div>
+                                        <button
+                                            className="btn btn-ghost btn-sm"
+                                            onClick={() => handleDelete(seed.id)}
+                                            style={{ marginTop: '8px' }}
+                                        >
+                                            🗑 Remove
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))
+                )}
+            </main>
+        </>
+    );
+}
