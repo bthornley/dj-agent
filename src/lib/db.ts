@@ -8,7 +8,7 @@ import { escapeLikeQuery } from './security';
 // All tables have user_id for data isolation between users.
 // ============================================================
 
-const DB_PATH = path.join(process.cwd(), 'data', 'dj-agent.db');
+const DB_PATH = process.env.DATABASE_PATH || path.join(process.cwd(), 'data', 'dj-agent.db');
 
 let _db: Database.Database | null = null;
 
