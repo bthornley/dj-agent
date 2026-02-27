@@ -11,19 +11,23 @@ export async function GET() {
 
     let seeds = await dbGetAllSeeds(userId);
 
-    // Auto-populate defaults for new users based on artist types
+    // Auto-populate defaults for new users based on artist types + regions
     if (seeds.length === 0) {
         const client = await clerkClient();
         const user = await client.users.getUser(userId);
         const meta = user.publicMetadata as Record<string, unknown>;
-        const raw = meta.artistTypes ?? meta.artistType;
-        const artistTypes: ArtistType[] = Array.isArray(raw) ? raw : [((raw as string) || 'dj') as ArtistType];
 
-        // Merge seeds from all selected types, deduplicate by keywords
+        const rawTypes = meta.artistTypes ?? meta.artistType;
+        const artistTypes: ArtistType[] = Array.isArray(rawTypes) ? rawTypes : [((rawTypes as string) || 'dj') as ArtistType];
+
+        const rawRegions = meta.regions;
+        const regions: string[] = Array.isArray(rawRegions) ? rawRegions : ['Orange County', 'Long Beach'];
+
+        // Merge seeds from all selected types + regions, deduplicate
         const seen = new Set<string>();
         const allSeeds: ReturnType<typeof getDefaultSeeds> = [];
         for (const type of artistTypes) {
-            for (const s of getDefaultSeeds(type)) {
+            for (const s of getDefaultSeeds(type, regions)) {
                 const key = s.keywords.join('|');
                 if (!seen.has(key)) {
                     seen.add(key);

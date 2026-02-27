@@ -6,122 +6,130 @@ import { v4 as uuid } from 'uuid';
 // Per-artist-type seeds for tailored discovery
 // ============================================================
 
+/** Primary US metro regions available for selection */
+export const US_REGIONS = [
+    // California
+    'Los Angeles', 'San Francisco', 'San Diego', 'Orange County', 'Long Beach',
+    'Sacramento', 'San Jose', 'Oakland', 'Inland Empire', 'Santa Barbara',
+    // Southwest
+    'Las Vegas', 'Phoenix', 'Tucson', 'Albuquerque',
+    // Pacific Northwest
+    'Seattle', 'Portland', 'Boise',
+    // Mountain
+    'Denver', 'Salt Lake City', 'Colorado Springs',
+    // Texas
+    'Houston', 'Dallas', 'Austin', 'San Antonio', 'Fort Worth', 'El Paso',
+    // Midwest
+    'Chicago', 'Detroit', 'Minneapolis', 'Milwaukee', 'Indianapolis',
+    'Columbus', 'Cleveland', 'Kansas City', 'St. Louis', 'Cincinnati',
+    // Southeast
+    'Atlanta', 'Miami', 'Tampa', 'Orlando', 'Nashville', 'Charlotte',
+    'Raleigh', 'Jacksonville', 'Memphis', 'New Orleans', 'Birmingham',
+    'Charleston', 'Savannah',
+    // Northeast
+    'New York', 'Boston', 'Philadelphia', 'Washington DC', 'Baltimore',
+    'Pittsburgh', 'Hartford', 'Providence', 'Newark',
+    // Other
+    'Honolulu', 'Anchorage',
+] as const;
+
+/** @deprecated Use US_REGIONS and user-selected regions instead */
 export const TARGET_REGIONS = ['Orange County', 'Long Beach'] as const;
 
 function seed(region: string, keywords: string[]): QuerySeed {
     return { id: uuid(), region, keywords, source: 'web_search', active: true, created_at: new Date().toISOString() };
 }
 
-const DJ_SEEDS: QuerySeed[] = [
-    // Nightlife
-    ...TARGET_REGIONS.flatMap(r => [
+/** Generate DJ seeds for given regions */
+function djSeeds(regions: string[]): QuerySeed[] {
+    return regions.flatMap(r => [
         seed(r, ['nightclub', r]), seed(r, ['lounge', 'cocktail bar', r]),
         seed(r, ['rooftop bar', r]), seed(r, ['live music venue', r]),
-    ]),
-    // Event spaces
-    ...TARGET_REGIONS.flatMap(r => [
         seed(r, ['event space', 'private events', r]), seed(r, ['hotel ballroom', r]),
         seed(r, ['brewery', 'winery', 'events', r]),
-    ]),
-    // DJ-specific
-    ...TARGET_REGIONS.flatMap(r => [
         seed(r, ['DJ night', r]), seed(r, ['Latin night', r]),
-    ]),
-    // Corporate
-    ...TARGET_REGIONS.flatMap(r => [
         seed(r, ['corporate event venue', r]), seed(r, ['event planner', r]),
         seed(r, ['promoter', 'events', r]),
-    ]),
-    // Marketplace listings
-    ...TARGET_REGIONS.flatMap(r => [
+        // Marketplace
         seed(r, ['site:craigslist.org', 'DJ gig', r]),
         seed(r, ['site:craigslist.org', 'DJ wanted', r]),
         seed(r, ['site:facebook.com/marketplace', 'DJ gig', r]),
         seed(r, ['site:facebook.com/marketplace', 'DJ wanted', r]),
         seed(r, ['site:gigsalad.com', 'DJ', r]),
         seed(r, ['site:thumbtack.com', 'DJ', r]),
-        seed(r, ['site:bark.com', 'DJ hire', r]),
-        seed(r, ['site:eventective.com', 'DJ', r]),
-    ]),
-];
+    ]);
+}
 
-const BAND_SEEDS: QuerySeed[] = [
-    ...TARGET_REGIONS.flatMap(r => [
+/** Generate Band seeds for given regions */
+function bandSeeds(regions: string[]): QuerySeed[] {
+    return regions.flatMap(r => [
         seed(r, ['live music venue', r]), seed(r, ['concert venue', r]),
         seed(r, ['bar live music', r]), seed(r, ['brewery live band', r]),
         seed(r, ['open mic night', r]), seed(r, ['music festival', r]),
         seed(r, ['outdoor concert', r]), seed(r, ['wedding band venue', r]),
         seed(r, ['corporate entertainment', 'live band', r]),
         seed(r, ['event space', 'live entertainment', r]),
-    ]),
-    // Marketplace listings
-    ...TARGET_REGIONS.flatMap(r => [
+        // Marketplace
         seed(r, ['site:craigslist.org', 'band wanted', r]),
         seed(r, ['site:craigslist.org', 'live band gig', r]),
         seed(r, ['site:facebook.com/marketplace', 'band wanted', r]),
-        seed(r, ['site:facebook.com/marketplace', 'live band gig', r]),
         seed(r, ['site:gigsalad.com', 'live band', r]),
         seed(r, ['site:thumbtack.com', 'live band', r]),
         seed(r, ['site:bandmix.com', r]),
-        seed(r, ['site:bark.com', 'live band', r]),
-    ]),
-];
+    ]);
+}
 
-const SOLO_ARTIST_SEEDS: QuerySeed[] = [
-    ...TARGET_REGIONS.flatMap(r => [
+/** Generate Solo Artist seeds for given regions */
+function soloArtistSeeds(regions: string[]): QuerySeed[] {
+    return regions.flatMap(r => [
         seed(r, ['restaurant live music', r]), seed(r, ['winery live music', r]),
         seed(r, ['coffee shop music', r]), seed(r, ['acoustic venue', r]),
         seed(r, ['wedding venue musician', r]), seed(r, ['private event entertainment', r]),
         seed(r, ['hotel lobby musician', r]), seed(r, ['cocktail hour entertainment', r]),
         seed(r, ['farmers market music', r]), seed(r, ['corporate reception musician', r]),
-    ]),
-    // Marketplace listings
-    ...TARGET_REGIONS.flatMap(r => [
+        // Marketplace
         seed(r, ['site:craigslist.org', 'musician wanted', r]),
         seed(r, ['site:craigslist.org', 'solo musician gig', r]),
         seed(r, ['site:facebook.com/marketplace', 'musician wanted', r]),
         seed(r, ['site:gigsalad.com', 'solo musician', r]),
         seed(r, ['site:thumbtack.com', 'musician', r]),
-        seed(r, ['site:bark.com', 'musician hire', r]),
-    ]),
-];
+    ]);
+}
 
-const MUSIC_TEACHER_SEEDS: QuerySeed[] = [
-    ...TARGET_REGIONS.flatMap(r => [
+/** Generate Music Teacher seeds for given regions */
+function musicTeacherSeeds(regions: string[]): QuerySeed[] {
+    return regions.flatMap(r => [
         seed(r, ['music school', r]), seed(r, ['music lessons', r]),
         seed(r, ['music store lessons', r]), seed(r, ['community center music', r]),
         seed(r, ['school district music program', r]),
         seed(r, ['after school music program', r]),
         seed(r, ['summer camp music', r]), seed(r, ['church music program', r]),
         seed(r, ['youth music program', r]), seed(r, ['private music studio', r]),
-    ]),
-    // Marketplace listings
-    ...TARGET_REGIONS.flatMap(r => [
+        // Marketplace
         seed(r, ['site:craigslist.org', 'music teacher', r]),
         seed(r, ['site:craigslist.org', 'music lessons', r]),
         seed(r, ['site:facebook.com/marketplace', 'music teacher', r]),
         seed(r, ['site:thumbtack.com', 'music lessons', r]),
         seed(r, ['site:care.com', 'music teacher', r]),
         seed(r, ['site:takelessons.com', r]),
-        seed(r, ['site:lessonface.com', r]),
-    ]),
-];
-
+    ]);
+}
 /**
- * Get default seeds based on artist type.
+ * Get default seeds based on artist type and user's selected regions.
  */
-export function getDefaultSeeds(artistType: ArtistType = 'dj'): QuerySeed[] {
+export function getDefaultSeeds(artistType: ArtistType = 'dj', regions?: string[]): QuerySeed[] {
+    const r = regions && regions.length > 0 ? regions : ['Orange County', 'Long Beach'];
     switch (artistType) {
-        case 'band': return BAND_SEEDS;
-        case 'solo_artist': return SOLO_ARTIST_SEEDS;
-        case 'music_teacher': return MUSIC_TEACHER_SEEDS;
+        case 'band': return bandSeeds(r);
+        case 'solo_artist': return soloArtistSeeds(r);
+        case 'music_teacher': return musicTeacherSeeds(r);
         case 'dj':
-        default: return DJ_SEEDS;
+        default: return djSeeds(r);
     }
 }
 
-/** @deprecated Use getDefaultSeeds(artistType) instead */
-export const DEFAULT_SEEDS = DJ_SEEDS;
+/** @deprecated Use getDefaultSeeds(artistType, regions) instead */
+export const DEFAULT_SEEDS = djSeeds(['Orange County', 'Long Beach']);
 
 /**
  * High-value entity type keywords — used during enrichment

@@ -171,8 +171,43 @@ export default function SeedsPage() {
                             <div className="form-group">
                                 <label className="form-label">Region</label>
                                 <select className="input" value={region} onChange={e => setRegion(e.target.value)}>
-                                    <option value="Orange County">Orange County</option>
-                                    <option value="Long Beach">Long Beach</option>
+                                    <optgroup label="California">
+                                        <option>Los Angeles</option><option>San Francisco</option><option>San Diego</option>
+                                        <option>Orange County</option><option>Long Beach</option><option>Sacramento</option>
+                                        <option>San Jose</option><option>Oakland</option><option>Inland Empire</option><option>Santa Barbara</option>
+                                    </optgroup>
+                                    <optgroup label="Southwest">
+                                        <option>Las Vegas</option><option>Phoenix</option><option>Tucson</option><option>Albuquerque</option>
+                                    </optgroup>
+                                    <optgroup label="Pacific NW">
+                                        <option>Seattle</option><option>Portland</option><option>Boise</option>
+                                    </optgroup>
+                                    <optgroup label="Mountain">
+                                        <option>Denver</option><option>Salt Lake City</option><option>Colorado Springs</option>
+                                    </optgroup>
+                                    <optgroup label="Texas">
+                                        <option>Houston</option><option>Dallas</option><option>Austin</option>
+                                        <option>San Antonio</option><option>Fort Worth</option><option>El Paso</option>
+                                    </optgroup>
+                                    <optgroup label="Midwest">
+                                        <option>Chicago</option><option>Detroit</option><option>Minneapolis</option>
+                                        <option>Milwaukee</option><option>Indianapolis</option><option>Columbus</option>
+                                        <option>Cleveland</option><option>Kansas City</option><option>St. Louis</option><option>Cincinnati</option>
+                                    </optgroup>
+                                    <optgroup label="Southeast">
+                                        <option>Atlanta</option><option>Miami</option><option>Tampa</option><option>Orlando</option>
+                                        <option>Nashville</option><option>Charlotte</option><option>Raleigh</option><option>Jacksonville</option>
+                                        <option>Memphis</option><option>New Orleans</option><option>Birmingham</option>
+                                        <option>Charleston</option><option>Savannah</option>
+                                    </optgroup>
+                                    <optgroup label="Northeast">
+                                        <option>New York</option><option>Boston</option><option>Philadelphia</option>
+                                        <option>Washington DC</option><option>Baltimore</option><option>Pittsburgh</option>
+                                        <option>Hartford</option><option>Providence</option><option>Newark</option>
+                                    </optgroup>
+                                    <optgroup label="Other">
+                                        <option>Honolulu</option><option>Anchorage</option>
+                                    </optgroup>
                                 </select>
                             </div>
                             <div className="form-group">

@@ -11,13 +11,27 @@ const ARTIST_TYPES = [
     { value: 'music_teacher', label: '🎹 Music Teacher', desc: 'Schools, community programs' },
 ] as const;
 
+const US_REGIONS: Record<string, string[]> = {
+    'California': ['Los Angeles', 'San Francisco', 'San Diego', 'Orange County', 'Long Beach', 'Sacramento', 'San Jose', 'Oakland', 'Inland Empire', 'Santa Barbara'],
+    'Southwest': ['Las Vegas', 'Phoenix', 'Tucson', 'Albuquerque'],
+    'Pacific NW': ['Seattle', 'Portland', 'Boise'],
+    'Mountain': ['Denver', 'Salt Lake City', 'Colorado Springs'],
+    'Texas': ['Houston', 'Dallas', 'Austin', 'San Antonio', 'Fort Worth', 'El Paso'],
+    'Midwest': ['Chicago', 'Detroit', 'Minneapolis', 'Milwaukee', 'Indianapolis', 'Columbus', 'Cleveland', 'Kansas City', 'St. Louis', 'Cincinnati'],
+    'Southeast': ['Atlanta', 'Miami', 'Tampa', 'Orlando', 'Nashville', 'Charlotte', 'Raleigh', 'Jacksonville', 'Memphis', 'New Orleans', 'Birmingham', 'Charleston', 'Savannah'],
+    'Northeast': ['New York', 'Boston', 'Philadelphia', 'Washington DC', 'Baltimore', 'Pittsburgh', 'Hartford', 'Providence', 'Newark'],
+    'Other': ['Honolulu', 'Anchorage'],
+};
+
 export default function AccountPage() {
     const { user } = useUser();
     const currentPlan = (user?.publicMetadata?.planId as string) || 'free';
     const [quota, setQuota] = useState<{ used: number; remaining: number; limit: number } | null>(null);
     const [stats, setStats] = useState<{ total: number; avgScore: number } | null>(null);
     const [artistTypes, setArtistTypes] = useState<string[]>(['dj']);
+    const [regions, setRegions] = useState<string[]>(['Orange County', 'Long Beach']);
     const [savingType, setSavingType] = useState(false);
+    const [savingRegion, setSavingRegion] = useState(false);
 
     useEffect(() => {
         fetch('/api/leads/auto-scan', {
@@ -36,7 +50,10 @@ export default function AccountPage() {
 
         fetch('/api/profile')
             .then(r => r.json())
-            .then(d => { if (d.artistTypes) setArtistTypes(d.artistTypes); })
+            .then(d => {
+                if (d.artistTypes) setArtistTypes(d.artistTypes);
+                if (d.regions) setRegions(d.regions);
+            })
             .catch(() => { });
     }, []);
 
@@ -57,6 +74,25 @@ export default function AccountPage() {
             }
         } catch { /* ignore */ }
         setSavingType(false);
+    };
+
+    const handleRegionToggle = async (region: string) => {
+        const newRegions = regions.includes(region)
+            ? regions.filter(r => r !== region)
+            : [...regions, region];
+        if (newRegions.length === 0) return;
+        setSavingRegion(true);
+        try {
+            const res = await fetch('/api/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ regions: newRegions }),
+            });
+            if (res.ok) {
+                setRegions(newRegions);
+            }
+        } catch { /* ignore */ }
+        setSavingRegion(false);
     };
 
     const planNames: Record<string, string> = {
@@ -136,6 +172,41 @@ export default function AccountPage() {
                     </div>
                 </div>
 
+                {/* Region Selector */}
+                <div className="card" style={{ marginBottom: '24px' }}>
+                    <h3 className="card-title">Regions</h3>
+                    <p className="text-muted" style={{ fontSize: '13px', margin: '4px 0 16px' }}>
+                        Select the regions where you want to find gigs. Seeds will be generated for each selected region.
+                    </p>
+                    {Object.entries(US_REGIONS).map(([area, cities]) => (
+                        <div key={area} style={{ marginBottom: '12px' }}>
+                            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-accent)', marginBottom: '6px' }}>
+                                {area}
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                {cities.map(city => (
+                                    <button
+                                        key={city}
+                                        onClick={() => handleRegionToggle(city)}
+                                        disabled={savingRegion}
+                                        className={`btn btn-sm ${regions.includes(city) ? 'btn-primary' : 'btn-ghost'}`}
+                                        style={{
+                                            opacity: savingRegion ? 0.6 : 1,
+                                            fontSize: '12px',
+                                            padding: '4px 10px',
+                                            border: regions.includes(city) ? '1px solid var(--accent-purple)' : '1px solid var(--border)',
+                                        }}
+                                    >
+                                        {city}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                    <p className="text-muted" style={{ fontSize: '12px', marginTop: '8px' }}>
+                        {regions.length} region{regions.length !== 1 ? 's' : ''} selected
+                    </p>
+                </div>
                 {quota && (
                     <div className="card" style={{ marginBottom: '24px' }}>
                         <h3 className="card-title">Search Usage</h3>
