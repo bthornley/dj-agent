@@ -14,14 +14,14 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
         const client = await clerkClient();
         const user = await client.users.getUser(userId);
 
-        // Get all user data from DB
-        const [stats, events, leads, posts, brand] = await Promise.all([
-            dbGetUserStats(userId),
-            dbGetAllEvents(userId),
-            dbGetAllLeads(userId),
-            dbGetAllSocialPosts(userId),
-            dbGetBrandProfile(userId),
-        ]);
+        // Get all user data from DB — each wrapped independently
+        const stats = await dbGetUserStats(userId).catch(() => ({
+            events: 0, leads: 0, posts: 0, plans: 0, mediaAssets: 0, hasBrand: false,
+        }));
+        const events = await dbGetAllEvents(userId).catch(() => []);
+        const leads = await dbGetAllLeads(userId).catch(() => []);
+        const posts = await dbGetAllSocialPosts(userId).catch(() => []);
+        const brand = await dbGetBrandProfile(userId).catch(() => null);
 
         return NextResponse.json({
             user: {
@@ -36,14 +36,15 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
                 publicMetadata: user.publicMetadata,
             },
             stats,
-            events: events.slice(0, 20), // Most recent 20
-            leads: leads.slice(0, 20),
-            posts: posts.slice(0, 20),
+            events: (events || []).slice(0, 20),
+            leads: (leads || []).slice(0, 20),
+            posts: (posts || []).slice(0, 20),
             brand,
         });
     } catch (err) {
         console.error('Admin user detail error:', err);
-        return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 });
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        return NextResponse.json({ error: 'Failed to fetch user', detail: message }, { status: 500 });
     }
 }
 

@@ -47,7 +47,19 @@ export default function AdminUserDetailPage() {
         try {
             const res = await fetch(`/api/admin/users/${id}`);
             const json = await res.json();
-            setData(json);
+            if (json.error || !json.user) {
+                console.error('User detail API error:', json.error, json.detail);
+                setData(null);
+            } else {
+                // Ensure arrays are never undefined
+                setData({
+                    ...json,
+                    events: json.events || [],
+                    leads: json.leads || [],
+                    posts: json.posts || [],
+                    stats: json.stats || { events: 0, leads: 0, posts: 0, plans: 0, mediaAssets: 0, hasBrand: false },
+                });
+            }
         } catch (e) { console.error(e); }
         setLoading(false);
     }
