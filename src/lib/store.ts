@@ -5,7 +5,7 @@ import { Event } from './types';
 // Persists to localStorage on the client, in-memory on the server.
 // ============================================================
 
-const STORAGE_KEY = 'dj-agent-events';
+const STORAGE_KEY = 'gigfinder-events';
 
 let memoryStore: Event[] = [];
 

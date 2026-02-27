@@ -1,5 +1,5 @@
 // ============================================================
-// DJ Event Agent — Core Data Model
+// GigFinder — Core Data Model
 // ============================================================
 
 export type ArtistType = 'dj' | 'band' | 'solo_artist' | 'music_teacher';
