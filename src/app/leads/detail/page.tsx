@@ -104,20 +104,30 @@ function LeadDetailContent() {
                     )}
                     <button className="btn btn-primary" onClick={async () => {
                         setOutreachLoading(true);
+                        setCopied(false);
+                        setOutreach(null);
                         try {
                             const res = await fetch('/api/leads/outreach', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ leadId: lead.lead_id }),
                             });
-                            const data = await res.json();
-                            if (data.emails) {
+                            const text = await res.text();
+                            console.log('Outreach response:', res.status, text);
+                            let data;
+                            try { data = JSON.parse(text); } catch { data = { error: text }; }
+                            if (data.emails && data.emails.length > 0) {
                                 setOutreach(data.emails);
                                 setActiveVariant(0);
                             } else {
-                                setMessage(data.error || 'Failed to generate outreach');
+                                setMessage(data.error || 'No emails generated — check your lead data');
+                                setTimeout(() => setMessage(''), 5000);
                             }
-                        } catch (e) { console.error(e); setMessage('Failed to generate outreach'); }
+                        } catch (e) {
+                            console.error('Outreach fetch error:', e);
+                            setMessage('Network error — failed to reach API');
+                            setTimeout(() => setMessage(''), 5000);
+                        }
                         setOutreachLoading(false);
                     }} disabled={outreachLoading}>
                         {outreachLoading ? '⏳ Generating...' : '✉️ Draft Outreach'}
