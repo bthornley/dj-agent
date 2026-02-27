@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
 import { UserButton } from '@clerk/nextjs';
 
 interface UserDetail {
@@ -30,11 +29,11 @@ interface UserDetail {
     brand: { djName: string; genre: string; vibe: string[] } | null;
 }
 
-export default function AdminUserDetailPage() {
-    const params = useParams();
-    const userId = params.id as string;
+export default function AdminUserDetailPage({ params }: { params: { id: string } }) {
+    const userId = params.id;
     const [data, setData] = useState<UserDetail | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [roleUpdating, setRoleUpdating] = useState(false);
     const [activeTab, setActiveTab] = useState<'events' | 'leads' | 'posts'>('events');
 
@@ -44,14 +43,20 @@ export default function AdminUserDetailPage() {
 
     async function fetchUser(id: string) {
         setLoading(true);
+        setError('');
         try {
             const res = await fetch(`/api/admin/users/${id}`);
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                setError(errData.detail || errData.error || `HTTP ${res.status}`);
+                setLoading(false);
+                return;
+            }
             const json = await res.json();
             if (json.error || !json.user) {
-                console.error('User detail API error:', json.error, json.detail);
+                setError(json.detail || json.error || 'Unknown error');
                 setData(null);
             } else {
-                // Ensure arrays are never undefined
                 setData({
                     ...json,
                     events: json.events || [],
@@ -60,7 +65,10 @@ export default function AdminUserDetailPage() {
                     stats: json.stats || { events: 0, leads: 0, posts: 0, plans: 0, mediaAssets: 0, hasBrand: false },
                 });
             }
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+            setError('Network error');
+        }
         setLoading(false);
     }
 
@@ -103,6 +111,13 @@ export default function AdminUserDetailPage() {
             <main className="main-content fade-in">
                 {loading ? (
                     <div className="empty-state"><div className="spinner" /></div>
+                ) : error ? (
+                    <div className="empty-state">
+                        <div className="empty-icon">⚠️</div>
+                        <h3>Error loading user</h3>
+                        <p style={{ color: 'var(--text-muted)', marginBottom: '16px' }}>{error}</p>
+                        <Link href="/admin" className="btn btn-primary btn-sm">← Admin Dashboard</Link>
+                    </div>
                 ) : !data ? (
                     <div className="empty-state">
                         <div className="empty-icon">❌</div>
