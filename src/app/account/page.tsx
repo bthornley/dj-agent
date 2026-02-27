@@ -16,7 +16,7 @@ export default function AccountPage() {
     const currentPlan = (user?.publicMetadata?.planId as string) || 'free';
     const [quota, setQuota] = useState<{ used: number; remaining: number; limit: number } | null>(null);
     const [stats, setStats] = useState<{ total: number; avgScore: number } | null>(null);
-    const [artistType, setArtistType] = useState<string>('dj');
+    const [artistTypes, setArtistTypes] = useState<string[]>(['dj']);
     const [savingType, setSavingType] = useState(false);
 
     useEffect(() => {
@@ -36,20 +36,24 @@ export default function AccountPage() {
 
         fetch('/api/profile')
             .then(r => r.json())
-            .then(d => { if (d.artistType) setArtistType(d.artistType); })
+            .then(d => { if (d.artistTypes) setArtistTypes(d.artistTypes); })
             .catch(() => { });
     }, []);
 
-    const handleArtistTypeChange = async (newType: string) => {
+    const handleArtistTypeToggle = async (type: string) => {
+        const newTypes = artistTypes.includes(type)
+            ? artistTypes.filter(t => t !== type)
+            : [...artistTypes, type];
+        if (newTypes.length === 0) return; // must have at least one
         setSavingType(true);
         try {
             const res = await fetch('/api/profile', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ artistType: newType }),
+                body: JSON.stringify({ artistTypes: newTypes }),
             });
             if (res.ok) {
-                setArtistType(newType);
+                setArtistTypes(newTypes);
             }
         } catch { /* ignore */ }
         setSavingType(false);
@@ -105,15 +109,15 @@ export default function AccountPage() {
                 <div className="card" style={{ marginBottom: '24px' }}>
                     <h3 className="card-title">Artist Type</h3>
                     <p className="text-muted" style={{ fontSize: '13px', margin: '4px 0 16px' }}>
-                        This tailors your lead discovery seeds and scoring to find the best opportunities for you.
+                        Select all that apply — your leads and discovery seeds will be tailored accordingly.
                     </p>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
                         {ARTIST_TYPES.map(t => (
                             <button
                                 key={t.value}
-                                onClick={() => handleArtistTypeChange(t.value)}
+                                onClick={() => handleArtistTypeToggle(t.value)}
                                 disabled={savingType}
-                                className={`btn ${artistType === t.value ? 'btn-primary' : 'btn-secondary'}`}
+                                className={`btn ${artistTypes.includes(t.value) ? 'btn-primary' : 'btn-secondary'}`}
                                 style={{
                                     padding: '14px 16px',
                                     display: 'flex',
@@ -122,7 +126,7 @@ export default function AccountPage() {
                                     gap: '4px',
                                     textAlign: 'left',
                                     opacity: savingType ? 0.6 : 1,
-                                    border: artistType === t.value ? '2px solid var(--accent-purple)' : '2px solid transparent',
+                                    border: artistTypes.includes(t.value) ? '2px solid var(--accent-purple)' : '2px solid transparent',
                                 }}
                             >
                                 <span style={{ fontSize: '15px', fontWeight: 600 }}>{t.label}</span>

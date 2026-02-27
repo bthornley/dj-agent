@@ -11,13 +11,27 @@ export async function GET() {
 
     let seeds = await dbGetAllSeeds(userId);
 
-    // Auto-populate defaults for new users based on artist type
+    // Auto-populate defaults for new users based on artist types
     if (seeds.length === 0) {
         const client = await clerkClient();
         const user = await client.users.getUser(userId);
-        const artistType = ((user.publicMetadata as Record<string, unknown>).artistType as ArtistType) || 'dj';
-        const defaults = getDefaultSeeds(artistType);
-        for (const seed of defaults) {
+        const meta = user.publicMetadata as Record<string, unknown>;
+        const raw = meta.artistTypes ?? meta.artistType;
+        const artistTypes: ArtistType[] = Array.isArray(raw) ? raw : [((raw as string) || 'dj') as ArtistType];
+
+        // Merge seeds from all selected types, deduplicate by keywords
+        const seen = new Set<string>();
+        const allSeeds: ReturnType<typeof getDefaultSeeds> = [];
+        for (const type of artistTypes) {
+            for (const s of getDefaultSeeds(type)) {
+                const key = s.keywords.join('|');
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    allSeeds.push(s);
+                }
+            }
+        }
+        for (const seed of allSeeds) {
             await dbSaveSeed(seed, userId);
         }
         seeds = await dbGetAllSeeds(userId);

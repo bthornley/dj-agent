@@ -9,7 +9,7 @@ import { ArtistType } from './types';
 export interface UserPlan {
     planId: PlanId;
     plan: ReturnType<typeof getPlanById>;
-    artistType: ArtistType;
+    artistType: ArtistType[];
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;
 }
@@ -21,18 +21,18 @@ export async function getUserPlan(): Promise<UserPlan> {
     const user = await currentUser();
 
     if (!user) {
-        return { planId: 'free', plan: PLANS.free, artistType: 'dj' };
+        return { planId: 'free', plan: PLANS.free, artistType: ['dj'] };
     }
 
     const metadata = user.publicMetadata as Record<string, unknown>;
     const planId = (metadata.planId as PlanId) || 'free';
-    const artistType = (metadata.artistType as ArtistType) || 'dj';
+    const artistTypes = (metadata.artistTypes as ArtistType[]) || ['dj'];
     const plan = getPlanById(planId);
 
     return {
         planId,
         plan,
-        artistType,
+        artistType: artistTypes,
         stripeCustomerId: metadata.stripeCustomerId as string | undefined,
         stripeSubscriptionId: metadata.stripeSubscriptionId as string | undefined,
     };
