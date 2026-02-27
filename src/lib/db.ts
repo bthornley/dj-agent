@@ -1,5 +1,5 @@
 import { createClient, Client } from '@libsql/client';
-import { Event, Lead, QuerySeed } from './types';
+import { Event, Lead, QuerySeed, BrandProfile, SocialPost, ContentPlan, EngagementTask } from './types';
 import { escapeLikeQuery } from './security';
 
 // ============================================================
@@ -56,6 +56,47 @@ async function ensureSchema(): Promise<Client> {
       CREATE TABLE IF NOT EXISTS search_quota (
         quota_key TEXT PRIMARY KEY,
         count INTEGER DEFAULT 0
+      );
+
+      CREATE TABLE IF NOT EXISTS brand_profiles (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL DEFAULT '',
+        data TEXT NOT NULL,
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+
+      CREATE TABLE IF NOT EXISTS social_posts (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL DEFAULT '',
+        data TEXT NOT NULL,
+        status TEXT DEFAULT 'idea',
+        pillar TEXT DEFAULT '',
+        post_type TEXT DEFAULT '',
+        plan_id TEXT DEFAULT '',
+        scheduled_for TEXT DEFAULT '',
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+
+      CREATE TABLE IF NOT EXISTS content_plans (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL DEFAULT '',
+        data TEXT NOT NULL,
+        week_of TEXT DEFAULT '',
+        status TEXT DEFAULT 'draft',
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+
+      CREATE TABLE IF NOT EXISTS engagement_tasks (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL DEFAULT '',
+        data TEXT NOT NULL,
+        type TEXT DEFAULT '',
+        status TEXT DEFAULT 'pending',
+        requires_approval INTEGER DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
     `);
     _migrated = true;
@@ -266,4 +307,159 @@ export async function dbSaveSeed(seed: QuerySeed, userId: string): Promise<void>
 export async function dbDeleteSeed(id: string, userId: string): Promise<void> {
   const db = await ensureSchema();
   await db.execute({ sql: 'DELETE FROM query_seeds WHERE id = ? AND user_id = ?', args: [id, userId] });
+}
+
+// ============================================================
+// Social Hype Agent — CRUD
+// ============================================================
+
+// ---- Brand Profile ----
+
+export async function dbGetBrandProfile(userId: string): Promise<BrandProfile | null> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: 'SELECT data FROM brand_profiles WHERE user_id = ? LIMIT 1', args: [userId] });
+  return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
+}
+
+export async function dbSaveBrandProfile(profile: BrandProfile, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  const now = new Date().toISOString();
+  const data = JSON.stringify(profile);
+  await db.execute({
+    sql: `INSERT INTO brand_profiles (id, user_id, data, updated_at)
+          VALUES (?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            data = excluded.data,
+            updated_at = excluded.updated_at`,
+    args: [profile.id, userId, data, now],
+  });
+}
+
+// ---- Social Posts ----
+
+export interface SocialPostFilters {
+  status?: string;
+  pillar?: string;
+  postType?: string;
+  planId?: string;
+}
+
+export async function dbGetAllSocialPosts(userId: string, filters?: SocialPostFilters): Promise<SocialPost[]> {
+  const db = await ensureSchema();
+  let sql = 'SELECT data FROM social_posts WHERE user_id = ?';
+  const params: (string | number)[] = [userId];
+
+  if (filters?.status) { sql += ' AND status = ?'; params.push(filters.status); }
+  if (filters?.pillar) { sql += ' AND pillar = ?'; params.push(filters.pillar); }
+  if (filters?.postType) { sql += ' AND post_type = ?'; params.push(filters.postType); }
+  if (filters?.planId) { sql += ' AND plan_id = ?'; params.push(filters.planId); }
+
+  sql += ' ORDER BY created_at DESC';
+  const result = await db.execute({ sql, args: params });
+  return result.rows.map((row) => JSON.parse(row.data as string));
+}
+
+export async function dbGetSocialPost(id: string, userId: string): Promise<SocialPost | null> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: 'SELECT data FROM social_posts WHERE id = ? AND user_id = ?', args: [id, userId] });
+  return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
+}
+
+export async function dbSaveSocialPost(post: SocialPost, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  const now = new Date().toISOString();
+  const data = JSON.stringify(post);
+  await db.execute({
+    sql: `INSERT INTO social_posts (id, user_id, data, status, pillar, post_type, plan_id, scheduled_for, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            data = excluded.data,
+            status = excluded.status,
+            pillar = excluded.pillar,
+            post_type = excluded.post_type,
+            plan_id = excluded.plan_id,
+            scheduled_for = excluded.scheduled_for,
+            updated_at = excluded.updated_at`,
+    args: [post.id, userId, data, post.status, post.pillar, post.postType, post.planId, post.scheduledFor || '', post.createdAt || now, now],
+  });
+}
+
+export async function dbDeleteSocialPost(id: string, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  await db.execute({ sql: 'DELETE FROM social_posts WHERE id = ? AND user_id = ?', args: [id, userId] });
+}
+
+export async function dbGetPostStats(userId: string): Promise<{ total: number; byStatus: Record<string, number>; byPillar: Record<string, number> }> {
+  const db = await ensureSchema();
+  const totalRow = await db.execute({ sql: 'SELECT COUNT(*) as c FROM social_posts WHERE user_id = ?', args: [userId] });
+  const total = Number(totalRow.rows[0].c);
+
+  const statusRows = await db.execute({ sql: 'SELECT status, COUNT(*) as c FROM social_posts WHERE user_id = ? GROUP BY status', args: [userId] });
+  const byStatus: Record<string, number> = {};
+  for (const r of statusRows.rows) byStatus[r.status as string] = Number(r.c);
+
+  const pillarRows = await db.execute({ sql: 'SELECT pillar, COUNT(*) as c FROM social_posts WHERE user_id = ? GROUP BY pillar', args: [userId] });
+  const byPillar: Record<string, number> = {};
+  for (const r of pillarRows.rows) byPillar[r.pillar as string] = Number(r.c);
+
+  return { total, byStatus, byPillar };
+}
+
+// ---- Content Plans ----
+
+export async function dbGetContentPlan(weekOf: string, userId: string): Promise<ContentPlan | null> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: 'SELECT data FROM content_plans WHERE week_of = ? AND user_id = ?', args: [weekOf, userId] });
+  return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
+}
+
+export async function dbGetLatestContentPlan(userId: string): Promise<ContentPlan | null> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: 'SELECT data FROM content_plans WHERE user_id = ? ORDER BY week_of DESC LIMIT 1', args: [userId] });
+  return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
+}
+
+export async function dbSaveContentPlan(plan: ContentPlan, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  const now = new Date().toISOString();
+  const data = JSON.stringify(plan);
+  await db.execute({
+    sql: `INSERT INTO content_plans (id, user_id, data, week_of, status, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            data = excluded.data,
+            week_of = excluded.week_of,
+            status = excluded.status,
+            updated_at = excluded.updated_at`,
+    args: [plan.id, userId, data, plan.weekOf, plan.status, plan.createdAt || now, now],
+  });
+}
+
+// ---- Engagement Tasks ----
+
+export async function dbGetEngagementTasks(userId: string, status?: string): Promise<EngagementTask[]> {
+  const db = await ensureSchema();
+  let sql = 'SELECT data FROM engagement_tasks WHERE user_id = ?';
+  const params: (string | number)[] = [userId];
+  if (status) { sql += ' AND status = ?'; params.push(status); }
+  sql += ' ORDER BY requires_approval DESC, created_at DESC';
+  const result = await db.execute({ sql, args: params });
+  return result.rows.map((row) => JSON.parse(row.data as string));
+}
+
+export async function dbSaveEngagementTask(task: EngagementTask, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  const now = new Date().toISOString();
+  const data = JSON.stringify(task);
+  await db.execute({
+    sql: `INSERT INTO engagement_tasks (id, user_id, data, type, status, requires_approval, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            data = excluded.data,
+            type = excluded.type,
+            status = excluded.status,
+            requires_approval = excluded.requires_approval,
+            updated_at = excluded.updated_at`,
+    args: [task.id, userId, data, task.type, task.status, task.requiresApproval ? 1 : 0, task.createdAt || now, now],
+  });
 }

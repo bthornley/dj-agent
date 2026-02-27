@@ -266,3 +266,147 @@ export interface LeadHandoff {
   event_types_seen: string[];
   music_fit_tags: string[];
 }
+
+// ============================================================
+// Social Hype Agent — Data Model
+// ============================================================
+
+export type SocialPlatform = 'instagram' | 'facebook' | 'tiktok';
+
+export interface ConnectedAccount {
+  platform: SocialPlatform;
+  handle: string;              // @username or page name
+  profileUrl: string;          // full URL to profile
+  accessToken: string;         // platform API access token
+  pageId: string;              // Meta Page ID (for FB) or IG Business Account ID
+  connected: boolean;          // whether we have a valid token
+  lastVerified: string;        // ISO timestamp of last token check
+  tokenExpiresAt: string;      // ISO timestamp when token expires
+}
+
+export interface BrandProfile {
+  id: string;
+  voiceExamples: string[];       // 5 captions they wrote
+  vibeWords: string[];           // e.g. ["energy", "underground", "party"]
+  emojis: string[];              // emojis they actually use
+  avoidTopics: string[];         // topics to never touch
+  profanityLevel: 'none' | 'mild' | 'any';
+  politicsAllowed: boolean;
+  locations: string[];           // cities/regions they play
+  typicalVenues: string[];       // venue names
+  brandColors: string[];         // hex codes
+  djName: string;
+  bio: string;
+  connectedAccounts: ConnectedAccount[];
+  updatedAt: string;
+}
+
+export type ContentPillar =
+  | 'event'              // upcoming events (flyers, set times, ticket links)
+  | 'proof_of_party'     // crowd clips, reactions, before/after
+  | 'taste_identity'     // micro-edits, crate digs, "track ID?" bait
+  | 'education'          // Q&As, "help me pick the opener", polls
+  | 'credibility';       // testimonials, venue tags, collaborator shoutouts
+
+export type PostType =
+  | 'reel'
+  | 'carousel'
+  | 'story'
+  | 'fb_event'
+  | 'fb_post'
+  | 'live';
+
+export type PostPlatform = 'instagram' | 'facebook' | 'both';
+
+export type PostStatus =
+  | 'idea'
+  | 'draft'
+  | 'approved'
+  | 'scheduled'
+  | 'posted'
+  | 'rejected';
+
+export interface SocialPost {
+  id: string;
+  pillar: ContentPillar;
+  postType: PostType;
+  platform: PostPlatform;
+  hookText: string;              // first 1–2 lines
+  caption: string;               // full caption
+  hashtags: string[];            // tight set, 6–15
+  cta: string;                   // "comment", "save", "DM SETLIST", etc.
+  mediaRefs: string[];           // filenames/paths of attached media
+  status: PostStatus;
+  scheduledFor: string;          // ISO datetime
+  postedAt: string;              // ISO datetime
+  variant: 'A' | 'B';           // A/B testing
+  variantPairId: string;         // links A/B variants
+  eventId: string;               // linked event (if pillar=event)
+  planId: string;                // parent content plan
+  notes: string;                 // internal notes
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ContentPlanStatus = 'draft' | 'approved' | 'active' | 'completed';
+
+export interface ContentPlanTargets {
+  reels: number;
+  carousels: number;
+  stories: number;       // per day
+  fbEvents: number;
+  fbPosts: number;
+  lives: number;
+}
+
+export interface ContentPlan {
+  id: string;
+  weekOf: string;                // ISO date (Monday)
+  theme: string;                 // weekly theme
+  targets: ContentPlanTargets;
+  postIds: string[];             // SocialPost IDs in this plan
+  status: ContentPlanStatus;
+  strategyNotes: string;         // why this theme/mix was chosen
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type EngagementTaskType =
+  | 'reply_comment'
+  | 'reply_dm'
+  | 'outbound_comment'
+  | 'collab_outreach'
+  | 'venue_tag'
+  | 'promoter_connect';
+
+export type EngagementTaskStatus = 'pending' | 'approved' | 'completed' | 'skipped';
+
+export interface EngagementTask {
+  id: string;
+  type: EngagementTaskType;
+  target: string;                // @handle, page name, or post URL
+  context: string;               // "Promoter asked about rates", "Crowd comment on reel"
+  draftReply: string;            // suggested reply text
+  status: EngagementTaskStatus;
+  requiresApproval: boolean;     // true for booking/money DMs
+  handoffReason: string;         // why it needs human review
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WeeklyReport {
+  id: string;
+  weekOf: string;
+  reach: number;
+  impressions: number;
+  saves: number;
+  shares: number;
+  comments: number;
+  followerGrowth: number;
+  profileVisits: number;
+  linkClicks: number;
+  topPostIds: string[];          // best performing post IDs
+  insights: string[];            // "Crowd clips beat studio clips 2.3×"
+  recommendations: string[];    // "Increase reel frequency next week"
+  createdAt: string;
+}

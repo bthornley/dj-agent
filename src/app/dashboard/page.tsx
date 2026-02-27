@@ -34,6 +34,7 @@ export default function DashboardPage() {
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/leads" className="btn btn-ghost btn-sm">🔍 Leads</Link>
                     <Link href="/leads/scan" className="btn btn-ghost btn-sm">📡 Scan</Link>
+                    <Link href="/social" className="btn btn-ghost btn-sm">📱 Social</Link>
                     <Link href="/pricing" className="btn btn-ghost btn-sm">💎 Plans</Link>
                     <Link href="/account" className="btn btn-ghost btn-sm">⚙️ Account</Link>
                     <UserButton />
