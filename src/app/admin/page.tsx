@@ -13,6 +13,7 @@ interface UserRow {
     createdAt: number;
     lastSignInAt: number | null;
     role: string;
+    planId: string;
     stats: {
         events: number;
         leads: number;
@@ -58,9 +59,14 @@ export default function AdminDashboard() {
         setLoading(true);
         try {
             const res = await fetch(`/api/admin/users?search=${encodeURIComponent(query)}`);
-            if (res.status === 403) { setError('Access denied — admin role required'); return; }
+            if (res.status === 403) { setError('Access denied — admin role required'); setLoading(false); return; }
             const data = await res.json();
-            if (data.users) setUsers(data.users);
+            if (data.error) {
+                console.error('API error:', data.error, data.detail);
+                setError(`API error: ${data.detail || data.error}`);
+            } else if (data.users) {
+                setUsers(data.users);
+            }
         } catch (e) { console.error(e); }
         setLoading(false);
     }
@@ -175,6 +181,7 @@ export default function AdminDashboard() {
                             <thead>
                                 <tr>
                                     <th>User</th>
+                                    <th>Plan</th>
                                     <th>Role</th>
                                     <th>Signed Up</th>
                                     <th>Last Sign In</th>
@@ -199,6 +206,11 @@ export default function AdminDashboard() {
                                                     <div className="admin-user-email">{user.email}</div>
                                                 </div>
                                             </div>
+                                        </td>
+                                        <td>
+                                            <span className={`badge ${user.planId === 'unlimited' ? 'badge-approved' : user.planId === 'pro' ? 'badge-scheduled' : 'badge-draft'}`}>
+                                                {user.planId}
+                                            </span>
                                         </td>
                                         <td>
                                             <span className={`badge ${user.role === 'admin' ? 'badge-approved' : 'badge-draft'}`}>

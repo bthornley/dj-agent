@@ -16,17 +16,27 @@ export async function GET(request: NextRequest) {
     try {
         const client = await clerkClient();
 
-        // Get users from Clerk
-        const clerkUsers = await client.users.getUserList({
+        // Build params — only include query if search is non-empty
+        const listParams: Parameters<typeof client.users.getUserList>[0] = {
             limit,
             offset: (page - 1) * limit,
-            query: search || undefined,
             orderBy: '-created_at',
-        });
+        };
+        if (search.trim()) {
+            listParams.query = search.trim();
+        }
+
+        // Get users from Clerk
+        const clerkUsers = await client.users.getUserList(listParams);
 
         // Get DB stats for platform user IDs
-        const platformStats = await dbGetPlatformStats();
-        const dbUserIds = new Set(platformStats.uniqueUserIds);
+        let dbUserIds = new Set<string>();
+        try {
+            const platformStats = await dbGetPlatformStats();
+            dbUserIds = new Set(platformStats.uniqueUserIds);
+        } catch (dbErr) {
+            console.error('DB stats error (non-fatal):', dbErr);
+        }
 
         // Build user list with stats
         const users = await Promise.all(
@@ -35,7 +45,11 @@ export async function GET(request: NextRequest) {
                 let stats = { events: 0, leads: 0, posts: 0, plans: 0, mediaAssets: 0, hasBrand: false };
 
                 if (hasDbData) {
-                    stats = await dbGetUserStats(user.id);
+                    try {
+                        stats = await dbGetUserStats(user.id);
+                    } catch (e) {
+                        console.error('User stats error:', e);
+                    }
                 }
 
                 return {
@@ -47,6 +61,7 @@ export async function GET(request: NextRequest) {
                     createdAt: user.createdAt,
                     lastSignInAt: user.lastSignInAt,
                     role: (user.publicMetadata as Record<string, unknown>)?.role || 'user',
+                    planId: (user.publicMetadata as Record<string, unknown>)?.planId || 'free',
                     stats,
                 };
             })
@@ -60,6 +75,7 @@ export async function GET(request: NextRequest) {
         });
     } catch (err) {
         console.error('Admin users list error:', err);
-        return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        return NextResponse.json({ error: 'Failed to fetch users', detail: message }, { status: 500 });
     }
 }
