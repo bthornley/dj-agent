@@ -1,29 +1,30 @@
-import Database from 'better-sqlite3';
-import path from 'path';
+import { createClient, Client } from '@libsql/client';
 import { Event, Lead, QuerySeed } from './types';
 import { escapeLikeQuery } from './security';
 
 // ============================================================
-// SQLite Database — Multi-tenant persistent storage
+// Turso (LibSQL) Database — Multi-tenant persistent storage
 // All tables have user_id for data isolation between users.
 // ============================================================
 
-const DB_PATH = process.env.DATABASE_PATH || path.join(process.cwd(), 'data', 'dj-agent.db');
+let _db: Client | null = null;
 
-let _db: Database.Database | null = null;
-
-function getDb(): Database.Database {
+function getDb(): Client {
   if (!_db) {
-    const fs = require('fs');
-    const dir = path.dirname(DB_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    _db = createClient({
+      url: process.env.TURSO_DATABASE_URL || 'file:data/dj-agent.db',
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    });
+  }
+  return _db;
+}
 
-    _db = new Database(DB_PATH);
-    _db.pragma('journal_mode = WAL');
-
-    _db.exec(`
+// Run schema migration on first call
+let _migrated = false;
+async function ensureSchema(): Promise<Client> {
+  const db = getDb();
+  if (!_migrated) {
+    await db.executeMultiple(`
       CREATE TABLE IF NOT EXISTS events (
         id TEXT PRIMARY KEY,
         user_id TEXT NOT NULL DEFAULT '',
@@ -57,20 +58,9 @@ function getDb(): Database.Database {
         count INTEGER DEFAULT 0
       );
     `);
-
-    // Migrate: add user_id columns if they don't exist (for existing DBs)
-    try { _db.exec('ALTER TABLE events ADD COLUMN user_id TEXT NOT NULL DEFAULT ""'); } catch { /* already exists */ }
-    try { _db.exec('ALTER TABLE leads ADD COLUMN user_id TEXT NOT NULL DEFAULT ""'); } catch { /* already exists */ }
-    try { _db.exec('ALTER TABLE query_seeds ADD COLUMN user_id TEXT NOT NULL DEFAULT ""'); } catch { /* already exists */ }
-
-    // Migrate: dedupe_key from UNIQUE to non-unique (scoped by user now)
-    // Drop old unique index if it exists, create a composite one
-    try { _db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_leads_user_dedupe ON leads(user_id, dedupe_key)'); } catch { /* */ }
-
-    // Migrate search_quota from month PK to quota_key PK
-    try { _db.exec('ALTER TABLE search_quota RENAME COLUMN month TO quota_key'); } catch { /* already renamed or doesn't exist */ }
+    _migrated = true;
   }
-  return _db;
+  return db;
 }
 
 // ---- Search Quota (user-scoped) ----
@@ -83,74 +73,75 @@ function quotaKey(userId: string): string {
   return `${userId}:${month}`;
 }
 
-export function dbGetSearchQuota(userId: string): { month: string; used: number; remaining: number; limit: number } {
-  const db = getDb();
+export async function dbGetSearchQuota(userId: string): Promise<{ month: string; used: number; remaining: number; limit: number }> {
+  const db = await ensureSchema();
   const key = quotaKey(userId);
   const month = key.split(':')[1];
-  const row = db.prepare('SELECT count FROM search_quota WHERE quota_key = ?').get(key) as { count: number } | undefined;
-  const used = row?.count || 0;
+  const row = await db.execute({ sql: 'SELECT count FROM search_quota WHERE quota_key = ?', args: [key] });
+  const used = row.rows.length > 0 ? Number(row.rows[0].count) : 0;
   return { month, used, remaining: Math.max(0, MONTHLY_SEARCH_LIMIT - used), limit: MONTHLY_SEARCH_LIMIT };
 }
 
-export function dbIncrementSearchQuota(userId: string, amount: number = 1): { allowed: boolean; used: number; remaining: number } {
-  const db = getDb();
+export async function dbIncrementSearchQuota(userId: string, amount: number = 1): Promise<{ allowed: boolean; used: number; remaining: number }> {
+  const db = await ensureSchema();
   const key = quotaKey(userId);
-  const quota = dbGetSearchQuota(userId);
+  const quota = await dbGetSearchQuota(userId);
 
   if (quota.remaining < amount) {
     return { allowed: false, used: quota.used, remaining: quota.remaining };
   }
 
-  db.prepare(`
-    INSERT INTO search_quota (quota_key, count) VALUES (?, ?)
-    ON CONFLICT(quota_key) DO UPDATE SET count = count + ?
-  `).run(key, amount, amount);
+  await db.execute({
+    sql: `INSERT INTO search_quota (quota_key, count) VALUES (?, ?)
+          ON CONFLICT(quota_key) DO UPDATE SET count = count + ?`,
+    args: [key, amount, amount],
+  });
 
   return { allowed: true, used: quota.used + amount, remaining: quota.remaining - amount };
 }
 
 // ---- Event CRUD (user-scoped) ----
 
-export function dbGetAllEvents(userId: string): Event[] {
-  const db = getDb();
-  const rows = db.prepare('SELECT data FROM events WHERE user_id = ? ORDER BY created_at DESC').all(userId) as { data: string }[];
-  return rows.map((row) => JSON.parse(row.data));
+export async function dbGetAllEvents(userId: string): Promise<Event[]> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: 'SELECT data FROM events WHERE user_id = ? ORDER BY created_at DESC', args: [userId] });
+  return result.rows.map((row) => JSON.parse(row.data as string));
 }
 
-export function dbGetEvent(id: string, userId: string): Event | null {
-  const db = getDb();
-  const row = db.prepare('SELECT data FROM events WHERE id = ? AND user_id = ?').get(id, userId) as { data: string } | undefined;
-  return row ? JSON.parse(row.data) : null;
+export async function dbGetEvent(id: string, userId: string): Promise<Event | null> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: 'SELECT data FROM events WHERE id = ? AND user_id = ?', args: [id, userId] });
+  return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
-export function dbSaveEvent(event: Event, userId: string): void {
-  const db = getDb();
+export async function dbSaveEvent(event: Event, userId: string): Promise<void> {
+  const db = await ensureSchema();
   const now = new Date().toISOString();
   const data = JSON.stringify(event);
 
-  db.prepare(`
-    INSERT INTO events (id, user_id, data, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET
-      data = excluded.data,
-      updated_at = excluded.updated_at
-  `).run(event.id, userId, data, event.createdAt || now, now);
+  await db.execute({
+    sql: `INSERT INTO events (id, user_id, data, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            data = excluded.data,
+            updated_at = excluded.updated_at`,
+    args: [event.id, userId, data, event.createdAt || now, now],
+  });
 }
 
-export function dbDeleteEvent(id: string, userId: string): void {
-  const db = getDb();
-  db.prepare('DELETE FROM events WHERE id = ? AND user_id = ?').run(id, userId);
+export async function dbDeleteEvent(id: string, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  await db.execute({ sql: 'DELETE FROM events WHERE id = ? AND user_id = ?', args: [id, userId] });
 }
 
-export function dbSearchEvents(query: string, userId: string): Event[] {
-  const db = getDb();
+export async function dbSearchEvents(query: string, userId: string): Promise<Event[]> {
+  const db = await ensureSchema();
   const safeQuery = escapeLikeQuery(query);
-  const rows = db.prepare(`
-    SELECT data FROM events
-    WHERE user_id = ? AND data LIKE ? ESCAPE '\\'
-    ORDER BY created_at DESC
-  `).all(userId, `%${safeQuery}%`) as { data: string }[];
-  return rows.map((row) => JSON.parse(row.data));
+  const result = await db.execute({
+    sql: `SELECT data FROM events WHERE user_id = ? AND data LIKE ? ESCAPE '\\' ORDER BY created_at DESC`,
+    args: [userId, `%${safeQuery}%`],
+  });
+  return result.rows.map((row) => JSON.parse(row.data as string));
 }
 
 // ---- Lead CRUD (user-scoped) ----
@@ -162,8 +153,8 @@ export interface LeadFilters {
   search?: string;
 }
 
-export function dbGetAllLeads(userId: string, filters?: LeadFilters): Lead[] {
-  const db = getDb();
+export async function dbGetAllLeads(userId: string, filters?: LeadFilters): Promise<Lead[]> {
+  const db = await ensureSchema();
   let sql = 'SELECT data FROM leads WHERE user_id = ?';
   const params: (string | number)[] = [userId];
 
@@ -180,96 +171,99 @@ export function dbGetAllLeads(userId: string, filters?: LeadFilters): Lead[] {
     params.push(filters.minScore);
   }
   if (filters?.search) {
-    sql += " AND data LIKE ? ESCAPE '\\\\'";
+    sql += " AND data LIKE ? ESCAPE '\\'";
     params.push(`%${escapeLikeQuery(filters.search)}%`);
   }
 
   sql += ' ORDER BY lead_score DESC, created_at DESC';
 
-  const rows = db.prepare(sql).all(...params) as { data: string }[];
-  return rows.map((row) => JSON.parse(row.data));
+  const result = await db.execute({ sql, args: params });
+  return result.rows.map((row) => JSON.parse(row.data as string));
 }
 
-export function dbGetLead(id: string, userId: string): Lead | null {
-  const db = getDb();
-  const row = db.prepare('SELECT data FROM leads WHERE lead_id = ? AND user_id = ?').get(id, userId) as { data: string } | undefined;
-  return row ? JSON.parse(row.data) : null;
+export async function dbGetLead(id: string, userId: string): Promise<Lead | null> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: 'SELECT data FROM leads WHERE lead_id = ? AND user_id = ?', args: [id, userId] });
+  return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
-export function dbSaveLead(lead: Lead, userId: string): void {
-  const db = getDb();
+export async function dbSaveLead(lead: Lead, userId: string): Promise<void> {
+  const db = await ensureSchema();
   const now = new Date().toISOString();
   const data = JSON.stringify(lead);
 
-  db.prepare(`
-    INSERT INTO leads (lead_id, user_id, data, dedupe_key, lead_score, status, priority, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT(lead_id) DO UPDATE SET
-      data = excluded.data,
-      dedupe_key = excluded.dedupe_key,
-      lead_score = excluded.lead_score,
-      status = excluded.status,
-      priority = excluded.priority,
-      updated_at = excluded.updated_at
-  `).run(lead.lead_id, userId, data, lead.dedupe_key, lead.lead_score, lead.status, lead.priority, lead.found_at || now, now);
+  await db.execute({
+    sql: `INSERT INTO leads (lead_id, user_id, data, dedupe_key, lead_score, status, priority, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(lead_id) DO UPDATE SET
+            data = excluded.data,
+            dedupe_key = excluded.dedupe_key,
+            lead_score = excluded.lead_score,
+            status = excluded.status,
+            priority = excluded.priority,
+            updated_at = excluded.updated_at`,
+    args: [lead.lead_id, userId, data, lead.dedupe_key, lead.lead_score, lead.status, lead.priority, lead.found_at || now, now],
+  });
 }
 
-export function dbDeleteLead(id: string, userId: string): void {
-  const db = getDb();
-  db.prepare('DELETE FROM leads WHERE lead_id = ? AND user_id = ?').run(id, userId);
+export async function dbDeleteLead(id: string, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  await db.execute({ sql: 'DELETE FROM leads WHERE lead_id = ? AND user_id = ?', args: [id, userId] });
 }
 
-export function dbFindLeadByDedupeKey(key: string, userId: string): Lead | null {
-  const db = getDb();
-  const row = db.prepare('SELECT data FROM leads WHERE dedupe_key = ? AND user_id = ?').get(key, userId) as { data: string } | undefined;
-  return row ? JSON.parse(row.data) : null;
+export async function dbFindLeadByDedupeKey(key: string, userId: string): Promise<Lead | null> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: 'SELECT data FROM leads WHERE dedupe_key = ? AND user_id = ?', args: [key, userId] });
+  return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
-export function dbGetLeadStats(userId: string): { total: number; byStatus: Record<string, number>; byPriority: Record<string, number>; avgScore: number } {
-  const db = getDb();
-  const total = (db.prepare('SELECT COUNT(*) as c FROM leads WHERE user_id = ?').get(userId) as { c: number }).c;
+export async function dbGetLeadStats(userId: string): Promise<{ total: number; byStatus: Record<string, number>; byPriority: Record<string, number>; avgScore: number }> {
+  const db = await ensureSchema();
+  const totalRow = await db.execute({ sql: 'SELECT COUNT(*) as c FROM leads WHERE user_id = ?', args: [userId] });
+  const total = Number(totalRow.rows[0].c);
 
-  const statusRows = db.prepare('SELECT status, COUNT(*) as c FROM leads WHERE user_id = ? GROUP BY status').all(userId) as { status: string; c: number }[];
+  const statusRows = await db.execute({ sql: 'SELECT status, COUNT(*) as c FROM leads WHERE user_id = ? GROUP BY status', args: [userId] });
   const byStatus: Record<string, number> = {};
-  for (const r of statusRows) byStatus[r.status] = r.c;
+  for (const r of statusRows.rows) byStatus[r.status as string] = Number(r.c);
 
-  const priorityRows = db.prepare('SELECT priority, COUNT(*) as c FROM leads WHERE user_id = ? GROUP BY priority').all(userId) as { priority: string; c: number }[];
+  const priorityRows = await db.execute({ sql: 'SELECT priority, COUNT(*) as c FROM leads WHERE user_id = ? GROUP BY priority', args: [userId] });
   const byPriority: Record<string, number> = {};
-  for (const r of priorityRows) byPriority[r.priority] = r.c;
+  for (const r of priorityRows.rows) byPriority[r.priority as string] = Number(r.c);
 
-  const avgRow = db.prepare('SELECT AVG(lead_score) as avg FROM leads WHERE user_id = ?').get(userId) as { avg: number | null };
-  const avgScore = Math.round(avgRow.avg || 0);
+  const avgRow = await db.execute({ sql: 'SELECT AVG(lead_score) as avg FROM leads WHERE user_id = ?', args: [userId] });
+  const avgScore = Math.round(Number(avgRow.rows[0].avg) || 0);
 
   return { total, byStatus, byPriority, avgScore };
 }
 
-export function dbGetHandoffQueue(userId: string): Lead[] {
-  const db = getDb();
-  const rows = db.prepare("SELECT data FROM leads WHERE user_id = ? AND status = 'queued_for_dj_agent' ORDER BY lead_score DESC").all(userId) as { data: string }[];
-  return rows.map((row) => JSON.parse(row.data));
+export async function dbGetHandoffQueue(userId: string): Promise<Lead[]> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: "SELECT data FROM leads WHERE user_id = ? AND status = 'queued_for_dj_agent' ORDER BY lead_score DESC", args: [userId] });
+  return result.rows.map((row) => JSON.parse(row.data as string));
 }
 
 // ---- Query Seed CRUD (user-scoped) ----
 
-export function dbGetAllSeeds(userId: string): QuerySeed[] {
-  const db = getDb();
-  const rows = db.prepare('SELECT data FROM query_seeds WHERE user_id = ? ORDER BY created_at DESC').all(userId) as { data: string }[];
-  return rows.map((row) => JSON.parse(row.data));
+export async function dbGetAllSeeds(userId: string): Promise<QuerySeed[]> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: 'SELECT data FROM query_seeds WHERE user_id = ? ORDER BY created_at DESC', args: [userId] });
+  return result.rows.map((row) => JSON.parse(row.data as string));
 }
 
-export function dbSaveSeed(seed: QuerySeed, userId: string): void {
-  const db = getDb();
+export async function dbSaveSeed(seed: QuerySeed, userId: string): Promise<void> {
+  const db = await ensureSchema();
   const data = JSON.stringify(seed);
-  db.prepare(`
-    INSERT INTO query_seeds (id, user_id, data, active, created_at)
-    VALUES (?, ?, ?, ?, ?)
-    ON CONFLICT(id) DO UPDATE SET
-      data = excluded.data,
-      active = excluded.active
-  `).run(seed.id, userId, data, seed.active ? 1 : 0, seed.created_at || new Date().toISOString());
+  await db.execute({
+    sql: `INSERT INTO query_seeds (id, user_id, data, active, created_at)
+          VALUES (?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            data = excluded.data,
+            active = excluded.active`,
+    args: [seed.id, userId, data, seed.active ? 1 : 0, seed.created_at || new Date().toISOString()],
+  });
 }
 
-export function dbDeleteSeed(id: string, userId: string): void {
-  const db = getDb();
-  db.prepare('DELETE FROM query_seeds WHERE id = ? AND user_id = ?').run(id, userId);
+export async function dbDeleteSeed(id: string, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  await db.execute({ sql: 'DELETE FROM query_seeds WHERE id = ? AND user_id = ?', args: [id, userId] });
 }

@@ -95,7 +95,7 @@ export async function runPipeline(input: {
     enrichedLead.notes = generateNotes(enrichedLead);
 
     // Step 7: Dedup check
-    const { isDuplicate, mergedLead } = checkAndMergeDuplicate(enrichedLead, input.userId || '');
+    const { isDuplicate, mergedLead } = await checkAndMergeDuplicate(enrichedLead, input.userId || '');
     const finalLead = mergedLead;
 
     // Re-score if merged (may have new data)
@@ -111,7 +111,7 @@ export async function runPipeline(input: {
     const qcResult = qualityCheck(finalLead);
 
     // Step 9: Save to DB
-    dbSaveLead(finalLead, input.userId || '');
+    await dbSaveLead(finalLead, input.userId || '');
 
     return {
         lead: finalLead,

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     const statsOnly = searchParams.get('stats') === 'true';
 
     if (statsOnly) {
-        const stats = dbGetLeadStats(userId);
+        const stats = await dbGetLeadStats(userId);
         return NextResponse.json(stats);
     }
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         search: searchParams.get('search') || undefined,
     };
 
-    const leads = dbGetAllLeads(userId, filters);
+    const leads = await dbGetAllLeads(userId, filters);
     return NextResponse.json(leads);
 }
 
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
             lead.priority = scoreResult.priority;
         }
 
-        dbSaveLead(lead, userId);
+        await dbSaveLead(lead, userId);
         return NextResponse.json({ success: true, lead }, { status: 201 });
     } catch (error) {
         console.error('Failed to create lead:', error);

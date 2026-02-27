@@ -52,7 +52,7 @@ export async function discoverFromSeed(seed: QuerySeed, userId: string = ''): Pr
     }
 
     // Check quota before searching
-    const quota = dbGetSearchQuota(userId);
+    const quota = await dbGetSearchQuota(userId);
     if (quota.remaining <= 0) {
         return {
             seed,
@@ -69,7 +69,7 @@ export async function discoverFromSeed(seed: QuerySeed, userId: string = ''): Pr
 
     try {
         // Increment quota for this search
-        const quotaCheck = dbIncrementSearchQuota(userId, 1);
+        const quotaCheck = await dbIncrementSearchQuota(userId, 1);
         if (!quotaCheck.allowed) {
             return {
                 seed,

@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const quota = dbGetSearchQuota(userId);
+        const quota = await dbGetSearchQuota(userId);
 
         // Mode 0: Quota check
         if (body.quota_check) {
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
                 }, { status: 429 });
             }
 
-            const seeds = dbGetAllSeeds(userId);
+            const seeds = await dbGetAllSeeds(userId);
             const activeSeeds = seeds.filter(s => s.active);
 
             if (activeSeeds.length === 0) {
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
             return NextResponse.json({
                 mode: 'auto',
-                quota: dbGetSearchQuota(userId),
+                quota: await dbGetSearchQuota(userId),
                 seedsProcessed: seedsToProcess.length,
                 totalUrls,
                 highValueLeads: totalCreated,

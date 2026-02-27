@@ -9,7 +9,7 @@ export async function GET() {
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     try {
-        const queue = dbGetHandoffQueue(userId);
+        const queue = await dbGetHandoffQueue(userId);
         const handoffs = queue.map(lead => generateHandoff(lead));
         return NextResponse.json(handoffs);
     } catch (error) {
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
         }[] = [];
 
         for (const id of leadIds) {
-            const lead = dbGetLead(id, userId);
+            const lead = await dbGetLead(id, userId);
             if (!lead) {
                 results.push({ lead_id: id, success: false, error: 'Lead not found' });
                 continue;
@@ -51,11 +51,11 @@ export async function POST(request: NextRequest) {
 
             const handoff = generateHandoff(lead);
             const event = leadToEvent(lead, handoff);
-            dbSaveEvent(event, userId);
+            await dbSaveEvent(event, userId);
 
             lead.status = 'queued_for_dj_agent';
             lead.agent_trace = [lead.agent_trace, `[Handoff ${new Date().toISOString()}] Created event ${event.id}`].filter(Boolean).join('\n');
-            dbSaveLead(lead, userId);
+            await dbSaveLead(lead, userId);
 
             results.push({ lead_id: id, success: true, event_id: event.id, handoff });
         }

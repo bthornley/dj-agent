@@ -8,14 +8,14 @@ export async function GET() {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    let seeds = dbGetAllSeeds(userId);
+    let seeds = await dbGetAllSeeds(userId);
 
     // Auto-populate defaults for new users
     if (seeds.length === 0) {
         for (const seed of DEFAULT_SEEDS) {
-            dbSaveSeed(seed, userId);
+            await dbSaveSeed(seed, userId);
         }
-        seeds = dbGetAllSeeds(userId);
+        seeds = await dbGetAllSeeds(userId);
     }
 
     return NextResponse.json(seeds);
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const seed = await request.json();
-    dbSaveSeed(seed, userId);
+    await dbSaveSeed(seed, userId);
     return NextResponse.json({ success: true, seed }, { status: 201 });
 }
 
@@ -40,6 +40,6 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
-    dbDeleteSeed(id, userId);
+    await dbDeleteSeed(id, userId);
     return NextResponse.json({ success: true });
 }

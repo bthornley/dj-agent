@@ -49,11 +49,11 @@ function normalizeName(name: string): string {
  * Check if a lead is a duplicate. If so, merge and return
  * the merged lead + the existing lead ID.
  */
-export function checkAndMergeDuplicate(
+export async function checkAndMergeDuplicate(
     newLead: Lead,
     userId: string = ''
-): { isDuplicate: boolean; mergedLead: Lead; existingId?: string } {
-    const existing = dbFindLeadByDedupeKey(newLead.dedupe_key, userId);
+): Promise<{ isDuplicate: boolean; mergedLead: Lead; existingId?: string }> {
+    const existing = await dbFindLeadByDedupeKey(newLead.dedupe_key, userId);
 
     if (!existing) {
         return { isDuplicate: false, mergedLead: newLead };

@@ -20,7 +20,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { id } = await params;
-    const lead = dbGetLead(id, userId);
+    const lead = await dbGetLead(id, userId);
     if (!lead) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json(lead);
 }
@@ -31,7 +31,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { id } = await params;
-    const existing = dbGetLead(id, userId);
+    const existing = await dbGetLead(id, userId);
     if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     const body = await request.json();
@@ -53,7 +53,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         updated.priority = scoreResult.priority;
     }
 
-    dbSaveLead(updated, userId);
+    await dbSaveLead(updated, userId);
     return NextResponse.json(updated);
 }
 
@@ -63,6 +63,6 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { id } = await params;
-    dbDeleteLead(id, userId);
+    await dbDeleteLead(id, userId);
     return NextResponse.json({ success: true });
 }

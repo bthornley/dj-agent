@@ -10,7 +10,7 @@ export async function GET() {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const events = dbGetAllEvents(userId);
+    const events = await dbGetAllEvents(userId);
     return NextResponse.json(events);
 }
 
@@ -39,6 +39,6 @@ export async function POST(request: NextRequest) {
         }
     }
 
-    dbSaveEvent(event, userId);
+    await dbSaveEvent(event, userId);
     return NextResponse.json({ success: true, event }, { status: 201 });
 }
