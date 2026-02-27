@@ -92,7 +92,7 @@ export default function EPKPage({ params }: { params: Promise<{ id: string }> })
                 <div style={{ fontSize: '48px' }}>🎵</div>
                 <h1 style={{ fontSize: '24px' }}>EPK Not Found</h1>
                 <p style={{ color: '#999' }}>This electronic press kit doesn&apos;t exist or hasn&apos;t been set up yet.</p>
-                <Link href="/" style={{ color: '#a855f7' }}>← Go to StageScout</Link>
+                <Link href="/" style={{ color: '#a855f7' }}>← Go to GigLift</Link>
             </div>
         );
     }
@@ -366,7 +366,7 @@ export default function EPKPage({ params }: { params: Promise<{ id: string }> })
                 }}>
                     <p>Electronic Press Kit — {brand.djName}</p>
                     <p style={{ marginTop: '4px' }}>
-                        Powered by <a href="/" style={{ color: accentColor, textDecoration: 'none' }}>StageScout</a>
+                        Powered by <a href="/" style={{ color: accentColor, textDecoration: 'none' }}>GigLift</a>
                     </p>
                 </footer>
             </div>

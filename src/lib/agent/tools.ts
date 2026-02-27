@@ -101,7 +101,7 @@ export function generateEmailDraft(event: Partial<Event>): string {
 export function saveToCRM(event: Event): { success: boolean; id: string } {
     if (typeof window !== 'undefined') {
         try {
-            const key = 'stagescout-events';
+            const key = 'giglift-events';
             const existing = JSON.parse(localStorage.getItem(key) || '[]');
             const idx = existing.findIndex((e: Event) => e.id === event.id);
             if (idx >= 0) {

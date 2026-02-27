@@ -107,7 +107,7 @@ export default function PricingPage() {
     const handleUpgrade = async (planId: string) => {
         if (planId === 'free' || planId === currentPlan) return;
         if (planId === 'agency') {
-            window.location.href = 'mailto:hello@stagescout.app?subject=Agency%20Tier%20Inquiry&body=Hi%2C%20I%27m%20interested%20in%20the%20Agency%20tier%20for%20my%20DJ%20agency.';
+            window.location.href = 'mailto:hello@giglift.app?subject=Agency%20Tier%20Inquiry&body=Hi%2C%20I%27m%20interested%20in%20the%20Agency%20tier%20for%20my%20DJ%20agency.';
             return;
         }
         if (!user) {
@@ -142,7 +142,7 @@ export default function PricingPage() {
             <header className="topbar">
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
                     <div className="icon">🎧</div>
-                    <span>StageScout</span>
+                    <span>GigLift</span>
                 </Link>
                 <nav className="topbar-nav">
                     {user ? (

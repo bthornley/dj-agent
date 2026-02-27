@@ -12,7 +12,7 @@ let _db: Client | null = null;
 function getDb(): Client {
   if (!_db) {
     _db = createClient({
-      url: process.env.TURSO_DATABASE_URL || 'file:data/stagescout.db',
+      url: process.env.TURSO_DATABASE_URL || 'file:data/giglift.db',
       authToken: process.env.TURSO_AUTH_TOKEN,
     });
   }

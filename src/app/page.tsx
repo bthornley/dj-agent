@@ -11,7 +11,7 @@ export default async function LandingPage() {
       <header className="landing-topbar">
         <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
           <div className="icon">🎵</div>
-          <span>StageScout</span>
+          <span>GigLift</span>
         </Link>
         <nav className="topbar-nav" style={{ gap: '8px' }}>
           <Link href="/pricing" className="btn btn-ghost btn-sm">Pricing</Link>
@@ -27,7 +27,7 @@ export default async function LandingPage() {
             Find Gigs & <span className="hero-accent">Build Your Brand</span> Automatically
           </h1>
           <p className="hero-subtitle">
-            StageScout&apos;s AI agents scan the web for venues, score and qualify leads, then generate
+            GigLift&apos;s AI agents scan the web for venues, score and qualify leads, then generate
             scroll-stopping social content to grow your following. For DJs, bands, solo artists &amp; music teachers.
           </p>
 
@@ -138,7 +138,7 @@ export default async function LandingPage() {
       </main>
 
       <footer className="landing-footer">
-        <p>© 2026 StageScout. Built for DJs who hustle.</p>
+        <p>© 2026 GigLift. Built for DJs who hustle.</p>
       </footer>
     </>
   );

@@ -1,5 +1,5 @@
 // ============================================================
-// StageScout — Core Data Model
+// GigLift — Core Data Model
 // ============================================================
 
 export type ArtistType = 'dj' | 'band' | 'solo_artist' | 'music_teacher';

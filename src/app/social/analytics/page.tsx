@@ -55,7 +55,7 @@ export default function AnalyticsPage() {
             <header className="topbar">
                 <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
                     <div className="icon">🎧</div>
-                    <span>StageScout</span>
+                    <span>GigLift</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/social" className="btn btn-ghost btn-sm">📱 Social</Link>

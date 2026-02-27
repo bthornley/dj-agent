@@ -88,7 +88,7 @@ export default function AdminDashboard() {
                 <header className="topbar">
                     <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
                         <div className="icon">🎧</div>
-                        <span>StageScout</span>
+                        <span>GigLift</span>
                     </Link>
                     <nav className="topbar-nav"><UserButton /></nav>
                 </header>
@@ -108,7 +108,7 @@ export default function AdminDashboard() {
             <header className="topbar">
                 <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
                     <div className="icon">🎧</div>
-                    <span>StageScout</span>
+                    <span>GigLift</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/dashboard" className="btn btn-ghost btn-sm">📊 App</Link>
