@@ -271,6 +271,25 @@ export interface LeadHandoff {
 // Social Hype Agent — Data Model
 // ============================================================
 
+export type MediaType = 'image' | 'video' | 'audio';
+
+export interface MediaAsset {
+  id: string;
+  fileName: string;           // original file name
+  fileSize: number;           // bytes
+  mimeType: string;           // e.g. image/jpeg, video/mp4
+  mediaType: MediaType;       // image, video, or audio
+  url: string;                // blob storage URL
+  thumbnailUrl: string;       // smaller preview URL (same as url for images)
+  width: number;              // 0 if unknown
+  height: number;             // 0 if unknown
+  duration: number;           // seconds, 0 for images
+  tags: string[];             // user-assigned tags for search/filter
+  usedInPosts: string[];      // post IDs where this asset was used
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type SocialPlatform = 'instagram' | 'facebook' | 'tiktok';
 
 export interface ConnectedAccount {

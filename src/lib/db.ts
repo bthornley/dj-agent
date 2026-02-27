@@ -1,5 +1,5 @@
 import { createClient, Client } from '@libsql/client';
-import { Event, Lead, QuerySeed, BrandProfile, SocialPost, ContentPlan, EngagementTask } from './types';
+import { Event, Lead, QuerySeed, BrandProfile, SocialPost, ContentPlan, EngagementTask, MediaAsset } from './types';
 import { escapeLikeQuery } from './security';
 
 // ============================================================
@@ -95,6 +95,16 @@ async function ensureSchema(): Promise<Client> {
         type TEXT DEFAULT '',
         status TEXT DEFAULT 'pending',
         requires_approval INTEGER DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+
+      CREATE TABLE IF NOT EXISTS media_assets (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL DEFAULT '',
+        data TEXT NOT NULL,
+        file_name TEXT DEFAULT '',
+        media_type TEXT DEFAULT '',
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
@@ -462,4 +472,40 @@ export async function dbSaveEngagementTask(task: EngagementTask, userId: string)
             updated_at = excluded.updated_at`,
     args: [task.id, userId, data, task.type, task.status, task.requiresApproval ? 1 : 0, task.createdAt || now, now],
   });
+}
+
+// ---- Media Assets ----
+
+export async function dbGetAllMediaAssets(userId: string): Promise<MediaAsset[]> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: 'SELECT data FROM media_assets WHERE user_id = ? ORDER BY created_at DESC', args: [userId] });
+  return result.rows.map(r => JSON.parse(r.data as string));
+}
+
+export async function dbGetMediaAsset(id: string, userId: string): Promise<MediaAsset | null> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: 'SELECT data FROM media_assets WHERE id = ? AND user_id = ?', args: [id, userId] });
+  if (result.rows.length === 0) return null;
+  return JSON.parse(result.rows[0].data as string);
+}
+
+export async function dbSaveMediaAsset(asset: MediaAsset, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  const now = new Date().toISOString();
+  const data = JSON.stringify(asset);
+  await db.execute({
+    sql: `INSERT INTO media_assets (id, user_id, data, file_name, media_type, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(id) DO UPDATE SET
+            data = excluded.data,
+            file_name = excluded.file_name,
+            media_type = excluded.media_type,
+            updated_at = excluded.updated_at`,
+    args: [asset.id, userId, data, asset.fileName, asset.mediaType, asset.createdAt || now, now],
+  });
+}
+
+export async function dbDeleteMediaAsset(id: string, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  await db.execute({ sql: 'DELETE FROM media_assets WHERE id = ? AND user_id = ?', args: [id, userId] });
 }
