@@ -5,6 +5,34 @@ import Link from 'next/link';
 import { QuerySeed } from '@/lib/types';
 import { fetchSeeds, createSeed, deleteSeed } from '@/lib/api-client';
 
+function generateId() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}
+
+const MARKETPLACE_PRESETS: Record<string, { keywords: string[]; label: string }[]> = {
+    'Orange County': [
+        { keywords: ['site:craigslist.org', 'gig', 'Orange County'], label: 'Craigslist — Gigs' },
+        { keywords: ['site:craigslist.org', 'musician wanted', 'Orange County'], label: 'Craigslist — Musicians Wanted' },
+        { keywords: ['site:facebook.com/marketplace', 'gig', 'Orange County'], label: 'FB Marketplace — Gigs' },
+        { keywords: ['site:facebook.com/marketplace', 'musician', 'Orange County'], label: 'FB Marketplace — Musicians' },
+        { keywords: ['site:gigsalad.com', 'Orange County'], label: 'GigSalad' },
+        { keywords: ['site:thumbtack.com', 'musician', 'Orange County'], label: 'Thumbtack' },
+        { keywords: ['site:bark.com', 'musician', 'Orange County'], label: 'Bark' },
+    ],
+    'Long Beach': [
+        { keywords: ['site:craigslist.org', 'gig', 'Long Beach'], label: 'Craigslist — Gigs' },
+        { keywords: ['site:craigslist.org', 'musician wanted', 'Long Beach'], label: 'Craigslist — Musicians Wanted' },
+        { keywords: ['site:facebook.com/marketplace', 'gig', 'Long Beach'], label: 'FB Marketplace — Gigs' },
+        { keywords: ['site:facebook.com/marketplace', 'musician', 'Long Beach'], label: 'FB Marketplace — Musicians' },
+        { keywords: ['site:gigsalad.com', 'Long Beach'], label: 'GigSalad' },
+        { keywords: ['site:thumbtack.com', 'musician', 'Long Beach'], label: 'Thumbtack' },
+        { keywords: ['site:bark.com', 'musician', 'Long Beach'], label: 'Bark' },
+    ],
+};
+
 export default function SeedsPage() {
     const [seeds, setSeeds] = useState<QuerySeed[]>([]);
     const [loading, setLoading] = useState(true);
@@ -13,6 +41,7 @@ export default function SeedsPage() {
     const [keywords, setKeywords] = useState('');
     const [source, setSource] = useState('web_search');
     const [message, setMessage] = useState('');
+    const [addingPresets, setAddingPresets] = useState(false);
 
     const loadSeeds = async () => {
         try {
@@ -34,18 +63,51 @@ export default function SeedsPage() {
         }
         try {
             await createSeed({
+                id: generateId(),
                 region,
                 keywords: keywords.split(',').map(k => k.trim()).filter(Boolean),
                 source,
+                active: true,
+                created_at: new Date().toISOString(),
             });
             setKeywords('');
             setShowForm(false);
             loadSeeds();
             setMessage('Seed added');
             setTimeout(() => setMessage(''), 3000);
-        } catch (err) {
+        } catch {
             setMessage('Failed to add seed');
         }
+    };
+
+    const handleAddMarketplacePresets = async () => {
+        setAddingPresets(true);
+        try {
+            const existingKeywords = new Set(seeds.map(s => s.keywords.join('|')));
+            let added = 0;
+            for (const [reg, presets] of Object.entries(MARKETPLACE_PRESETS)) {
+                for (const preset of presets) {
+                    const key = preset.keywords.join('|');
+                    if (!existingKeywords.has(key)) {
+                        await createSeed({
+                            id: generateId(),
+                            region: reg,
+                            keywords: preset.keywords,
+                            source: 'marketplace',
+                            active: true,
+                            created_at: new Date().toISOString(),
+                        });
+                        added++;
+                    }
+                }
+            }
+            await loadSeeds();
+            setMessage(added > 0 ? `✅ Added ${added} marketplace seeds` : 'All marketplace seeds already added');
+            setTimeout(() => setMessage(''), 4000);
+        } catch {
+            setMessage('Failed to add marketplace seeds');
+        }
+        setAddingPresets(false);
     };
 
     const handleDelete = async (id: string) => {
@@ -65,6 +127,9 @@ export default function SeedsPage() {
         return acc;
     }, {} as Record<string, QuerySeed[]>);
 
+    const isMarketplaceSeed = (seed: QuerySeed) =>
+        seed.keywords.some(k => k.startsWith('site:'));
+
     return (
         <>
             <header className="topbar">
@@ -72,8 +137,16 @@ export default function SeedsPage() {
                     <div className="icon">⚙</div>
                     <span>Query Seeds</span>
                 </Link>
-                <nav className="topbar-nav">
+                <nav className="topbar-nav" style={{ gap: '8px' }}>
                     <Link href="/leads" className="btn btn-ghost btn-sm">← Leads</Link>
+                    <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={handleAddMarketplacePresets}
+                        disabled={addingPresets}
+                        style={{ opacity: addingPresets ? 0.6 : 1 }}
+                    >
+                        {addingPresets ? '⏳ Adding...' : '🏪 Add Marketplace Seeds'}
+                    </button>
                     <button className="btn btn-primary btn-sm" onClick={() => setShowForm(!showForm)}>
                         + Add Seed
                     </button>
@@ -106,6 +179,7 @@ export default function SeedsPage() {
                                 <label className="form-label">Source</label>
                                 <select className="input" value={source} onChange={e => setSource(e.target.value)}>
                                     <option value="web_search">Web Search</option>
+                                    <option value="marketplace">Marketplace</option>
                                     <option value="google_maps">Google Maps</option>
                                     <option value="event_platform">Event Platform</option>
                                     <option value="instagram">Instagram</option>
@@ -116,11 +190,14 @@ export default function SeedsPage() {
                             <label className="form-label">Keywords (comma-separated)</label>
                             <input
                                 className="input"
-                                placeholder="e.g. nightclub, DJ night, rooftop bar"
+                                placeholder="e.g. site:craigslist.org, DJ gig, Orange County"
                                 value={keywords}
                                 onChange={e => setKeywords(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && handleAdd()}
                             />
+                            <p className="text-muted" style={{ fontSize: '12px', marginTop: '4px' }}>
+                                Tip: Use <code>site:craigslist.org</code> or <code>site:facebook.com/marketplace</code> to target specific platforms
+                            </p>
                         </div>
                         <div style={{ display: 'flex', gap: '12px' }}>
                             <button className="btn btn-primary" onClick={handleAdd}>Add Seed</button>
@@ -146,11 +223,15 @@ export default function SeedsPage() {
                                     <div key={seed.id} className="seed-card">
                                         <div className="seed-keywords">
                                             {seed.keywords.map((kw, i) => (
-                                                <span key={i} className="badge badge-draft">{kw}</span>
+                                                <span key={i} className={`badge ${kw.startsWith('site:') ? 'badge-confirmed' : 'badge-draft'}`}>
+                                                    {kw}
+                                                </span>
                                             ))}
                                         </div>
                                         <div className="seed-meta">
-                                            <span className="badge badge-inquiry">{seed.source.replace(/_/g, ' ')}</span>
+                                            <span className={`badge ${isMarketplaceSeed(seed) ? 'badge-proposed' : 'badge-inquiry'}`}>
+                                                {isMarketplaceSeed(seed) ? '🏪 marketplace' : seed.source.replace(/_/g, ' ')}
+                                            </span>
                                             <span className={`badge ${seed.active ? 'badge-confirmed' : ''}`}>
                                                 {seed.active ? '● Active' : '○ Inactive'}
                                             </span>
