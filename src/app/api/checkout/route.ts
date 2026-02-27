@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { stripe, PLANS, PlanId } from '@/lib/stripe';
+import { getStripe, PLANS, PlanId } from '@/lib/stripe';
 import { getUserPlan } from '@/lib/subscription';
 import { rateLimit } from '@/lib/rate-limit';
 
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
         const userPlan = await getUserPlan();
         if (userPlan.stripeCustomerId) {
             // Create a billing portal session for plan changes
-            const portalSession = await stripe.billingPortal.sessions.create({
+            const portalSession = await getStripe().billingPortal.sessions.create({
                 customer: userPlan.stripeCustomerId,
                 return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/account`,
             });
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
         }
 
         // Create a new Checkout session
-        const session = await stripe.checkout.sessions.create({
+        const session = await getStripe().checkout.sessions.create({
             mode: 'subscription',
             line_items: [{ price: plan.priceId, quantity: 1 }],
             success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?upgraded=true`,

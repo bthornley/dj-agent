@@ -4,7 +4,14 @@ import Stripe from 'stripe';
 // Stripe SDK + Plan Configuration
 // ============================================================
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
+// Lazy-initialized — env vars aren't available at build time on Vercel
+let _stripe: Stripe | null = null;
+export function getStripe(): Stripe {
+    if (!_stripe) {
+        _stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
+    }
+    return _stripe;
+}
 
 export type PlanId = 'free' | 'pro' | 'unlimited';
 
