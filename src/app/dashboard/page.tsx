@@ -29,7 +29,7 @@ export default function DashboardPage() {
             <header className="topbar">
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
                     <div className="icon">🎧</div>
-                    <span>GigFinder</span>
+                    <span>StageScout</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/leads" className="btn btn-ghost btn-sm">🔍 Leads</Link>

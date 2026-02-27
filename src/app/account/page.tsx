@@ -106,7 +106,7 @@ export default function AccountPage() {
             <header className="topbar">
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
                     <div className="icon">🎵</div>
-                    <span>GigFinder</span>
+                    <span>StageScout</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/dashboard" className="btn btn-ghost btn-sm">← Dashboard</Link>

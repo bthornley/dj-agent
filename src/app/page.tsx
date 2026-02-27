@@ -11,7 +11,7 @@ export default async function LandingPage() {
       <header className="landing-topbar">
         <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
           <div className="icon">🎵</div>
-          <span>GigFinder</span>
+          <span>StageScout</span>
         </Link>
         <nav className="topbar-nav" style={{ gap: '8px' }}>
           <Link href="/pricing" className="btn btn-ghost btn-sm">Pricing</Link>
@@ -27,7 +27,7 @@ export default async function LandingPage() {
             Find Your Next <span className="hero-accent">Gig</span> Automatically
           </h1>
           <p className="hero-subtitle">
-            GigFinder scans the web for venues and opportunities, scores them, and surfaces the ones
+            StageScout scans the web for venues and opportunities, scores them, and surfaces the ones
             most likely to book you. For DJs, bands, solo artists & music teachers.
           </p>
 
@@ -87,7 +87,7 @@ export default async function LandingPage() {
       </main>
 
       <footer className="landing-footer">
-        <p>© 2026 GigFinder. Built for DJs who hustle.</p>
+        <p>© 2026 StageScout. Built for DJs who hustle.</p>
       </footer>
     </>
   );

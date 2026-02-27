@@ -100,7 +100,7 @@ export default function PricingPage() {
             <header className="topbar">
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
                     <div className="icon">🎧</div>
-                    <span>GigFinder</span>
+                    <span>StageScout</span>
                 </Link>
                 <nav className="topbar-nav">
                     {user ? (
