@@ -22,13 +22,13 @@ export default async function LandingPage() {
 
       <main className="landing-hero">
         <div className="hero-content">
-          <div className="hero-badge">🚀 AI-Powered Lead Discovery</div>
+          <div className="hero-badge">🚀 AI-Powered Lead Discovery + Social Hype Agent</div>
           <h1 className="hero-title">
-            Find Your Next <span className="hero-accent">Gig</span> Automatically
+            Find Gigs & <span className="hero-accent">Build Your Brand</span> Automatically
           </h1>
           <p className="hero-subtitle">
-            StageScout scans the web for venues and opportunities, scores them, and surfaces the ones
-            most likely to book you. For DJs, bands, solo artists & music teachers.
+            StageScout&apos;s AI agents scan the web for venues, score and qualify leads, then generate
+            scroll-stopping social content to grow your following. For DJs, bands, solo artists &amp; music teachers.
           </p>
 
           <div className="hero-actions">
@@ -42,8 +42,8 @@ export default async function LandingPage() {
               <div className="hero-stat-label">Venues Found/mo</div>
             </div>
             <div className="hero-stat">
-              <div className="hero-stat-value">P1/P2</div>
-              <div className="hero-stat-label">High-Value Only</div>
+              <div className="hero-stat-value">4 Agents</div>
+              <div className="hero-stat-label">Working For You</div>
             </div>
             <div className="hero-stat">
               <div className="hero-stat-value">100%</div>
@@ -52,6 +52,15 @@ export default async function LandingPage() {
           </div>
         </div>
 
+        {/* Lead Discovery Features */}
+        <div style={{ textAlign: 'center', marginBottom: '12px', marginTop: '24px' }}>
+          <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+            🔍 Lead Discovery Agent
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+            AI-powered venue discovery, scoring, and booking pipeline
+          </p>
+        </div>
         <div className="feature-grid">
           <div className="feature-card">
             <div className="feature-icon">🔍</div>
@@ -82,6 +91,48 @@ export default async function LandingPage() {
             <div className="feature-icon">⚡</div>
             <h3>Booking Pipeline</h3>
             <p>Track leads from discovery to outreach to booked. Your complete DJ CRM.</p>
+          </div>
+        </div>
+
+        {/* Social Hype Agent Features */}
+        <div style={{ textAlign: 'center', marginBottom: '12px', marginTop: '48px' }}>
+          <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+            📱 Social Hype Agent
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+            4-agent content machine that builds your brand on autopilot
+          </p>
+        </div>
+        <div className="feature-grid">
+          <div className="feature-card">
+            <div className="feature-icon">🎨</div>
+            <h3>Brand Voice Setup</h3>
+            <p>Define your DJ name, genre, vibe, and tone. The agent writes posts that sound like you, not a robot.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">📅</div>
+            <h3>Weekly Content Plans</h3>
+            <p>AI strategist generates a themed 7-day content plan with Reels, carousels, stories, and FB posts.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">✍️</div>
+            <h3>A/B Post Drafts</h3>
+            <p>Every post gets two hook variants so you can pick the best angle. Captions, hashtags, and CTAs included.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">📁</div>
+            <h3>Media Library</h3>
+            <p>Upload folders of event photos, DJ set videos, and promo graphics. The agent attaches them to posts.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">🤝</div>
+            <h3>Engagement Copilot</h3>
+            <p>Daily checklist of comments to reply, DMs to send, and collabs to reach out to — with draft replies.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">📊</div>
+            <h3>Analytics Dashboard</h3>
+            <p>Track post performance, engagement rates, and content pillar distribution across all platforms.</p>
           </div>
         </div>
       </main>

@@ -17,6 +17,11 @@ const plans = [
             '1 region',
             'Manual scanning only',
             'Lead scoring & QC',
+            '—',
+            'Brand voice setup',
+            '1 content plan per week',
+            '5 post drafts per week',
+            'Basic media library (50MB)',
         ],
         cta: 'Current Plan',
         highlighted: false,
@@ -34,7 +39,13 @@ const plans = [
             'Auto-discovery from seeds',
             'Lead scoring & QC',
             'DJ Agent handoff',
-            'Email templates',
+            '—',
+            'Brand voice setup',
+            'Unlimited content plans',
+            'Unlimited post drafts + A/B variants',
+            'Media library (2GB)',
+            'Engagement copilot',
+            'Analytics dashboard',
         ],
         cta: 'Upgrade to Pro',
         highlighted: true,
@@ -53,8 +64,14 @@ const plans = [
             'Lead scoring & QC',
             'DJ Agent handoff',
             'Email templates',
+            '—',
+            'Brand voice setup',
+            'Unlimited content plans',
+            'Unlimited post drafts + A/B variants',
+            'Media library (10GB)',
+            'Engagement copilot',
+            'Analytics dashboard',
             'Priority support',
-            'CRM features',
         ],
         cta: 'Go Unlimited',
         highlighted: false,
@@ -136,7 +153,16 @@ export default function PricingPage() {
 
                             <ul className="pricing-features">
                                 {plan.features.map((f, i) => (
-                                    <li key={i}>✓ {f}</li>
+                                    f === '—' ? (
+                                        <li key={i} style={{
+                                            listStyle: 'none', borderTop: '1px solid var(--border)',
+                                            margin: '8px 0', paddingTop: '8px', fontSize: '11px',
+                                            textTransform: 'uppercase', letterSpacing: '0.5px',
+                                            color: 'var(--text-accent)', fontWeight: 600,
+                                        }}>📱 Social Hype Agent</li>
+                                    ) : (
+                                        <li key={i}>✓ {f}</li>
+                                    )
                                 ))}
                             </ul>
 
