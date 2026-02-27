@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
@@ -19,6 +19,7 @@ function LeadDetailContent() {
     const [outreachLoading, setOutreachLoading] = useState(false);
     const [activeVariant, setActiveVariant] = useState(0);
     const [copied, setCopied] = useState(false);
+    const outreachRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!id) return;
@@ -119,6 +120,7 @@ function LeadDetailContent() {
                             if (data.emails && data.emails.length > 0) {
                                 setOutreach(data.emails);
                                 setActiveVariant(0);
+                                setTimeout(() => outreachRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
                             } else {
                                 setMessage(data.error || 'No emails generated — check your lead data');
                                 setTimeout(() => setMessage(''), 5000);
@@ -277,7 +279,7 @@ function LeadDetailContent() {
 
             {/* Outreach Email Preview */}
             {outreach && outreach.length > 0 && (
-                <div className="card" style={{ marginTop: '24px' }}>
+                <div ref={outreachRef} className="card" style={{ marginTop: '24px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                         <h3 className="card-title">✉️ Outreach Email Draft</h3>
                         <button className="btn btn-ghost btn-sm" onClick={() => setOutreach(null)}>✕ Close</button>
