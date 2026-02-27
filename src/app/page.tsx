@@ -10,7 +10,7 @@ export default async function LandingPage() {
     <>
       <header className="landing-topbar">
         <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-          <div className="icon">🎧</div>
+          <div className="icon">🎵</div>
           <span>GigFinder</span>
         </Link>
         <nav className="topbar-nav" style={{ gap: '8px' }}>
@@ -24,11 +24,11 @@ export default async function LandingPage() {
         <div className="hero-content">
           <div className="hero-badge">🚀 AI-Powered Lead Discovery</div>
           <h1 className="hero-title">
-            Find Your Next <span className="hero-accent">DJ Gig</span> Automatically
+            Find Your Next <span className="hero-accent">Gig</span> Automatically
           </h1>
           <p className="hero-subtitle">
-            GigFinder scans the web for venues, scores them, and surfaces the ones
-            most likely to book you. Stop cold-calling — let AI find your leads.
+            GigFinder scans the web for venues and opportunities, scores them, and surfaces the ones
+            most likely to book you. For DJs, bands, solo artists & music teachers.
           </p>
 
           <div className="hero-actions">

@@ -1,61 +1,86 @@
-import { QuerySeed } from '../../types';
+import { QuerySeed, ArtistType } from '../../types';
 import { v4 as uuid } from 'uuid';
 
 // ============================================================
 // Lead Finder — Seed Queries & Source Definitions
-// Target regions: Orange County, Long Beach
-// Excluded: weddings
+// Per-artist-type seeds for tailored discovery
 // ============================================================
 
 export const TARGET_REGIONS = ['Orange County', 'Long Beach'] as const;
 
-export const DEFAULT_SEEDS: QuerySeed[] = [
-    // — Orange County: Nightlife / Clubs —
-    { id: uuid(), region: 'Orange County', keywords: ['nightclub', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Orange County', keywords: ['lounge', 'cocktail bar', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Orange County', keywords: ['rooftop bar', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Orange County', keywords: ['live music venue', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
+function seed(region: string, keywords: string[]): QuerySeed {
+    return { id: uuid(), region, keywords, source: 'web_search', active: true, created_at: new Date().toISOString() };
+}
 
-    // — Orange County: Event Spaces —
-    { id: uuid(), region: 'Orange County', keywords: ['event space', 'private events', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Orange County', keywords: ['hotel ballroom', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Orange County', keywords: ['brewery', 'winery', 'events', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-
-    // — Orange County: DJ-Specific —
-    { id: uuid(), region: 'Orange County', keywords: ['DJ night', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Orange County', keywords: ['Latin night', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-
-    // — Orange County: Corporate / Events —
-    { id: uuid(), region: 'Orange County', keywords: ['corporate event venue', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Orange County', keywords: ['event planner', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Orange County', keywords: ['promoter', 'events', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-
-    // — Long Beach: Nightlife / Clubs —
-    { id: uuid(), region: 'Long Beach', keywords: ['nightclub', 'Long Beach'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Long Beach', keywords: ['lounge', 'cocktail bar', 'Long Beach'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Long Beach', keywords: ['rooftop bar', 'Long Beach'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Long Beach', keywords: ['live music venue', 'Long Beach'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-
-    // — Long Beach: Event Spaces —
-    { id: uuid(), region: 'Long Beach', keywords: ['event space', 'private events', 'Long Beach'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Long Beach', keywords: ['hotel ballroom', 'Long Beach'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Long Beach', keywords: ['brewery', 'winery', 'events', 'Long Beach'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-
-    // — Long Beach: DJ-Specific —
-    { id: uuid(), region: 'Long Beach', keywords: ['DJ night', 'Long Beach'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Long Beach', keywords: ['Latin night', 'Long Beach'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-
-    // — Long Beach: Corporate / Events —
-    { id: uuid(), region: 'Long Beach', keywords: ['corporate event venue', 'Long Beach'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Long Beach', keywords: ['event planner', 'Long Beach'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-
-    // — Seasonal (both regions) —
-    { id: uuid(), region: 'Orange County', keywords: ['holiday party venue', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Orange County', keywords: ['new year event venue', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Orange County', keywords: ['summer pool party', 'Orange County'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Long Beach', keywords: ['holiday party venue', 'Long Beach'], source: 'web_search', active: true, created_at: new Date().toISOString() },
-    { id: uuid(), region: 'Long Beach', keywords: ['charity gala venue', 'Long Beach'], source: 'web_search', active: true, created_at: new Date().toISOString() },
+const DJ_SEEDS: QuerySeed[] = [
+    // Nightlife
+    ...TARGET_REGIONS.flatMap(r => [
+        seed(r, ['nightclub', r]), seed(r, ['lounge', 'cocktail bar', r]),
+        seed(r, ['rooftop bar', r]), seed(r, ['live music venue', r]),
+    ]),
+    // Event spaces
+    ...TARGET_REGIONS.flatMap(r => [
+        seed(r, ['event space', 'private events', r]), seed(r, ['hotel ballroom', r]),
+        seed(r, ['brewery', 'winery', 'events', r]),
+    ]),
+    // DJ-specific
+    ...TARGET_REGIONS.flatMap(r => [
+        seed(r, ['DJ night', r]), seed(r, ['Latin night', r]),
+    ]),
+    // Corporate
+    ...TARGET_REGIONS.flatMap(r => [
+        seed(r, ['corporate event venue', r]), seed(r, ['event planner', r]),
+        seed(r, ['promoter', 'events', r]),
+    ]),
 ];
+
+const BAND_SEEDS: QuerySeed[] = [
+    ...TARGET_REGIONS.flatMap(r => [
+        seed(r, ['live music venue', r]), seed(r, ['concert venue', r]),
+        seed(r, ['bar live music', r]), seed(r, ['brewery live band', r]),
+        seed(r, ['open mic night', r]), seed(r, ['music festival', r]),
+        seed(r, ['outdoor concert', r]), seed(r, ['wedding band venue', r]),
+        seed(r, ['corporate entertainment', 'live band', r]),
+        seed(r, ['event space', 'live entertainment', r]),
+    ]),
+];
+
+const SOLO_ARTIST_SEEDS: QuerySeed[] = [
+    ...TARGET_REGIONS.flatMap(r => [
+        seed(r, ['restaurant live music', r]), seed(r, ['winery live music', r]),
+        seed(r, ['coffee shop music', r]), seed(r, ['acoustic venue', r]),
+        seed(r, ['wedding venue musician', r]), seed(r, ['private event entertainment', r]),
+        seed(r, ['hotel lobby musician', r]), seed(r, ['cocktail hour entertainment', r]),
+        seed(r, ['farmers market music', r]), seed(r, ['corporate reception musician', r]),
+    ]),
+];
+
+const MUSIC_TEACHER_SEEDS: QuerySeed[] = [
+    ...TARGET_REGIONS.flatMap(r => [
+        seed(r, ['music school', r]), seed(r, ['music lessons', r]),
+        seed(r, ['music store lessons', r]), seed(r, ['community center music', r]),
+        seed(r, ['school district music program', r]),
+        seed(r, ['after school music program', r]),
+        seed(r, ['summer camp music', r]), seed(r, ['church music program', r]),
+        seed(r, ['youth music program', r]), seed(r, ['private music studio', r]),
+    ]),
+];
+
+/**
+ * Get default seeds based on artist type.
+ */
+export function getDefaultSeeds(artistType: ArtistType = 'dj'): QuerySeed[] {
+    switch (artistType) {
+        case 'band': return BAND_SEEDS;
+        case 'solo_artist': return SOLO_ARTIST_SEEDS;
+        case 'music_teacher': return MUSIC_TEACHER_SEEDS;
+        case 'dj':
+        default: return DJ_SEEDS;
+    }
+}
+
+/** @deprecated Use getDefaultSeeds(artistType) instead */
+export const DEFAULT_SEEDS = DJ_SEEDS;
 
 /**
  * High-value entity type keywords — used during enrichment

@@ -2,6 +2,8 @@
 // DJ Event Agent — Core Data Model
 // ============================================================
 
+export type ArtistType = 'dj' | 'band' | 'solo_artist' | 'music_teacher';
+
 export interface ScheduleMoment {
   time: string;       // e.g. "6:30 PM"
   moment: string;     // e.g. "First Dance"

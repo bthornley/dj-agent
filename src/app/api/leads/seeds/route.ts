@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { dbGetAllSeeds, dbSaveSeed, dbDeleteSeed } from '@/lib/db';
-import { DEFAULT_SEEDS } from '@/lib/agent/lead-finder/sources';
+import { getDefaultSeeds } from '@/lib/agent/lead-finder/sources';
+import { ArtistType } from '@/lib/types';
 
 // GET /api/leads/seeds — Get user's seeds (auto-populate defaults on first access)
 export async function GET() {
@@ -10,9 +11,13 @@ export async function GET() {
 
     let seeds = await dbGetAllSeeds(userId);
 
-    // Auto-populate defaults for new users
+    // Auto-populate defaults for new users based on artist type
     if (seeds.length === 0) {
-        for (const seed of DEFAULT_SEEDS) {
+        const client = await clerkClient();
+        const user = await client.users.getUser(userId);
+        const artistType = ((user.publicMetadata as Record<string, unknown>).artistType as ArtistType) || 'dj';
+        const defaults = getDefaultSeeds(artistType);
+        for (const seed of defaults) {
             await dbSaveSeed(seed, userId);
         }
         seeds = await dbGetAllSeeds(userId);

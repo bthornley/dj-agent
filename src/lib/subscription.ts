@@ -1,5 +1,6 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { PlanId, PLANS, getPlanById } from './stripe';
+import { ArtistType } from './types';
 
 // ============================================================
 // Subscription — Plan checking + feature gating
@@ -8,6 +9,7 @@ import { PlanId, PLANS, getPlanById } from './stripe';
 export interface UserPlan {
     planId: PlanId;
     plan: ReturnType<typeof getPlanById>;
+    artistType: ArtistType;
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;
 }
@@ -19,16 +21,18 @@ export async function getUserPlan(): Promise<UserPlan> {
     const user = await currentUser();
 
     if (!user) {
-        return { planId: 'free', plan: PLANS.free };
+        return { planId: 'free', plan: PLANS.free, artistType: 'dj' };
     }
 
     const metadata = user.publicMetadata as Record<string, unknown>;
     const planId = (metadata.planId as PlanId) || 'free';
+    const artistType = (metadata.artistType as ArtistType) || 'dj';
     const plan = getPlanById(planId);
 
     return {
         planId,
         plan,
+        artistType,
         stripeCustomerId: metadata.stripeCustomerId as string | undefined,
         stripeSubscriptionId: metadata.stripeSubscriptionId as string | undefined,
     };

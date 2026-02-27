@@ -4,11 +4,20 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { UserButton, useUser } from '@clerk/nextjs';
 
+const ARTIST_TYPES = [
+    { value: 'dj', label: '🎧 DJ', desc: 'Clubs, lounges, events' },
+    { value: 'band', label: '🎸 Band', desc: 'Live music venues, festivals' },
+    { value: 'solo_artist', label: '🎤 Solo Artist', desc: 'Restaurants, private events' },
+    { value: 'music_teacher', label: '🎹 Music Teacher', desc: 'Schools, community programs' },
+] as const;
+
 export default function AccountPage() {
     const { user } = useUser();
     const currentPlan = (user?.publicMetadata?.planId as string) || 'free';
     const [quota, setQuota] = useState<{ used: number; remaining: number; limit: number } | null>(null);
     const [stats, setStats] = useState<{ total: number; avgScore: number } | null>(null);
+    const [artistType, setArtistType] = useState<string>('dj');
+    const [savingType, setSavingType] = useState(false);
 
     useEffect(() => {
         fetch('/api/leads/auto-scan', {
@@ -24,7 +33,27 @@ export default function AccountPage() {
             .then(r => r.json())
             .then(d => { if (d.total !== undefined) setStats(d); })
             .catch(() => { });
+
+        fetch('/api/profile')
+            .then(r => r.json())
+            .then(d => { if (d.artistType) setArtistType(d.artistType); })
+            .catch(() => { });
     }, []);
+
+    const handleArtistTypeChange = async (newType: string) => {
+        setSavingType(true);
+        try {
+            const res = await fetch('/api/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ artistType: newType }),
+            });
+            if (res.ok) {
+                setArtistType(newType);
+            }
+        } catch { /* ignore */ }
+        setSavingType(false);
+    };
 
     const planNames: Record<string, string> = {
         free: '🆓 Free',
@@ -36,7 +65,7 @@ export default function AccountPage() {
         <>
             <header className="topbar">
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <div className="icon">🎧</div>
+                    <div className="icon">🎵</div>
                     <span>GigFinder</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
@@ -49,7 +78,7 @@ export default function AccountPage() {
                 <div className="section-header">
                     <div>
                         <h2 className="section-title">Account</h2>
-                        <p className="section-subtitle">Manage your plan and usage</p>
+                        <p className="section-subtitle">Manage your profile, plan, and usage</p>
                     </div>
                 </div>
 
@@ -69,6 +98,37 @@ export default function AccountPage() {
                     <div className="stat-card">
                         <div className="stat-value">{stats?.avgScore ?? '—'}</div>
                         <div className="stat-label">Avg Lead Score</div>
+                    </div>
+                </div>
+
+                {/* Artist Type Selector */}
+                <div className="card" style={{ marginBottom: '24px' }}>
+                    <h3 className="card-title">Artist Type</h3>
+                    <p className="text-muted" style={{ fontSize: '13px', margin: '4px 0 16px' }}>
+                        This tailors your lead discovery seeds and scoring to find the best opportunities for you.
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
+                        {ARTIST_TYPES.map(t => (
+                            <button
+                                key={t.value}
+                                onClick={() => handleArtistTypeChange(t.value)}
+                                disabled={savingType}
+                                className={`btn ${artistType === t.value ? 'btn-primary' : 'btn-secondary'}`}
+                                style={{
+                                    padding: '14px 16px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-start',
+                                    gap: '4px',
+                                    textAlign: 'left',
+                                    opacity: savingType ? 0.6 : 1,
+                                    border: artistType === t.value ? '2px solid var(--accent-purple)' : '2px solid transparent',
+                                }}
+                            >
+                                <span style={{ fontSize: '15px', fontWeight: 600 }}>{t.label}</span>
+                                <span className="text-muted" style={{ fontSize: '12px' }}>{t.desc}</span>
+                            </button>
+                        ))}
                     </div>
                 </div>
 
