@@ -23,8 +23,9 @@ export default function ScanPage() {
     const [autoRegion, setAutoRegion] = useState('');
     const [autoLimit, setAutoLimit] = useState(5);
     const [quota, setQuota] = useState<{ used: number; remaining: number; limit: number } | null>(null);
+    const [regions, setRegions] = useState<string[]>([]);
 
-    // Fetch quota on mount
+    // Fetch quota + regions on mount
     useEffect(() => {
         fetch('/api/leads/auto-scan', {
             method: 'POST',
@@ -34,6 +35,25 @@ export default function ScanPage() {
             .then(r => r.json())
             .then(data => { if (data.quota) setQuota(data.quota); })
             .catch(() => { });
+
+        // Fetch regions from brand profile + seeds
+        const regionSet = new Set<string>();
+        Promise.all([
+            fetch('/api/social/brand').then(r => r.json()).catch(() => null),
+            fetch('/api/leads/seeds').then(r => r.json()).catch(() => []),
+        ]).then(([brand, seeds]) => {
+            // Brand profile locations
+            if (brand?.locations) {
+                for (const loc of brand.locations) regionSet.add(loc);
+            }
+            // Unique regions from seeds
+            if (Array.isArray(seeds)) {
+                for (const seed of seeds) {
+                    if (seed.region) regionSet.add(seed.region);
+                }
+            }
+            setRegions(Array.from(regionSet).sort());
+        });
     }, []);
 
     // Shared state
@@ -183,8 +203,9 @@ export default function ScanPage() {
                                 <label className="form-label">Region (optional)</label>
                                 <select className="input" value={autoRegion} onChange={e => setAutoRegion(e.target.value)}>
                                     <option value="">All Regions</option>
-                                    <option value="Orange County">Orange County</option>
-                                    <option value="Long Beach">Long Beach</option>
+                                    {regions.map(r => (
+                                        <option key={r} value={r}>{r}</option>
+                                    ))}
                                 </select>
                             </div>
                             <div className="form-group">
