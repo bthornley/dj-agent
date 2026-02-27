@@ -509,3 +509,63 @@ export async function dbDeleteMediaAsset(id: string, userId: string): Promise<vo
   const db = await ensureSchema();
   await db.execute({ sql: 'DELETE FROM media_assets WHERE id = ? AND user_id = ?', args: [id, userId] });
 }
+
+// ---- Admin Functions ----
+
+export async function dbGetPlatformStats(): Promise<{
+  totalEvents: number;
+  totalLeads: number;
+  totalPosts: number;
+  totalPlans: number;
+  totalMediaAssets: number;
+  uniqueUserIds: string[];
+}> {
+  const db = await ensureSchema();
+  const [events, leads, posts, plans, media] = await Promise.all([
+    db.execute('SELECT COUNT(*) as cnt, COUNT(DISTINCT user_id) as users FROM events'),
+    db.execute('SELECT COUNT(*) as cnt FROM leads'),
+    db.execute('SELECT COUNT(*) as cnt FROM social_posts'),
+    db.execute('SELECT COUNT(*) as cnt FROM content_plans'),
+    db.execute('SELECT COUNT(*) as cnt FROM media_assets'),
+  ]);
+
+  // Gather unique user IDs
+  const userRows = await db.execute('SELECT DISTINCT user_id FROM events UNION SELECT DISTINCT user_id FROM leads UNION SELECT DISTINCT user_id FROM social_posts UNION SELECT DISTINCT user_id FROM brand_profiles');
+  const uniqueUserIds = userRows.rows.map(r => r.user_id as string).filter(Boolean);
+
+  return {
+    totalEvents: Number(events.rows[0]?.cnt || 0),
+    totalLeads: Number(leads.rows[0]?.cnt || 0),
+    totalPosts: Number(posts.rows[0]?.cnt || 0),
+    totalPlans: Number(plans.rows[0]?.cnt || 0),
+    totalMediaAssets: Number(media.rows[0]?.cnt || 0),
+    uniqueUserIds,
+  };
+}
+
+export async function dbGetUserStats(userId: string): Promise<{
+  events: number;
+  leads: number;
+  posts: number;
+  plans: number;
+  mediaAssets: number;
+  hasBrand: boolean;
+}> {
+  const db = await ensureSchema();
+  const [events, leads, posts, plans, media, brand] = await Promise.all([
+    db.execute({ sql: 'SELECT COUNT(*) as cnt FROM events WHERE user_id = ?', args: [userId] }),
+    db.execute({ sql: 'SELECT COUNT(*) as cnt FROM leads WHERE user_id = ?', args: [userId] }),
+    db.execute({ sql: 'SELECT COUNT(*) as cnt FROM social_posts WHERE user_id = ?', args: [userId] }),
+    db.execute({ sql: 'SELECT COUNT(*) as cnt FROM content_plans WHERE user_id = ?', args: [userId] }),
+    db.execute({ sql: 'SELECT COUNT(*) as cnt FROM media_assets WHERE user_id = ?', args: [userId] }),
+    db.execute({ sql: 'SELECT COUNT(*) as cnt FROM brand_profiles WHERE user_id = ?', args: [userId] }),
+  ]);
+  return {
+    events: Number(events.rows[0]?.cnt || 0),
+    leads: Number(leads.rows[0]?.cnt || 0),
+    posts: Number(posts.rows[0]?.cnt || 0),
+    plans: Number(plans.rows[0]?.cnt || 0),
+    mediaAssets: Number(media.rows[0]?.cnt || 0),
+    hasBrand: Number(brand.rows[0]?.cnt || 0) > 0,
+  };
+}

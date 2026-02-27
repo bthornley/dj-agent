@@ -9,9 +9,24 @@ const isPublicRoute = createRouteMatcher([
     '/api/webhooks(.*)',
 ]);
 
+// Admin routes — require admin role
+const isAdminRoute = createRouteMatcher([
+    '/admin(.*)',
+    '/api/admin(.*)',
+]);
+
 export default clerkMiddleware(async (auth, request) => {
     if (!isPublicRoute(request)) {
         await auth.protect();
+    }
+
+    // Admin route protection
+    if (isAdminRoute(request)) {
+        const { sessionClaims } = await auth();
+        const metadata = sessionClaims?.metadata as Record<string, unknown> | undefined;
+        if (metadata?.role !== 'admin') {
+            return new Response('Forbidden — admin access required', { status: 403 });
+        }
     }
 });
 
