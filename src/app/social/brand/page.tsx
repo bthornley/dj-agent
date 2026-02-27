@@ -34,6 +34,7 @@ export default function BrandSetupPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [saveError, setSaveError] = useState('');
 
     // Temp inputs for list fields
     const [vibeInput, setVibeInput] = useState('');
@@ -63,16 +64,25 @@ export default function BrandSetupPage() {
     async function handleSave() {
         setSaving(true);
         setSaved(false);
+        setSaveError('');
         try {
             const res = await fetch('/api/social/brand', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(profile),
             });
-            if (res.ok) setSaved(true);
-        } catch (e) { console.error(e); }
+            if (res.ok) {
+                setSaved(true);
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                setSaveError(errData.error || `Save failed (HTTP ${res.status})`);
+            }
+        } catch (e) {
+            console.error(e);
+            setSaveError('Network error — could not save');
+        }
         setSaving(false);
-        setTimeout(() => setSaved(false), 3000);
+        setTimeout(() => { setSaved(false); setSaveError(''); }, 5000);
     }
 
     function addToList(field: keyof BrandProfile, value: string) {
@@ -151,6 +161,7 @@ export default function BrandSetupPage() {
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         {saved && <span style={{ color: 'var(--accent-green)', fontSize: '14px' }}>✅ Saved!</span>}
+                        {saveError && <span style={{ color: 'var(--accent-red)', fontSize: '13px' }}>❌ {saveError}</span>}
                         <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving}>
                             {saving ? '⏳ Saving...' : '💾 Save Profile'}
                         </button>

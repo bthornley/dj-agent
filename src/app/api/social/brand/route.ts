@@ -17,10 +17,16 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const profile: BrandProfile = await request.json();
-    if (!profile.id) return NextResponse.json({ error: 'Profile id is required' }, { status: 400 });
+    try {
+        const profile: BrandProfile = await request.json();
+        if (!profile.id) return NextResponse.json({ error: 'Profile id is required' }, { status: 400 });
 
-    profile.updatedAt = new Date().toISOString();
-    await dbSaveBrandProfile(profile, userId);
-    return NextResponse.json({ success: true, profile }, { status: 201 });
+        profile.updatedAt = new Date().toISOString();
+        await dbSaveBrandProfile(profile, userId);
+        return NextResponse.json({ success: true, profile }, { status: 201 });
+    } catch (err) {
+        console.error('Brand profile save error:', err);
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        return NextResponse.json({ error: `Save failed: ${message}` }, { status: 500 });
+    }
 }
