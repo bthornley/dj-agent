@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
+import { UserButton, useUser } from '@clerk/nextjs';
 import AdminLink from '@/components/AdminLink';
 import { Event } from '@/lib/types';
 
 export default function DashboardPage() {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
+    const { user } = useUser();
 
     useEffect(() => {
         fetch('/api/events')
@@ -37,6 +38,7 @@ export default function DashboardPage() {
                     <Link href="/leads/scan" className="btn btn-ghost btn-sm">📡 Scan</Link>
                     <Link href="/social" className="btn btn-ghost btn-sm">📱 Social</Link>
                     <Link href="/pricing" className="btn btn-ghost btn-sm">💎 Plans</Link>
+                    {user && <Link href={`/epk/${user.id}`} className="btn btn-ghost btn-sm" target="_blank">📋 My EPK</Link>}
                     <Link href="/account" className="btn btn-ghost btn-sm">⚙️ Account</Link>
                     <AdminLink />
                     <UserButton />

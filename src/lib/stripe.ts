@@ -13,7 +13,7 @@ export function getStripe(): Stripe {
     return _stripe;
 }
 
-export type PlanId = 'free' | 'pro' | 'unlimited';
+export type PlanId = 'free' | 'pro' | 'unlimited' | 'agency';
 
 export interface PlanConfig {
     id: PlanId;
@@ -79,6 +79,24 @@ export const PLANS: Record<PlanId, PlanConfig> = {
             'Email templates',
             'Priority support',
             'CRM features',
+        ],
+    },
+    agency: {
+        id: 'agency',
+        name: 'Agency',
+        price: 149,
+        priceId: null, // Contact us — no self-serve checkout
+        scansPerMonth: 2500, // 250 × 10 sub-accounts
+        maxLeads: -1,
+        maxRegions: -1,
+        features: [
+            '10 DJ sub-accounts',
+            'Everything in Unlimited, per DJ',
+            'Bulk lead distribution',
+            'Shared media library',
+            'Agency-wide analytics',
+            'White-label EPK pages',
+            'Dedicated account manager',
         ],
     },
 };

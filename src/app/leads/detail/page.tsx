@@ -15,6 +15,10 @@ function LeadDetailContent() {
     const [editing, setEditing] = useState(false);
     const [editData, setEditData] = useState<Partial<Lead>>({});
     const [message, setMessage] = useState('');
+    const [outreach, setOutreach] = useState<{ variant: string; subject: string; body: string }[] | null>(null);
+    const [outreachLoading, setOutreachLoading] = useState(false);
+    const [activeVariant, setActiveVariant] = useState(0);
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -98,6 +102,26 @@ function LeadDetailContent() {
                     {lead.status === 'new' && (
                         <button className="btn btn-primary" onClick={handleQueue}>▶ Queue for DJ Agent</button>
                     )}
+                    <button className="btn btn-primary" onClick={async () => {
+                        setOutreachLoading(true);
+                        try {
+                            const res = await fetch('/api/leads/outreach', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ leadId: lead.lead_id }),
+                            });
+                            const data = await res.json();
+                            if (data.emails) {
+                                setOutreach(data.emails);
+                                setActiveVariant(0);
+                            } else {
+                                setMessage(data.error || 'Failed to generate outreach');
+                            }
+                        } catch (e) { console.error(e); setMessage('Failed to generate outreach'); }
+                        setOutreachLoading(false);
+                    }} disabled={outreachLoading}>
+                        {outreachLoading ? '⏳ Generating...' : '✉️ Draft Outreach'}
+                    </button>
                     <button className="btn btn-secondary" onClick={() => setEditing(!editing)}>
                         {editing ? 'Cancel' : '✏ Edit'}
                     </button>
@@ -238,6 +262,67 @@ function LeadDetailContent() {
                 <div style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
                     <button className="btn btn-primary" onClick={handleSave}>💾 Save Changes</button>
                     <button className="btn btn-ghost" onClick={() => setEditing(false)}>Cancel</button>
+                </div>
+            )}
+
+            {/* Outreach Email Preview */}
+            {outreach && outreach.length > 0 && (
+                <div className="card" style={{ marginTop: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <h3 className="card-title">✉️ Outreach Email Draft</h3>
+                        <button className="btn btn-ghost btn-sm" onClick={() => setOutreach(null)}>✕ Close</button>
+                    </div>
+
+                    {/* Variant tabs */}
+                    <div className="tabs" style={{ marginBottom: '16px' }}>
+                        {outreach.map((email, i) => (
+                            <button key={i}
+                                className={`tab ${activeVariant === i ? 'active' : ''}`}
+                                onClick={() => { setActiveVariant(i); setCopied(false); }}>
+                                {email.variant === 'formal' ? '📄 Formal' : email.variant === 'casual' ? '💬 Casual' : '🔄 Follow-up'}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Email preview */}
+                    <div style={{ background: 'var(--surface-raised)', borderRadius: '8px', padding: '16px', border: '1px solid var(--border)' }}>
+                        <div style={{ marginBottom: '12px' }}>
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Subject</span>
+                            <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                                {outreach[activeVariant].subject}
+                            </div>
+                        </div>
+                        <div style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Body</span>
+                            <pre style={{
+                                fontFamily: 'inherit', whiteSpace: 'pre-wrap', fontSize: '14px',
+                                color: 'var(--text-secondary)', lineHeight: 1.6, margin: '8px 0 0',
+                            }}>
+                                {outreach[activeVariant].body}
+                            </pre>
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                        <button className="btn btn-primary btn-sm" onClick={() => {
+                            const email = outreach[activeVariant];
+                            navigator.clipboard.writeText(`Subject: ${email.subject}\n\n${email.body}`);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 3000);
+                        }}>
+                            {copied ? '✅ Copied!' : '📋 Copy to Clipboard'}
+                        </button>
+                        {lead.email && (
+                            <a
+                                className="btn btn-secondary btn-sm"
+                                href={`mailto:${lead.email}?subject=${encodeURIComponent(outreach[activeVariant].subject)}&body=${encodeURIComponent(outreach[activeVariant].body)}`}
+                                target="_blank" rel="noopener noreferrer"
+                            >
+                                📧 Open in Email
+                            </a>
+                        )}
+                    </div>
                 </div>
             )}
         </main>

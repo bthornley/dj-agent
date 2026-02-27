@@ -76,6 +76,27 @@ const plans = [
         cta: 'Go Unlimited',
         highlighted: false,
     },
+    {
+        id: 'agency',
+        name: 'Agency',
+        price: 149,
+        period: '/mo',
+        description: 'For DJ agencies',
+        features: [
+            '10 DJ sub-accounts',
+            'Everything in Unlimited, per DJ',
+            'Bulk lead distribution',
+            'Shared media library',
+            '—',
+            'Full Social Hype Agent per DJ',
+            'Agency-wide analytics',
+            'White-label EPK pages',
+            'Dedicated account manager',
+            'Custom onboarding',
+        ],
+        cta: 'Contact Us',
+        highlighted: false,
+    },
 ];
 
 export default function PricingPage() {
@@ -85,6 +106,10 @@ export default function PricingPage() {
 
     const handleUpgrade = async (planId: string) => {
         if (planId === 'free' || planId === currentPlan) return;
+        if (planId === 'agency') {
+            window.location.href = 'mailto:hello@stagescout.app?subject=Agency%20Tier%20Inquiry&body=Hi%2C%20I%27m%20interested%20in%20the%20Agency%20tier%20for%20my%20DJ%20agency.';
+            return;
+        }
         if (!user) {
             window.location.href = `/sign-up?redirect_url=${encodeURIComponent('/pricing')}`;
             return;
