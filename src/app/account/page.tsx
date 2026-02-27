@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { UserButton, useUser } from '@clerk/nextjs';
+import AdminLink from '@/components/AdminLink';
 
 const ARTIST_TYPES = [
     { value: 'dj', label: '🎧 DJ', desc: 'Clubs, lounges, events' },
@@ -110,6 +111,7 @@ export default function AccountPage() {
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/dashboard" className="btn btn-ghost btn-sm">← Dashboard</Link>
+                    <AdminLink />
                     <UserButton />
                 </nav>
             </header>

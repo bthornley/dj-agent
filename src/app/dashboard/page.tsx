@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
+import AdminLink from '@/components/AdminLink';
 import { Event } from '@/lib/types';
 
 export default function DashboardPage() {
@@ -37,6 +38,7 @@ export default function DashboardPage() {
                     <Link href="/social" className="btn btn-ghost btn-sm">📱 Social</Link>
                     <Link href="/pricing" className="btn btn-ghost btn-sm">💎 Plans</Link>
                     <Link href="/account" className="btn btn-ghost btn-sm">⚙️ Account</Link>
+                    <AdminLink />
                     <UserButton />
                 </nav>
             </header>

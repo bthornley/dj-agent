@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
+import AdminLink from '@/components/AdminLink';
 import { ContentPlan, SocialPost, EngagementTask } from '@/lib/types';
 
 export default function SocialDashboardPage() {
@@ -71,6 +72,7 @@ export default function SocialDashboardPage() {
                     <Link href="/social/queue" className="btn btn-ghost btn-sm">📝 Queue</Link>
                     <Link href="/social/brand" className="btn btn-ghost btn-sm">🎨 Brand</Link>
                     <Link href="/social/analytics" className="btn btn-ghost btn-sm">📊 Analytics</Link>
+                    <AdminLink />
                     <UserButton />
                 </nav>
             </header>
