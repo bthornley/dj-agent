@@ -36,14 +36,19 @@ export default function ScanPage() {
             .then(data => { if (data.quota) setQuota(data.quota); })
             .catch(() => { });
 
-        // Fetch regions from brand profile + seeds
+        // Fetch regions from profile (Clerk metadata) + brand profile + seeds
         const regionSet = new Set<string>();
         Promise.all([
+            fetch('/api/profile').then(r => r.json()).catch(() => null),
             fetch('/api/social/brand').then(r => r.json()).catch(() => null),
             fetch('/api/leads/seeds').then(r => r.json()).catch(() => []),
-        ]).then(([brand, seeds]) => {
-            // Brand profile locations
-            if (brand?.locations) {
+        ]).then(([profile, brand, seeds]) => {
+            // Profile regions (from Clerk publicMetadata — account page)
+            if (profile?.regions && Array.isArray(profile.regions)) {
+                for (const r of profile.regions) regionSet.add(r);
+            }
+            // Brand profile locations (from Social Hype brand setup)
+            if (brand?.locations && Array.isArray(brand.locations)) {
                 for (const loc of brand.locations) regionSet.add(loc);
             }
             // Unique regions from seeds
