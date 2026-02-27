@@ -1,4 +1,4 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { clerkMiddleware, createRouteMatcher, clerkClient } from '@clerk/nextjs/server';
 
 // Public routes — accessible without login
 const isPublicRoute = createRouteMatcher([
@@ -20,11 +20,16 @@ export default clerkMiddleware(async (auth, request) => {
         await auth.protect();
     }
 
-    // Admin route protection
+    // Admin route protection — fetch user from Clerk Backend API
     if (isAdminRoute(request)) {
-        const { sessionClaims } = await auth();
-        const metadata = sessionClaims?.metadata as Record<string, unknown> | undefined;
-        if (metadata?.role !== 'admin') {
+        const { userId } = await auth();
+        if (!userId) return new Response('Unauthorized', { status: 401 });
+
+        const client = await clerkClient();
+        const user = await client.users.getUser(userId);
+        const role = (user.publicMetadata as Record<string, unknown>)?.role;
+
+        if (role !== 'admin') {
             return new Response('Forbidden — admin access required', { status: 403 });
         }
     }
