@@ -6,6 +6,7 @@ import Link from 'next/link';
 interface EPKData {
     brand: {
         djName: string;
+        tagline: string;
         bio: string;
         vibeWords: string[];
         locations: string[];
@@ -23,6 +24,7 @@ interface EPKData {
         status: string;
     }[];
     media: {
+        id: string;
         url: string;
         thumbnailUrl: string;
         mediaType: string;
@@ -32,6 +34,13 @@ interface EPKData {
         totalEvents: number;
         totalPosts: number;
     };
+    config: {
+        theme: 'dark' | 'light' | 'gradient';
+        accentColor: string;
+        sectionOrder: string[];
+        hiddenSections: string[];
+        customSections: { id: string; title: string; body: string }[];
+    } | null;
 }
 
 export default function EPKPage({ params }: { params: Promise<{ id: string }> }) {
@@ -88,12 +97,26 @@ export default function EPKPage({ params }: { params: Promise<{ id: string }> })
         );
     }
 
-    const { brand, events, media, stats } = data;
-    const accentColor = brand.brandColors?.[0] || '#a855f7';
+    const { brand, events, media, stats, config: epkConfig } = data;
+    const accentColor = epkConfig?.accentColor || brand.brandColors?.[0] || '#a855f7';
+    const theme = epkConfig?.theme || 'dark';
     const images = media.filter(m => m.mediaType === 'image');
     const videos = media.filter(m => m.mediaType === 'video');
     const upcomingEvents = events.filter(e => e.status === 'confirmed');
     const pastEvents = events.filter(e => e.status === 'completed');
+    const hiddenSections = new Set(epkConfig?.hiddenSections || []);
+    const sectionOrder = epkConfig?.sectionOrder || ['socials', 'stats', 'gallery', 'videos', 'venues', 'upcoming', 'past', 'custom'];
+    const customSections = epkConfig?.customSections || [];
+
+    const bgStyle = theme === 'light'
+        ? 'linear-gradient(135deg, #f0f0f4 0%, #e8e8f0 100%)'
+        : theme === 'gradient'
+            ? 'linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%)'
+            : 'linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 100%)';
+    const textColor = theme === 'light' ? '#1a1a2e' : '#fff';
+    const mutedColor = theme === 'light' ? '#666' : '#b0b0cc';
+    const cardBg = theme === 'light' ? '#ffffff15' : '#ffffff06';
+    const cardBorder = theme === 'light' ? '#00000010' : '#ffffff10';
 
     const socialIcons: Record<string, string> = {
         instagram: '📸', facebook: '📘', tiktok: '🎵', youtube: '🎬',
@@ -103,8 +126,8 @@ export default function EPKPage({ params }: { params: Promise<{ id: string }> })
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%)',
-            color: '#fff',
+            background: bgStyle,
+            color: textColor,
             fontFamily: "'Inter', 'Segoe UI', sans-serif",
         }}>
             {/* Hero */}
@@ -128,9 +151,17 @@ export default function EPKPage({ params }: { params: Promise<{ id: string }> })
                 }}>
                     {brand.djName}
                 </h1>
+                {brand.tagline && (
+                    <p style={{
+                        fontSize: '18px', color: mutedColor, fontStyle: 'italic',
+                        maxWidth: '500px', margin: '0 auto 16px',
+                    }}>
+                        {brand.tagline}
+                    </p>
+                )}
                 {brand.bio && (
                     <p style={{
-                        fontSize: '17px', lineHeight: 1.6, color: '#b0b0cc',
+                        fontSize: '17px', lineHeight: 1.6, color: mutedColor,
                         maxWidth: '600px', margin: '0 auto 24px',
                     }}>
                         {brand.bio}

@@ -320,6 +320,26 @@ export interface BrandProfile {
   updatedAt: string;
 }
 
+export interface EPKCustomSection {
+  id: string;
+  title: string;
+  body: string;
+}
+
+export interface EPKConfig {
+  headline: string;          // custom headline override
+  tagline: string;           // one-liner under the name
+  bio: string;               // custom EPK bio (may differ from brand bio)
+  sectionOrder: string[];    // section IDs in display order
+  hiddenSections: string[];  // section IDs to hide
+  customSections: EPKCustomSection[];
+  selectedMedia: string[];   // media asset IDs to show (empty = show all)
+  selectedEvents: string[];  // event IDs to show (empty = show all)
+  theme: 'dark' | 'light' | 'gradient';
+  accentColor: string;       // hex override
+  updatedAt: string;
+}
+
 export type ContentPillar =
   | 'event'              // upcoming events (flyers, set times, ticket links)
   | 'proof_of_party'     // crowd clips, reactions, before/after

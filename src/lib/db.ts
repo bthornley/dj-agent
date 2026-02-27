@@ -1,5 +1,5 @@
 import { createClient, Client } from '@libsql/client';
-import { Event, Lead, QuerySeed, BrandProfile, SocialPost, ContentPlan, EngagementTask, MediaAsset } from './types';
+import { Event, Lead, QuerySeed, BrandProfile, SocialPost, ContentPlan, EngagementTask, MediaAsset, EPKConfig } from './types';
 import { escapeLikeQuery } from './security';
 
 // ============================================================
@@ -106,6 +106,12 @@ async function ensureSchema(): Promise<Client> {
         file_name TEXT DEFAULT '',
         media_type TEXT DEFAULT '',
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+
+      CREATE TABLE IF NOT EXISTS epk_configs (
+        user_id TEXT PRIMARY KEY,
+        data TEXT NOT NULL,
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
     `);
@@ -568,4 +574,23 @@ export async function dbGetUserStats(userId: string): Promise<{
     mediaAssets: Number(media.rows[0]?.cnt || 0),
     hasBrand: Number(brand.rows[0]?.cnt || 0) > 0,
   };
+}
+
+// ── EPK Configs ──────────────────────────────────────────
+
+export async function dbGetEPKConfig(userId: string): Promise<EPKConfig | null> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: 'SELECT data FROM epk_configs WHERE user_id = ?', args: [userId] });
+  return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
+}
+
+export async function dbSaveEPKConfig(config: EPKConfig, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  const now = new Date().toISOString();
+  const data = JSON.stringify({ ...config, updatedAt: now });
+  await db.execute({
+    sql: `INSERT INTO epk_configs (user_id, data, updated_at) VALUES (?, ?, ?)
+          ON CONFLICT(user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`,
+    args: [userId, data, now],
+  });
 }
