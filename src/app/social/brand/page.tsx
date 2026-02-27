@@ -47,7 +47,13 @@ export default function BrandSetupPage() {
             .then(r => r.json())
             .then(data => {
                 if (data && data.id) {
-                    setProfile(data);
+                    // Merge with defaults to fill any missing fields (e.g. connectedAccounts)
+                    setProfile({
+                        ...EMPTY_PROFILE,
+                        ...data,
+                        connectedAccounts: data.connectedAccounts || [],
+                        voiceExamples: data.voiceExamples?.length ? data.voiceExamples : EMPTY_PROFILE.voiceExamples,
+                    });
                 }
                 setLoading(false);
             })
