@@ -1,28 +1,33 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
 import AdminLink from '@/components/AdminLink';
-import { ContentPlan, SocialPost, EngagementTask } from '@/lib/types';
+import { ContentPlan, SocialPost, EngagementTask, MediaAsset } from '@/lib/types';
 
 export default function SocialDashboardPage() {
     const [plan, setPlan] = useState<ContentPlan | null>(null);
     const [posts, setPosts] = useState<SocialPost[]>([]);
     const [tasks, setTasks] = useState<EngagementTask[]>([]);
+    const [media, setMedia] = useState<MediaAsset[]>([]);
     const [loading, setLoading] = useState(true);
     const [generating, setGenerating] = useState(false);
     const [genEngagement, setGenEngagement] = useState(false);
+    const [uploadingMedia, setUploadingMedia] = useState(false);
+    const [mediaProgress, setMediaProgress] = useState('');
 
     useEffect(() => {
         Promise.all([
             fetch('/api/social/plan').then(r => r.json()),
             fetch('/api/social/posts').then(r => r.json()),
             fetch('/api/social/engagement').then(r => r.json()),
-        ]).then(([planData, postsData, tasksData]) => {
+            fetch('/api/social/media').then(r => r.json()),
+        ]).then(([planData, postsData, tasksData, mediaData]) => {
             if (planData?.plan) setPlan(planData.plan);
             if (Array.isArray(postsData)) setPosts(postsData);
             if (Array.isArray(tasksData)) setTasks(tasksData);
+            if (Array.isArray(mediaData)) setMedia(mediaData);
             setLoading(false);
         }).catch(() => setLoading(false));
     }, []);
@@ -168,6 +173,40 @@ export default function SocialDashboardPage() {
                             </div>
                         </div>
 
+                        {/* Media Sources */}
+                        <MediaSourcesCard
+                            media={media}
+                            uploading={uploadingMedia}
+                            progress={mediaProgress}
+                            onUploadFiles={async (files: FileList) => {
+                                const mediaFiles = Array.from(files).filter(f =>
+                                    f.type.startsWith('image/') || f.type.startsWith('video/') || f.type.startsWith('audio/')
+                                );
+                                if (mediaFiles.length === 0) return;
+                                setUploadingMedia(true);
+                                setMediaProgress(`Uploading ${mediaFiles.length} files...`);
+                                const batchSize = 5;
+                                let uploaded = 0;
+                                for (let i = 0; i < mediaFiles.length; i += batchSize) {
+                                    const batch = mediaFiles.slice(i, i + batchSize);
+                                    const formData = new FormData();
+                                    batch.forEach(f => formData.append('files', f));
+                                    setMediaProgress(`Uploading... (${Math.min(i + batchSize, mediaFiles.length)}/${mediaFiles.length})`);
+                                    try {
+                                        const res = await fetch('/api/social/media', { method: 'POST', body: formData });
+                                        const data = await res.json();
+                                        uploaded += data.uploaded || 0;
+                                    } catch (e) { console.error(e); }
+                                }
+                                setMediaProgress(`✅ ${uploaded} files added`);
+                                setTimeout(() => setMediaProgress(''), 4000);
+                                setUploadingMedia(false);
+                                fetch('/api/social/media').then(r => r.json()).then(d => {
+                                    if (Array.isArray(d)) setMedia(d);
+                                });
+                            }}
+                        />
+
                         {/* Engagement Tasks */}
                         <div className="card" style={{ marginTop: '20px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -218,4 +257,164 @@ function taskTypeLabel(type: string): string {
         promoter_connect: '🎯 Connect',
     };
     return labels[type] || type;
+}
+
+/* ─── Media Sources Card ─────────────────────────────────── */
+
+
+function MediaSourcesCard({ media, uploading, progress, onUploadFiles }: {
+    media: MediaAsset[];
+    uploading: boolean;
+    progress: string;
+    onUploadFiles: (files: FileList) => void;
+}) {
+    const folderRef = useRef<HTMLInputElement>(null);
+    const fileRef = useRef<HTMLInputElement>(null);
+
+    const images = media.filter(m => m.mediaType === 'image');
+    const videos = media.filter(m => m.mediaType === 'video');
+    const audio = media.filter(m => m.mediaType === 'audio');
+    const recentMedia = media.filter(m => m.mediaType === 'image' || m.mediaType === 'video').slice(0, 8);
+
+    return (
+        <div className="card" style={{ marginTop: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div>
+                    <h3 className="card-title">📁 Agent Media Sources</h3>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '2px' }}>
+                        Upload folders of photos &amp; videos — the agent will reference these when creating posts
+                    </p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                    {progress && (
+                        <span style={{
+                            fontSize: '13px',
+                            color: progress.startsWith('✅') ? 'var(--accent-green)' : 'var(--text-muted)',
+                        }}>
+                            {uploading && <span className="spinner" style={{ width: 14, height: 14, display: 'inline-block', marginRight: 6, verticalAlign: 'middle' }} />}
+                            {progress}
+                        </span>
+                    )}
+                    <button className="btn btn-ghost btn-sm" onClick={() => folderRef.current?.click()} disabled={uploading}>
+                        📂 Import Folder
+                    </button>
+                    <button className="btn btn-ghost btn-sm" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                        ⬆️ Upload Files
+                    </button>
+                    <Link href="/social/media" className="btn btn-ghost btn-sm">View All →</Link>
+                </div>
+            </div>
+
+            {/* Hidden inputs */}
+            <input ref={folderRef} type="file" multiple
+                // @ts-expect-error webkitdirectory is non-standard
+                webkitdirectory=""
+                style={{ display: 'none' }}
+                onChange={e => { if (e.target.files) onUploadFiles(e.target.files); e.target.value = ''; }} />
+            <input ref={fileRef} type="file" multiple accept="image/*,video/*,audio/*"
+                style={{ display: 'none' }}
+                onChange={e => { if (e.target.files) onUploadFiles(e.target.files); e.target.value = ''; }} />
+
+            {media.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '28px 0' }}>
+                    <div style={{ fontSize: '36px', marginBottom: '10px' }}>📂</div>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '14px', maxWidth: '400px', margin: '0 auto 14px' }}>
+                        No media uploaded yet. Import a folder of your event photos, DJ set videos,
+                        or promo graphics so the agent can attach them to your social posts.
+                    </p>
+                    <button className="btn btn-primary btn-sm" onClick={() => folderRef.current?.click()} disabled={uploading}>
+                        📂 Import Your First Folder
+                    </button>
+                </div>
+            ) : (
+                <>
+                    {/* Type counts */}
+                    <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                        {images.length > 0 && (
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                padding: '6px 14px', borderRadius: '8px',
+                                background: 'var(--surface-raised)', fontSize: '13px',
+                            }}>
+                                <span>🖼️</span>
+                                <span style={{ fontWeight: 600 }}>{images.length}</span>
+                                <span style={{ color: 'var(--text-muted)' }}>images</span>
+                            </div>
+                        )}
+                        {videos.length > 0 && (
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                padding: '6px 14px', borderRadius: '8px',
+                                background: 'var(--surface-raised)', fontSize: '13px',
+                            }}>
+                                <span>🎬</span>
+                                <span style={{ fontWeight: 600 }}>{videos.length}</span>
+                                <span style={{ color: 'var(--text-muted)' }}>videos</span>
+                            </div>
+                        )}
+                        {audio.length > 0 && (
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                padding: '6px 14px', borderRadius: '8px',
+                                background: 'var(--surface-raised)', fontSize: '13px',
+                            }}>
+                                <span>🎵</span>
+                                <span style={{ fontWeight: 600 }}>{audio.length}</span>
+                                <span style={{ color: 'var(--text-muted)' }}>audio</span>
+                            </div>
+                        )}
+                        <div style={{
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            padding: '6px 14px', borderRadius: '8px',
+                            background: 'var(--accent-green-dim)', fontSize: '13px',
+                            color: 'var(--accent-green)',
+                        }}>
+                            <span>✅</span>
+                            <span style={{ fontWeight: 600 }}>{media.length} total</span>
+                            <span>available to agent</span>
+                        </div>
+                    </div>
+
+                    {/* Thumbnail strip */}
+                    {recentMedia.length > 0 && (
+                        <div style={{
+                            display: 'flex', gap: '8px', overflowX: 'auto',
+                            paddingBottom: '4px',
+                        }}>
+                            {recentMedia.map(asset => (
+                                <div key={asset.id} style={{
+                                    width: '72px', height: '72px', borderRadius: '8px',
+                                    overflow: 'hidden', flexShrink: 0,
+                                    border: '1px solid var(--border)',
+                                }}>
+                                    {asset.mediaType === 'image' ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img src={asset.url} alt={asset.fileName}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        <div style={{
+                                            width: '100%', height: '100%',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            background: 'var(--surface-raised)', fontSize: '20px',
+                                        }}>🎬</div>
+                                    )}
+                                </div>
+                            ))}
+                            {media.length > 8 && (
+                                <Link href="/social/media" style={{
+                                    width: '72px', height: '72px', borderRadius: '8px',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    background: 'var(--surface-raised)', border: '1px solid var(--border)',
+                                    color: 'var(--text-accent)', fontSize: '13px', fontWeight: 600,
+                                    textDecoration: 'none', flexShrink: 0,
+                                }}>
+                                    +{media.length - 8}
+                                </Link>
+                            )}
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
 }
