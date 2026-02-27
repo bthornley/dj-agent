@@ -236,7 +236,7 @@ export async function batchScanUrls(
 
 function isExcludedDomain(url: string): boolean {
     const excluded = [
-        'yelp.com', 'tripadvisor.com', 'facebook.com', 'instagram.com',
+        'yelp.com', 'tripadvisor.com', 'instagram.com',
         'twitter.com', 'x.com', 'tiktok.com', 'youtube.com',
         'google.com', 'wikipedia.org', 'reddit.com',
         'linkedin.com', 'pinterest.com', 'mapquest.com',

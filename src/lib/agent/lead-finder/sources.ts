@@ -36,6 +36,8 @@ const DJ_SEEDS: QuerySeed[] = [
     ...TARGET_REGIONS.flatMap(r => [
         seed(r, ['site:craigslist.org', 'DJ gig', r]),
         seed(r, ['site:craigslist.org', 'DJ wanted', r]),
+        seed(r, ['site:facebook.com/marketplace', 'DJ gig', r]),
+        seed(r, ['site:facebook.com/marketplace', 'DJ wanted', r]),
         seed(r, ['site:gigsalad.com', 'DJ', r]),
         seed(r, ['site:thumbtack.com', 'DJ', r]),
         seed(r, ['site:bark.com', 'DJ hire', r]),
@@ -56,6 +58,8 @@ const BAND_SEEDS: QuerySeed[] = [
     ...TARGET_REGIONS.flatMap(r => [
         seed(r, ['site:craigslist.org', 'band wanted', r]),
         seed(r, ['site:craigslist.org', 'live band gig', r]),
+        seed(r, ['site:facebook.com/marketplace', 'band wanted', r]),
+        seed(r, ['site:facebook.com/marketplace', 'live band gig', r]),
         seed(r, ['site:gigsalad.com', 'live band', r]),
         seed(r, ['site:thumbtack.com', 'live band', r]),
         seed(r, ['site:bandmix.com', r]),
@@ -75,6 +79,7 @@ const SOLO_ARTIST_SEEDS: QuerySeed[] = [
     ...TARGET_REGIONS.flatMap(r => [
         seed(r, ['site:craigslist.org', 'musician wanted', r]),
         seed(r, ['site:craigslist.org', 'solo musician gig', r]),
+        seed(r, ['site:facebook.com/marketplace', 'musician wanted', r]),
         seed(r, ['site:gigsalad.com', 'solo musician', r]),
         seed(r, ['site:thumbtack.com', 'musician', r]),
         seed(r, ['site:bark.com', 'musician hire', r]),
@@ -94,6 +99,7 @@ const MUSIC_TEACHER_SEEDS: QuerySeed[] = [
     ...TARGET_REGIONS.flatMap(r => [
         seed(r, ['site:craigslist.org', 'music teacher', r]),
         seed(r, ['site:craigslist.org', 'music lessons', r]),
+        seed(r, ['site:facebook.com/marketplace', 'music teacher', r]),
         seed(r, ['site:thumbtack.com', 'music lessons', r]),
         seed(r, ['site:care.com', 'music teacher', r]),
         seed(r, ['site:takelessons.com', r]),
