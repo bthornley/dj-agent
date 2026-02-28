@@ -30,7 +30,7 @@ export default function DashboardPage() {
         <>
             <header className="topbar">
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 28, height: 28, borderRadius: 6 }} />
+                    <img src="/logo.png" alt="GigLift" style={{ width: 36, height: 36, borderRadius: 8, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
                     <span>GigLift</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
