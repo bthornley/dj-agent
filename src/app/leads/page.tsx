@@ -28,6 +28,8 @@ export default function LeadsDashboard() {
     const [filterPriority, setFilterPriority] = useState('');
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<Set<string>>(new Set());
+    const [page, setPage] = useState(1);
+    const PAGE_SIZE = 25;
 
     const loadData = async () => {
         try {
@@ -50,11 +52,13 @@ export default function LeadsDashboard() {
 
     useEffect(() => {
         setLoading(true);
+        setPage(1);
         loadData();
     }, [filterStatus, filterPriority]);
 
     const handleSearch = () => {
         setLoading(true);
+        setPage(1);
         loadData();
     };
 
@@ -212,7 +216,7 @@ export default function LeadsDashboard() {
                             <div className="lead-col-actions">Actions</div>
                         </div>
 
-                        {leads.map(lead => {
+                        {leads.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map(lead => {
                             const status = statusLabels[lead.status] || statusLabels.new;
                             const priority = priorityLabels[lead.priority] || priorityLabels.P3;
                             return (
@@ -282,6 +286,28 @@ export default function LeadsDashboard() {
                                 </div>
                             );
                         })}
+
+                        {/* Pagination */}
+                        {leads.length > PAGE_SIZE && (
+                            <div style={{
+                                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                gap: '12px', padding: '20px 0', marginTop: '8px',
+                            }}>
+                                <button
+                                    className="btn btn-ghost btn-sm"
+                                    disabled={page === 1}
+                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                >← Prev</button>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
+                                    Page {page} of {Math.ceil(leads.length / PAGE_SIZE)} · {leads.length} leads
+                                </span>
+                                <button
+                                    className="btn btn-ghost btn-sm"
+                                    disabled={page >= Math.ceil(leads.length / PAGE_SIZE)}
+                                    onClick={() => setPage(p => p + 1)}
+                                >Next →</button>
+                            </div>
+                        )}
                     </div>
                 )}
             </main>
