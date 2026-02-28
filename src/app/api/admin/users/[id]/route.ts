@@ -65,6 +65,16 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             });
         }
 
+        if (body.planId !== undefined) {
+            const validPlans = ['free', 'pro', 'unlimited', 'agency'];
+            if (!validPlans.includes(body.planId)) {
+                return NextResponse.json({ error: 'Invalid plan ID' }, { status: 400 });
+            }
+            await client.users.updateUserMetadata(userId, {
+                publicMetadata: { planId: body.planId },
+            });
+        }
+
         return NextResponse.json({ success: true });
     } catch (err) {
         console.error('Admin user update error:', err);

@@ -14,6 +14,7 @@ interface UserDetail {
         createdAt: number;
         lastSignInAt: number | null;
         role: string;
+        publicMetadata?: Record<string, unknown>;
     };
     stats: {
         events: number;
@@ -34,6 +35,7 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [roleUpdating, setRoleUpdating] = useState(false);
+    const [planUpdating, setPlanUpdating] = useState(false);
     const [activeTab, setActiveTab] = useState<'events' | 'leads' | 'posts'>('events');
 
     useEffect(() => {
@@ -86,6 +88,43 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
             setData(prev => prev ? { ...prev, user: { ...prev.user, role: newRole } } : null);
         } catch (e) { console.error(e); }
         setRoleUpdating(false);
+    }
+
+    const planLabels: Record<string, string> = {
+        free: '🆓 Free',
+        pro: '⭐ Pro ($19/mo)',
+        unlimited: '🚀 Unlimited ($49/mo)',
+        agency: '🏢 Agency ($149/mo)',
+    };
+
+    function getCurrentPlanId(): string {
+        return (data?.user?.publicMetadata?.planId as string) || 'free';
+    }
+
+    async function changePlan(newPlanId: string) {
+        if (!data || !userId) return;
+        const currentPlan = getCurrentPlanId();
+        if (newPlanId === currentPlan) return;
+        if (!confirm(`Change subscription from "${planLabels[currentPlan]}" to "${planLabels[newPlanId]}"?`)) return;
+
+        setPlanUpdating(true);
+        try {
+            const res = await fetch(`/api/admin/users/${userId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ planId: newPlanId }),
+            });
+            if (res.ok) {
+                setData(prev => prev ? {
+                    ...prev,
+                    user: {
+                        ...prev.user,
+                        publicMetadata: { ...prev.user.publicMetadata, planId: newPlanId },
+                    },
+                } : null);
+            }
+        } catch (e) { console.error(e); }
+        setPlanUpdating(false);
     }
 
     const formatDate = (ts: number | null | string) => {
@@ -143,10 +182,47 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
                                     </span>
                                 </div>
                             </div>
-                            <div style={{ marginLeft: 'auto' }}>
+                            <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 <button className="btn btn-ghost btn-sm" onClick={toggleRole} disabled={roleUpdating}>
                                     {data.user.role === 'admin' ? '🔓 Remove Admin' : '🛡️ Make Admin'}
                                 </button>
+                            </div>
+                        </div>
+
+                        {/* Subscription Management */}
+                        <div className="card" style={{ marginTop: '16px', padding: '20px' }}>
+                            <h3 className="card-title" style={{ marginBottom: '12px' }}>💳 Subscription</h3>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                                <div>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Current Plan</div>
+                                    <span className={`badge ${getCurrentPlanId() === 'free' ? 'badge-draft' : getCurrentPlanId() === 'pro' ? 'badge-approved' : getCurrentPlanId() === 'unlimited' ? 'badge-confirmed' : 'badge-approved'}`}
+                                        style={{ fontSize: '14px', padding: '6px 12px' }}>
+                                        {planLabels[getCurrentPlanId()] || getCurrentPlanId()}
+                                    </span>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Change Plan</div>
+                                    <select
+                                        value={getCurrentPlanId()}
+                                        onChange={(e) => changePlan(e.target.value)}
+                                        disabled={planUpdating}
+                                        style={{
+                                            padding: '6px 12px',
+                                            borderRadius: '8px',
+                                            border: '1px solid var(--border)',
+                                            background: 'var(--bg-card)',
+                                            color: 'var(--text-primary)',
+                                            fontSize: '14px',
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        <option value="free">🆓 Free</option>
+                                        <option value="pro">⭐ Pro ($19/mo)</option>
+                                        <option value="unlimited">🚀 Unlimited ($49/mo)</option>
+                                        <option value="agency">🏢 Agency ($149/mo)</option>
+                                    </select>
+                                    {planUpdating && <span style={{ marginLeft: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Saving...</span>}
+                                </div>
                             </div>
                         </div>
 
