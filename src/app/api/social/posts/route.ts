@@ -75,12 +75,24 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ success: true, post });
 }
 
-// DELETE /api/social/posts — Delete a post
+// DELETE /api/social/posts — Delete a post or bulk-cleanup
 export async function DELETE(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
+    const cleanup = searchParams.get('cleanup');
+
+    // Bulk cleanup: delete all posts with no media
+    if (cleanup === 'noMedia') {
+        const allPosts = await dbGetAllSocialPosts(userId);
+        const noMedia = allPosts.filter(p => !p.mediaRefs || p.mediaRefs.length === 0);
+        for (const p of noMedia) {
+            await dbDeleteSocialPost(p.id, userId);
+        }
+        return NextResponse.json({ success: true, deleted: noMedia.length, remaining: allPosts.length - noMedia.length });
+    }
+
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'Post id is required' }, { status: 400 });
 
