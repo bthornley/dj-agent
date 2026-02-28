@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import { dbGetLatestContentPlan, dbSaveContentPlan, dbGetAllEvents, dbGetBrandProfile, dbSaveSocialPost, dbGetAllSocialPosts } from '@/lib/db';
+import { auth, clerkClient } from '@clerk/nextjs/server';
+import { dbGetLatestContentPlan, dbSaveContentPlan, dbGetAllEvents, dbGetBrandProfile, dbSaveSocialPost, dbGetAllSocialPosts, dbGetAllMediaAssets } from '@/lib/db';
 import { generateWeeklyPlan } from '@/lib/agent/social/strategy';
 import { generatePostContent } from '@/lib/agent/social/content';
 
@@ -29,6 +29,19 @@ export async function POST(request: NextRequest) {
     const events = await dbGetAllEvents(userId);
     const brand = await dbGetBrandProfile(userId);
 
+    // Gather media sources
+    const mediaAssets = await dbGetAllMediaAssets(userId);
+    const imageAssets = mediaAssets.filter(a => a.mediaType === 'image');
+    const videoAssets = mediaAssets.filter(a => a.mediaType === 'video');
+
+    // Get Google Photos album URL from profile
+    let googlePhotosAlbumUrl = '';
+    try {
+        const client = await clerkClient();
+        const user = await client.users.getUser(userId);
+        googlePhotosAlbumUrl = (user.publicMetadata as Record<string, unknown>).googlePhotosAlbumUrl as string || '';
+    } catch { /* ignore */ }
+
     // Step 1: Strategy Agent generates the plan + post shells
     const { plan, posts } = generateWeeklyPlan(events, brand, weekOf);
 
@@ -44,10 +57,41 @@ export async function POST(request: NextRequest) {
         }
     }
 
+    // Step 3: Attach media to posts
+    let imgIdx = 0;
+    let vidIdx = 0;
+    for (const post of allPosts) {
+        const refs: string[] = [];
+
+        if (post.postType === 'reel' && videoAssets.length > 0) {
+            // Reels prefer video
+            refs.push(videoAssets[vidIdx % videoAssets.length].url);
+            vidIdx++;
+        } else if (post.postType === 'carousel' && imageAssets.length > 0) {
+            // Carousels get 3-5 images
+            const count = Math.min(imageAssets.length, 3 + Math.floor(Math.random() * 3));
+            for (let i = 0; i < count; i++) {
+                refs.push(imageAssets[(imgIdx + i) % imageAssets.length].url);
+            }
+            imgIdx += count;
+        } else if (imageAssets.length > 0) {
+            // Single image for posts and stories
+            refs.push(imageAssets[imgIdx % imageAssets.length].url);
+            imgIdx++;
+        }
+
+        // Append Google Photos album as a source reference
+        if (googlePhotosAlbumUrl && refs.length === 0) {
+            refs.push(googlePhotosAlbumUrl);
+        }
+
+        post.mediaRefs = refs;
+    }
+
     // Update plan with all post IDs (including B variants)
     plan.postIds = allPosts.map(p => p.id);
 
-    // Step 3: Save everything
+    // Step 4: Save everything
     await dbSaveContentPlan(plan, userId);
     for (const post of allPosts) {
         await dbSaveSocialPost(post, userId);
