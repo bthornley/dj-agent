@@ -162,6 +162,52 @@ export default function ContentQueuePage() {
 
                                 <div className="post-card-hook">{post.hookText || 'No hook yet'}</div>
 
+                                {/* Media thumbnail — always visible */}
+                                {post.mediaRefs && post.mediaRefs.length > 0 && (
+                                    <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                        {post.mediaRefs.map((ref, i) => {
+                                            const isGooglePhotos = ref.includes('photos.google.com') || ref.includes('photos.app.goo.gl');
+                                            const isVideo = /\.(mp4|mov|webm)/i.test(ref);
+
+                                            if (isGooglePhotos) {
+                                                return (
+                                                    <a key={i} href={ref} target="_blank" rel="noreferrer"
+                                                        style={{
+                                                            display: 'inline-flex', alignItems: 'center', gap: '4px',
+                                                            padding: '4px 10px', borderRadius: 'var(--radius-sm)',
+                                                            background: 'rgba(66, 133, 244, 0.12)', color: '#4285F4',
+                                                            fontSize: '11px', fontWeight: 500, textDecoration: 'none',
+                                                        }}
+                                                        onClick={e => e.stopPropagation()}>
+                                                        📷 Google Photos
+                                                    </a>
+                                                );
+                                            }
+                                            if (isVideo) {
+                                                return (
+                                                    <div key={i} style={{
+                                                        width: '48px', height: '48px', borderRadius: 'var(--radius-sm)',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        background: 'var(--md-surface-container-high)',
+                                                        border: '1px solid var(--md-outline-variant)',
+                                                        fontSize: '18px', flexShrink: 0,
+                                                    }}>🎬</div>
+                                                );
+                                            }
+                                            return (
+                                                <div key={i} style={{
+                                                    width: '48px', height: '48px', borderRadius: 'var(--radius-sm)',
+                                                    overflow: 'hidden', border: '1px solid var(--md-outline-variant)',
+                                                    flexShrink: 0,
+                                                }}>
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img src={ref} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
                                 {expandedId === post.id && (
                                     <div className="post-card-details slide-up">
                                         <div className="post-detail-section">
