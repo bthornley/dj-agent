@@ -180,6 +180,64 @@ export default function ContentQueuePage() {
                                                 <div className="post-cta">{post.cta}</div>
                                             </div>
                                         )}
+                                        {post.mediaRefs && post.mediaRefs.length > 0 && (
+                                            <div className="post-detail-section">
+                                                <label>Media</label>
+                                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '6px' }}>
+                                                    {post.mediaRefs.map((ref, i) => {
+                                                        const isGooglePhotos = ref.includes('photos.google.com') || ref.includes('photos.app.goo.gl');
+                                                        const isImage = /\.(jpg|jpeg|png|gif|webp)/i.test(ref);
+                                                        const isVideo = /\.(mp4|mov|webm)/i.test(ref);
+
+                                                        if (isGooglePhotos) {
+                                                            return (
+                                                                <a key={i} href={ref} target="_blank" rel="noreferrer"
+                                                                    style={{
+                                                                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                                                                        padding: '6px 12px', borderRadius: 'var(--radius-sm)',
+                                                                        background: 'rgba(66, 133, 244, 0.12)', color: '#4285F4',
+                                                                        fontSize: '12px', fontWeight: 500, textDecoration: 'none',
+                                                                    }}
+                                                                    onClick={e => e.stopPropagation()}>
+                                                                    📷 Google Photos Album →
+                                                                </a>
+                                                            );
+                                                        }
+                                                        if (isImage || ref.startsWith('http')) {
+                                                            return (
+                                                                <div key={i} style={{
+                                                                    width: '64px', height: '64px', borderRadius: 'var(--radius-sm)',
+                                                                    overflow: 'hidden', border: '1px solid var(--md-outline-variant)',
+                                                                    flexShrink: 0,
+                                                                }}>
+                                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                    <img src={ref} alt={`media-${i}`}
+                                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                </div>
+                                                            );
+                                                        }
+                                                        if (isVideo) {
+                                                            return (
+                                                                <div key={i} style={{
+                                                                    width: '64px', height: '64px', borderRadius: 'var(--radius-sm)',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    background: 'var(--md-surface-container-high)',
+                                                                    border: '1px solid var(--md-outline-variant)',
+                                                                    fontSize: '20px', flexShrink: 0,
+                                                                }}>🎬</div>
+                                                            );
+                                                        }
+                                                        return (
+                                                            <span key={i} style={{
+                                                                fontSize: '12px', color: 'var(--text-muted)',
+                                                                padding: '4px 8px', borderRadius: 'var(--radius-sm)',
+                                                                background: 'var(--md-surface-container-high)',
+                                                            }}>📎 {ref.split('/').pop()}</span>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
                                         <div className="post-card-actions" onClick={e => e.stopPropagation()}>
                                             {post.status === 'draft' && (
                                                 <>
