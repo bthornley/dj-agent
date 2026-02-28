@@ -159,9 +159,21 @@ export default function SocialDashboardPage() {
                                                 <span className="queue-pillar">{pillarEmojis[post.pillar] || '📋'}</span>
                                                 <div className="queue-info">
                                                     <div className="queue-hook">{post.hookText || post.notes || 'Untitled post'}</div>
-                                                    <div className="queue-meta">
+                                                    <div className="queue-meta" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                                                         <span className={`badge badge-${post.postType}`}>{post.postType}</span>
                                                         <span className="badge badge-draft">{post.platform}</span>
+                                                        {post.mediaRefs && post.mediaRefs.length > 0 && post.mediaRefs.map((ref, i) => {
+                                                            const isGP = ref.includes('photos.google.com') || ref.includes('photos.app.goo.gl');
+                                                            const isVid = /\.(mp4|mov|webm)/i.test(ref);
+                                                            if (isGP) return <span key={i} style={{ fontSize: '10px', color: '#4285F4', background: 'rgba(66,133,244,0.12)', padding: '2px 6px', borderRadius: '4px' }}>📷 Album</span>;
+                                                            if (isVid) return <span key={i} style={{ fontSize: '10px', background: 'var(--md-surface-container-high)', padding: '2px 6px', borderRadius: '4px' }}>🎬 Video</span>;
+                                                            return (
+                                                                <div key={i} style={{ width: '24px', height: '24px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--md-outline-variant)', flexShrink: 0 }}>
+                                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                    <img src={ref} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                </div>
+                                                            );
+                                                        })}
                                                     </div>
                                                 </div>
                                             </div>
