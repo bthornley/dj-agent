@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280, height=720">
+  <title>GigLift Promo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 1280px;
+      height: 720px;
+      overflow: hidden;
+      background: #0a0a1a;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      position: relative;
+    }
+
+    /* Click overlay */
+    .start-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 999;
+      background: rgba(10, 10, 26, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: opacity 0.5s ease;
+    }
+
+    .start-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .start-overlay .play-btn {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      box-shadow: 0 0 60px rgba(168, 85, 247, 0.4);
+      transition: transform 0.2s;
+    }
+
+    .start-overlay .play-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .start-overlay .play-label {
+      margin-top: 20px;
+      font-size: 20px;
+      color: #a855f7;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Gradient bg */
+    .bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 40%, #0d0b1e 70%, #1a0a2e 100%);
+      z-index: 0;
+    }
+
+    .bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(155, 89, 247, 0.08) 0%, transparent 70%);
+    }
+
+    /* Particles */
+    .particles {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(155, 89, 247, 0.3);
+      animation: float 8s infinite ease-in-out;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.3;
+      }
+
+      50% {
+        transform: translateY(-40px) scale(1.2);
+        opacity: 0.6;
+      }
+    }
+
+    /* Scenes */
+    .scene {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none;
+    }
+
+    .scene.active {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+
+    /* Scene 1: Logo */
+    .scene-1 .emoji {
+      font-size: 80px;
+      margin-bottom: 16px;
+      animation: pulse 1s ease-in-out;
+    }
+
+    .scene-1 h1 {
+      font-size: 96px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, #fff 0%, #a855f7 50%, #00d4e6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    .scene-1 .sub-tagline {
+      font-size: 22px;
+      color: #b0b0cc;
+      margin-top: 6px;
+      font-style: italic;
+      letter-spacing: 1px;
+      animation: slideUp 0.6s ease-out 0.3s both;
+    }
+
+    .scene-1 .tagline {
+      font-size: 28px;
+      color: #00d4e6;
+      margin-top: 8px;
+      animation: slideUp 0.6s ease-out 0.5s both;
+    }
+
+    /* Scene 2: Problem */
+    .scene-2 .problem-badge {
+      background: rgba(255, 85, 85, 0.15);
+      border: 1px solid rgba(255, 85, 85, 0.4);
+      color: #ff5555;
+      padding: 8px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+      animation: slideUp 0.4s ease-out;
+    }
+
+    .scene-2 h2 {
+      font-size: 52px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.15;
+      animation: slideUp 0.5s ease-out 0.15s both;
+    }
+
+    .scene-2 h2 span {
+      color: #ff5555;
+    }
+
+    .scene-2 .stat-row {
+      display: flex;
+      gap: 48px;
+      margin-top: 32px;
+      animation: slideUp 0.5s ease-out 0.3s both;
+    }
+
+    .scene-2 .stat {
+      text-align: center;
+    }
+
+    .scene-2 .stat-num {
+      font-size: 56px;
+      font-weight: 900;
+      color: #ff5555;
+    }
+
+    .scene-2 .stat-label {
+      font-size: 14px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Scene 3: Features */
+    .scene-3 .features-title {
+      font-size: 16px;
+      color: #a855f7;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 24px;
+      animation: slideUp 0.4s ease-out;
+    }
+
+    .scene-3 .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 900px;
+    }
+
+    .scene-3 .feature-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      animation: popIn 0.4s ease-out both;
+    }
+
+    .scene-3 .feature-card:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    .scene-3 .feature-card:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .scene-3 .feature-card:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .scene-3 .feature-card:nth-child(4) {
+      animation-delay: 0.4s;
+    }
+
+    .scene-3 .feature-card:nth-child(5) {
+      animation-delay: 0.5s;
+    }
+
+    .scene-3 .feature-icon {
+      font-size: 40px;
+      margin-bottom: 8px;
+    }
+
+    .scene-3 .feature-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .scene-3 .feature-desc {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    /* Scene 4: How it works */
+    .scene-4 h2 {
+      font-size: 42px;
+      font-weight: 900;
+      margin-bottom: 40px;
+      animation: slideUp 0.4s ease-out;
+    }
+
+    .scene-4 h2 span {
+      color: #00d4e6;
+    }
+
+    .scene-4 .steps {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .scene-4 .step {
+      text-align: center;
+      width: 160px;
+      animation: popIn 0.4s ease-out both;
+    }
+
+    .scene-4 .step:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    .scene-4 .step:nth-child(3) {
+      animation-delay: 0.25s;
+    }
+
+    .scene-4 .step:nth-child(5) {
+      animation-delay: 0.4s;
+    }
+
+    .scene-4 .step:nth-child(7) {
+      animation-delay: 0.55s;
+    }
+
+    .scene-4 .step:nth-child(9) {
+      animation-delay: 0.7s;
+    }
+
+    .scene-4 .step-num {
+      font-size: 42px;
+      font-weight: 900;
+    }
+
+    .scene-4 .step-label {
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .scene-4 .step-desc {
+      font-size: 11px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .scene-4 .arrow {
+      font-size: 28px;
+      color: #555;
+      animation: fadeIn 0.3s ease-out both;
+    }
+
+    /* Scene 5: Pricing */
+    .scene-5 .pricing-badge {
+      background: rgba(0, 212, 230, 0.12);
+      border: 1px solid rgba(0, 212, 230, 0.3);
+      color: #00d4e6;
+      padding: 6px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    .scene-5 h2 {
+      font-size: 48px;
+      font-weight: 900;
+      margin-bottom: 32px;
+      animation: slideUp 0.4s ease-out 0.1s both;
+    }
+
+    .scene-5 .tier-row {
+      display: flex;
+      gap: 20px;
+      animation: slideUp 0.4s ease-out 0.2s both;
+    }
+
+    .scene-5 .tier {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 24px 32px;
+      width: 200px;
+      text-align: center;
+    }
+
+    .scene-5 .tier.featured {
+      border-color: #a855f7;
+      background: rgba(168, 85, 247, 0.08);
+      transform: scale(1.05);
+    }
+
+    .scene-5 .tier-name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .scene-5 .tier-price {
+      font-size: 36px;
+      font-weight: 900;
+      margin: 8px 0;
+    }
+
+    .scene-5 .tier-price span {
+      font-size: 14px;
+      font-weight: 400;
+      color: #888;
+    }
+
+    /* Scene 6: CTA */
+    .scene-6 h1 {
+      font-size: 72px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff 0%, #a855f7 50%, #00d4e6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: slideUp 0.5s ease-out;
+    }
+
+    .scene-6 .cta-tagline {
+      font-size: 28px;
+      color: #ccc;
+      margin: 12px 0 32px;
+      animation: slideUp 0.5s ease-out 0.15s both;
+    }
+
+    .scene-6 .cta-btn {
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
+      padding: 16px 48px;
+      border-radius: 12px;
+      border: none;
+      animation: popIn 0.5s ease-out 0.3s both;
+      box-shadow: 0 0 40px rgba(168, 85, 247, 0.3);
+    }
+
+    .scene-6 .url {
+      color: #a855f7;
+      font-size: 16px;
+      margin-top: 20px;
+      animation: fadeIn 0.5s ease-out 0.5s both;
+    }
+
+    /* Animations */
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+
+      50% {
+        transform: scale(1.2);
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      z-index: 100;
+      background: linear-gradient(90deg, #a855f7, #00d4e6);
+      transition: width 0.3s linear;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Click to start overlay (required for audio) -->
+  <div class="start-overlay" id="startOverlay" onclick="startPromo()">
+    <div class="play-btn">▶</div>
+    <div class="play-label">Click to Play</div>
+  </div>
+
+  <div class="bg"></div>
+  <div class="particles" id="particles"></div>
+
+  <!-- Scene 1: Logo Reveal -->
+  <div class="scene scene-1" id="scene-1">
+    <div class="emoji">🎵</div>
+    <h1>GIGLIFT</h1>
+    <div class="sub-tagline">Lift Your Gigs to the Next Level</div>
+    <div class="tagline">The Complete AI Platform for Musicians</div>
+  </div>
+
+  <!-- Scene 2: Problem -->
+  <div class="scene scene-2" id="scene-2">
+    <div class="problem-badge">The Problem</div>
+    <h2>Musicians spend more time<br><span>hustling</span> than <span>performing</span></h2>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="stat-num">78%</div>
+        <div class="stat-label">Earn under $15K/yr</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">20+</div>
+        <div class="stat-label">Hours/week searching</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">0</div>
+        <div class="stat-label">AI tools for musicians</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene 3: Features -->
+  <div class="scene scene-3" id="scene-3">
+    <div class="features-title">Everything You Need</div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <div class="feature-name">AI Lead Discovery</div>
+        <div class="feature-desc">Scans 10+ sources automatically</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-name">Smart Scoring</div>
+        <div class="feature-desc">0–100 lead ranking by fit</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✉️</div>
+        <div class="feature-name">AI Outreach</div>
+        <div class="feature-desc">Personalized booking emails</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <div class="feature-name">AI EPK Builder</div>
+        <div class="feature-desc">Custom press kit in minutes</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <div class="feature-name">Social Suite</div>
+        <div class="feature-desc">Content planning & scheduling</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene 4: How It Works -->
+  <div class="scene scene-4" id="scene-4">
+    <h2>From <span>Search</span> to <span>Stage</span></h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" style="color:#a855f7">1</div>
+        <div class="step-label">Discover</div>
+        <div class="step-desc">AI finds gigs</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <div class="step-num" style="color:#00d4e6">2</div>
+        <div class="step-label">Score</div>
+        <div class="step-desc">Rank by fit</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <div class="step-num" style="color:#00e676">3</div>
+        <div class="step-label">Outreach</div>
+        <div class="step-desc">AI emails</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <div class="step-num" style="color:#ffd700">4</div>
+        <div class="step-label">Build</div>
+        <div class="step-desc">EPK + brand</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <div class="step-num" style="color:#fff">5</div>
+        <div class="step-label">Book</div>
+        <div class="step-desc">Land the gig!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene 5: Pricing -->
+  <div class="scene scene-5" id="scene-5">
+    <div class="pricing-badge">Simple Pricing</div>
+    <h2>Plans That Scale With You</h2>
+    <div class="tier-row">
+      <div class="tier">
+        <div class="tier-name">Free</div>
+        <div class="tier-price">$0<span>/mo</span></div>
+      </div>
+      <div class="tier featured">
+        <div class="tier-name">Pro ⭐</div>
+        <div class="tier-price">$19<span>/mo</span></div>
+      </div>
+      <div class="tier">
+        <div class="tier-name">Unlimited</div>
+        <div class="tier-price">$49<span>/mo</span></div>
+      </div>
+      <div class="tier">
+        <div class="tier-name">Agency 🏢</div>
+        <div class="tier-price">$149<span>/mo</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene 6: CTA -->
+  <div class="scene scene-6" id="scene-6">
+    <h1>GIGLIFT</h1>
+    <div class="cta-tagline">Discover. Outreach. Build. Book.</div>
+    <button class="cta-btn">Start Free Today →</button>
+    <div class="url">giglift.app</div>
+  </div>
+
+  <div class="progress" id="progress"></div>
+
+  <script>
+    // Create particles
+    const pEl = document.getElementById('particles');
+    for (let i = 0; i < 20; i++) {
+      const d = document.createElement('div');
+      d.className = 'particle';
+      const size = 4 + Math.random() * 8;
+      d.style.width = size + 'px';
+      d.style.height = size + 'px';
+      d.style.left = Math.random() * 100 + '%';
+      d.style.top = Math.random() * 100 + '%';
+      d.style.animationDelay = Math.random() * 5 + 's';
+      d.style.animationDuration = (5 + Math.random() * 5) + 's';
+      if (Math.random() > 0.5) d.style.background = 'rgba(0,212,230,0.2)';
+      pEl.appendChild(d);
+    }
+
+    function startPromo() {
+      document.getElementById('startOverlay').classList.add('hidden');
+      startMusic();
+      startScenes();
+      startVoiceover();
+    }
+
+    // ═══════════════════════════════════════════════════
+    // SCENES
+    // ═══════════════════════════════════════════════════
+    function startScenes() {
+      const scenes = [
+        { id: 'scene-1', duration: 4500 },
+        { id: 'scene-2', duration: 5500 },
+        { id: 'scene-3', duration: 6000 },
+        { id: 'scene-4', duration: 5000 },
+        { id: 'scene-5', duration: 4500 },
+        { id: 'scene-6', duration: 5000 },
+      ]; // Total: ~30.5s
+
+      const totalDuration = scenes.reduce((s, sc) => s + sc.duration, 0);
+      const bar = document.getElementById('progress');
+      const startTime = Date.now();
+
+      function updateProgress() {
+        const elapsed = Date.now() - startTime;
+        const pct = Math.min(100, (elapsed / totalDuration) * 100);
+        bar.style.width = pct + '%';
+        if (pct < 100) requestAnimationFrame(updateProgress);
+      }
+
+      // Activate first scene immediately
+      document.getElementById('scene-1').classList.add('active');
+
+      let cumulative = 0;
+      scenes.forEach((sc) => {
+        setTimeout(() => {
+          document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
+          document.getElementById(sc.id).classList.add('active');
+        }, cumulative);
+        cumulative += sc.duration;
+      });
+
+      requestAnimationFrame(updateProgress);
+    }
+
+    // ═══════════════════════════════════════════════════
+    // VOICEOVER (Web Speech API)
+    // ═══════════════════════════════════════════════════
+    function startVoiceover() {
+      const synth = window.speechSynthesis;
+
+      // Cancel any pending
+      synth.cancel();
+
+      const voicelines = [
+        { time: 300, text: "Introducing GigLift.", rate: 0.95 },
+        { time: 1800, text: "Lift your gigs to the next level.", rate: 0.95 },
+        { time: 4800, text: "78% of artists earn under 15K a year. They spend 20 hours a week just searching for gigs.", rate: 1.05 },
+        { time: 10200, text: "GigLift gives you everything. AI lead discovery across 10 plus sources. Smart scoring. Automated outreach emails. A professional press kit builder. And a full social content suite.", rate: 1.1 },
+        { time: 16500, text: "From search to stage in five steps. Discover, score, outreach, build, and book.", rate: 1.0 },
+        { time: 21500, text: "Plans start free. Upgrade to Pro for 19 a month, Unlimited for 49, or Agency for 149.", rate: 1.05 },
+        { time: 26200, text: "GigLift. Discover. Outreach. Build. Book. Start free today at giglift dot app.", rate: 0.95 },
+      ];
+
+      // Try to find a good voice
+      let chosenVoice = null;
+      const voices = synth.getVoices();
+      // Prefer: Google US English, Samantha, Alex, or any en-US
+      const preferred = ['Google US English', 'Samantha', 'Alex', 'Daniel'];
+      for (const pref of preferred) {
+        const found = voices.find(v => v.name.includes(pref) && v.lang.startsWith('en'));
+        if (found) { chosenVoice = found; break; }
+      }
+      if (!chosenVoice) {
+        chosenVoice = voices.find(v => v.lang.startsWith('en-US')) || voices.find(v => v.lang.startsWith('en')) || null;
+      }
+
+      voicelines.forEach(({ time, text, rate }) => {
+        setTimeout(() => {
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.rate = rate || 1.0;
+          utter.pitch = 1.0;
+          utter.volume = 1.0;
+          if (chosenVoice) utter.voice = chosenVoice;
+          synth.speak(utter);
+        }, time);
+      });
+    }
+
+    // Load voices (async on some browsers)
+    if (window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+
+    // ═══════════════════════════════════════════════════
+    // MUSIC (Web Audio API)
+    // ═══════════════════════════════════════════════════
+    function startMusic() {
+      const actx = new (window.AudioContext || window.webkitAudioContext)();
+      actx.resume(); // Ensure audio context is active after user click
+
+      const masterGain = actx.createGain();
+      masterGain.gain.value = 0.22; // Lower so voice is clear
+      masterGain.connect(actx.destination);
+
+      const comp = actx.createDynamicsCompressor();
+      comp.threshold.value = -20;
+      comp.ratio.value = 6;
+      comp.connect(masterGain);
+
+      function kick(time) {
+        const osc = actx.createOscillator();
+        const g = actx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(150, time);
+        osc.frequency.exponentialRampToValueAtTime(30, time + 0.12);
+        g.gain.setValueAtTime(0.7, time);
+        g.gain.exponentialRampToValueAtTime(0.01, time + 0.25);
+        osc.connect(g); g.connect(comp);
+        osc.start(time); osc.stop(time + 0.25);
+      }
+
+      function hihat(time) {
+        const bufSize = actx.sampleRate * 0.04;
+        const buf = actx.createBuffer(1, bufSize, actx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+        const src = actx.createBufferSource();
+        src.buffer = buf;
+        const hp = actx.createBiquadFilter();
+        hp.type = 'highpass'; hp.frequency.value = 8000;
+        const g = actx.createGain();
+        g.gain.setValueAtTime(0.1, time);
+        g.gain.exponentialRampToValueAtTime(0.01, time + 0.04);
+        src.connect(hp); hp.connect(g); g.connect(comp);
+        src.start(time); src.stop(time + 0.05);
+      }
+
+      function bass(time, freq, dur) {
+        const osc = actx.createOscillator();
+        const g = actx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.value = freq;
+        const lp = actx.createBiquadFilter();
+        lp.type = 'lowpass'; lp.frequency.value = 350;
+        g.gain.setValueAtTime(0.2, time);
+        g.gain.exponentialRampToValueAtTime(0.01, time + dur);
+        osc.connect(lp); lp.connect(g); g.connect(comp);
+        osc.start(time); osc.stop(time + dur);
+      }
+
+      function pad(time, freq, dur) {
+        const osc1 = actx.createOscillator();
+        const osc2 = actx.createOscillator();
+        const g = actx.createGain();
+        osc1.type = 'sine'; osc1.frequency.value = freq;
+        osc2.type = 'triangle'; osc2.frequency.value = freq * 1.003;
+        const lp = actx.createBiquadFilter();
+        lp.type = 'lowpass'; lp.frequency.value = 1200;
+        g.gain.setValueAtTime(0.04, time);
+        g.gain.setValueAtTime(0.04, time + dur - 0.1);
+        g.gain.exponentialRampToValueAtTime(0.001, time + dur);
+        osc1.connect(lp); osc2.connect(lp); lp.connect(g); g.connect(comp);
+        osc1.start(time); osc1.stop(time + dur);
+        osc2.start(time); osc2.stop(time + dur);
+      }
+
+      const bpm = 126;
+      const beatLen = 60 / bpm;
+      const now = actx.currentTime + 0.05;
+      const totalBeats = Math.floor(31 / beatLen);
+
+      const bassNotes = [82.41, 98, 110, 82.41]; // E2 G2 A2 E2
+      const padChords = [
+        [164.81, 196, 246.94], // Em (E3, G3, B3)
+        [196, 246.94, 329.63], // G (G3, B3, E4)
+        [220, 277.18, 329.63], // Am (A3, C#4, E4)
+        [164.81, 196, 246.94], // Em
+      ];
+
+      for (let i = 0; i < totalBeats; i++) {
+        const t = now + i * beatLen;
+
+        // Kick on every beat
+        kick(t);
+
+        // Hi-hat on every half-beat
+        hihat(t);
+        hihat(t + beatLen * 0.5);
+
+        // Bass every 2 beats
+        if (i % 2 === 0) {
+          const bn = bassNotes[(Math.floor(i / 2)) % bassNotes.length];
+          bass(t, bn, beatLen * 1.8);
+        }
+
+        // Pad chords every 4 beats
+        if (i % 4 === 0) {
+          const chord = padChords[Math.floor(i / 4) % padChords.length];
+          chord.forEach(f => pad(t, f, beatLen * 3.8));
+        }
+      }
+
+      // Fade out
+      masterGain.gain.setValueAtTime(0.22, now + 28);
+      masterGain.gain.linearRampToValueAtTime(0, now + 31);
+    }
+  </script>
+</body>
+
+</html>
