@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { getStripe, PLANS, PlanId } from '@/lib/stripe';
 import { getUserPlan } from '@/lib/subscription';
 import { rateLimit } from '@/lib/rate-limit';
@@ -29,8 +29,17 @@ export async function POST(request: Request) {
         }
 
         const plan = PLANS[planId];
+
+        // If Stripe price IDs aren't configured, fall back to direct plan update
+        // (useful for demo/dev environments without Stripe)
         if (!plan.priceId) {
-            return NextResponse.json({ error: 'Plan not configured in Stripe' }, { status: 400 });
+            const client = await clerkClient();
+            await client.users.updateUserMetadata(userId, {
+                publicMetadata: { planId },
+            });
+            return NextResponse.json({
+                url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?upgraded=true`,
+            });
         }
 
         // Check if user already has a subscription
