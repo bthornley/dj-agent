@@ -137,7 +137,7 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
         <>
             <header className="topbar">
                 <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 36, height: 36, borderRadius: 8, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
+                    <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
                     <span>GigLift</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
