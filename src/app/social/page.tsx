@@ -270,6 +270,50 @@ function MediaSourcesCard({ media, uploading, progress, onUploadFiles }: {
 }) {
     const folderRef = useRef<HTMLInputElement>(null);
     const fileRef = useRef<HTMLInputElement>(null);
+    const [googleAlbumUrl, setGoogleAlbumUrl] = useState('');
+    const [googleAlbumSaving, setGoogleAlbumSaving] = useState(false);
+    const [googleAlbumSaved, setGoogleAlbumSaved] = useState(false);
+
+    // Load saved Google Photos URL on mount
+    useEffect(() => {
+        fetch('/api/profile')
+            .then(r => r.json())
+            .then(d => { if (d.googlePhotosAlbumUrl) setGoogleAlbumUrl(d.googlePhotosAlbumUrl); })
+            .catch(() => { });
+    }, []);
+
+    const saveGoogleAlbum = async () => {
+        setGoogleAlbumSaving(true);
+        try {
+            const res = await fetch('/api/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ googlePhotosAlbumUrl: googleAlbumUrl }),
+            });
+            if (res.ok) {
+                setGoogleAlbumSaved(true);
+                setTimeout(() => setGoogleAlbumSaved(false), 3000);
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to save');
+            }
+        } catch { alert('Failed to save'); }
+        setGoogleAlbumSaving(false);
+    };
+
+    const removeGoogleAlbum = async () => {
+        if (!confirm('Remove Google Photos album link?')) return;
+        setGoogleAlbumSaving(true);
+        try {
+            await fetch('/api/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ googlePhotosAlbumUrl: '' }),
+            });
+            setGoogleAlbumUrl('');
+        } catch { /* ignore */ }
+        setGoogleAlbumSaving(false);
+    };
 
     const images = media.filter(m => m.mediaType === 'image');
     const videos = media.filter(m => m.mediaType === 'video');
@@ -314,6 +358,60 @@ function MediaSourcesCard({ media, uploading, progress, onUploadFiles }: {
             <input ref={fileRef} type="file" multiple accept="image/*,video/*,audio/*"
                 style={{ display: 'none' }}
                 onChange={e => { if (e.target.files) onUploadFiles(e.target.files); e.target.value = ''; }} />
+
+            {/* Google Photos Album */}
+            <div style={{
+                padding: '16px', borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--md-outline-variant)',
+                background: 'var(--md-surface-container-low)',
+                marginBottom: '16px',
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                    <span style={{
+                        width: '32px', height: '32px', borderRadius: 'var(--radius-sm)',
+                        background: 'rgba(66, 133, 244, 0.15)', color: '#4285F4',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '16px',
+                    }}>📷</span>
+                    <span style={{ fontWeight: 500, fontSize: '14px' }}>Google Photos Album</span>
+                    {googleAlbumUrl && !googleAlbumSaving && (
+                        <span className="badge" style={{
+                            background: 'var(--md-success-container)', color: 'var(--md-success)',
+                            fontSize: '10px', padding: '2px 8px',
+                        }}>✓ Connected</span>
+                    )}
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input
+                        className="input"
+                        value={googleAlbumUrl}
+                        onChange={e => setGoogleAlbumUrl(e.target.value)}
+                        placeholder="https://photos.google.com/share/..."
+                        style={{ flex: 1, fontSize: '13px' }}
+                    />
+                    <button
+                        className="btn btn-primary btn-sm"
+                        onClick={saveGoogleAlbum}
+                        disabled={googleAlbumSaving || !googleAlbumUrl}
+                        style={{ flexShrink: 0 }}
+                    >
+                        {googleAlbumSaving ? '...' : googleAlbumSaved ? '✓ Saved' : 'Save'}
+                    </button>
+                    {googleAlbumUrl && (
+                        <button
+                            className="btn btn-ghost btn-sm"
+                            onClick={removeGoogleAlbum}
+                            disabled={googleAlbumSaving}
+                            style={{ flexShrink: 0, color: 'var(--md-error)' }}
+                        >
+                            Remove
+                        </button>
+                    )}
+                </div>
+                <p style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '6px' }}>
+                    Paste a shared Google Photos album URL &mdash; the agent will reference these photos when creating posts.
+                </p>
+            </div>
 
             {media.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '28px 0' }}>

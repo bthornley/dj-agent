@@ -21,7 +21,10 @@ export async function GET() {
     const rawRegions = meta.regions;
     const regions: string[] = Array.isArray(rawRegions) ? rawRegions : ['Orange County', 'Long Beach'];
 
-    return NextResponse.json({ artistTypes, regions });
+    // Google Photos album URL
+    const googlePhotosAlbumUrl = (meta.googlePhotosAlbumUrl as string) || '';
+
+    return NextResponse.json({ artistTypes, regions, googlePhotosAlbumUrl });
 }
 
 // PUT /api/profile — Update user's artist types and/or regions
@@ -51,6 +54,15 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: 'Select at least one region' }, { status: 400 });
         }
         updates.regions = regions;
+    }
+
+    // Update Google Photos album URL if provided
+    if (body.googlePhotosAlbumUrl !== undefined) {
+        const url = body.googlePhotosAlbumUrl as string;
+        if (url && !url.startsWith('https://photos.google.com/') && !url.startsWith('https://photos.app.goo.gl/')) {
+            return NextResponse.json({ error: 'Invalid Google Photos URL. Must start with https://photos.google.com/ or https://photos.app.goo.gl/' }, { status: 400 });
+        }
+        updates.googlePhotosAlbumUrl = url;
     }
 
     if (Object.keys(updates).length === 0) {
