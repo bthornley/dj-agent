@@ -27,6 +27,8 @@ const PLATFORM_CONFIG: Record<SocialPlatform, { icon: string; label: string; col
     instagram: { icon: '📸', label: 'Instagram', color: '#E4405F', placeholder: '@yourdj', tokenHelp: 'Get from Meta Business Suite → Settings → Advanced → Access Tokens' },
     facebook: { icon: '📘', label: 'Facebook', color: '#1877F2', placeholder: 'Your Page Name', tokenHelp: 'Get from developers.facebook.com → Tools → Graph API Explorer' },
     tiktok: { icon: '🎵', label: 'TikTok', color: '#000000', placeholder: '@yourdj', tokenHelp: 'Get from developers.tiktok.com → Manage Apps → Your App → API Key' },
+    soundcloud: { icon: '🔊', label: 'SoundCloud', color: '#FF5500', placeholder: 'soundcloud.com/yourdj', tokenHelp: 'Optional — just add your profile URL to share in outreach' },
+    spotify: { icon: '🎧', label: 'Spotify', color: '#1DB954', placeholder: 'open.spotify.com/artist/...', tokenHelp: 'Optional — just add your Spotify artist URL to share in outreach' },
 };
 
 export default function BrandSetupPage() {

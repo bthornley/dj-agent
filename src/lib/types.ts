@@ -290,7 +290,7 @@ export interface MediaAsset {
   updatedAt: string;
 }
 
-export type SocialPlatform = 'instagram' | 'facebook' | 'tiktok';
+export type SocialPlatform = 'instagram' | 'facebook' | 'tiktok' | 'soundcloud' | 'spotify';
 
 export interface ConnectedAccount {
   platform: SocialPlatform;

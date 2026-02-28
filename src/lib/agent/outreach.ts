@@ -57,6 +57,27 @@ function venueRef(lead: Lead): string {
     return lead.entity_name || 'your venue';
 }
 
+const PLATFORM_LABELS: Record<string, string> = {
+    soundcloud: 'SoundCloud',
+    spotify: 'Spotify',
+    instagram: 'Instagram',
+    facebook: 'Facebook',
+    tiktok: 'TikTok',
+};
+
+function connectedAccountsLine(brand: BrandProfile | null): string {
+    if (!brand?.connectedAccounts?.length) return '';
+    const links = brand.connectedAccounts
+        .filter(a => a.handle || a.profileUrl)
+        .map(a => {
+            const label = PLATFORM_LABELS[a.platform] || a.platform;
+            const url = a.profileUrl || a.handle;
+            return `${label}: ${url}`;
+        });
+    if (links.length === 0) return '';
+    return `\nYou can check out my work here:\n${links.join('\n')}\n`;
+}
+
 // ---- Email generators ----
 
 function formalEmail(lead: Lead, brand: BrandProfile | null): OutreachEmail {
@@ -77,7 +98,7 @@ function formalEmail(lead: Lead, brand: BrandProfile | null): OutreachEmail {
         `I'd love the opportunity to discuss a potential booking or audition set. I'm flexible on dates and happy to provide references, a press kit, or demo mixes.`,
         '',
         lead.capacity_estimate ? `I noticed your venue has a capacity around ${lead.capacity_estimate}, which is right in my sweet spot for creating an incredible atmosphere.` : '',
-        '',
+        connectedAccountsLine(brand),
         `Would you be open to a brief call or email exchange to explore this further?`,
         '',
         `Thank you for your time and consideration.`,
@@ -114,7 +135,7 @@ function casualEmail(lead: Lead, brand: BrandProfile | null): OutreachEmail {
             : '',
         '',
         `Would love to chat about doing a set. I can send over mixes, a press kit, whatever you need.`,
-        '',
+        connectedAccountsLine(brand),
         `Let me know! ${emojis}`,
         '',
         dj === 'I' ? '' : `— ${dj}`,
@@ -136,7 +157,7 @@ function followUpEmail(lead: Lead, brand: BrandProfile | null): OutreachEmail {
         `Just following up on my earlier message about DJing at ${venue}. Totally understand if you're swamped — just wanted to make sure it didn't get buried.`,
         '',
         `I'm ${dj === 'I' ? 'a local DJ' : dj} and I'd love a shot at performing at your venue. Happy to do an audition set, send demo mixes, or jump on a quick call — whatever works best for you.`,
-        '',
+        connectedAccountsLine(brand),
         `No pressure at all. If the timing isn't right, I'd love to stay on your radar for the future.`,
         '',
         `Thanks! ${emojis}`,
