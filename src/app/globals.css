@@ -1,54 +1,117 @@
 /* ============================================================
    GigLift — Design System
-   Dark-mode first, purple/cyan accent, glassmorphism
+   Material Design 3 — Dark Theme
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Background */
-  --bg-primary: #08080f;
-  --bg-secondary: #0e0e1a;
-  --bg-card: rgba(18, 18, 32, 0.7);
-  --bg-card-hover: rgba(25, 25, 45, 0.8);
-  --bg-input: rgba(15, 15, 30, 0.8);
+  /* ---- M3 Tonal Surfaces ---- */
+  --md-surface-dim: #0f0d13;
+  --md-surface: #141218;
+  --md-surface-bright: #1e1b20;
+  --md-surface-container-lowest: #0b0910;
+  --md-surface-container-low: #171520;
+  --md-surface-container: #1d1b23;
+  --md-surface-container-high: #262430;
+  --md-surface-container-highest: #2f2d38;
+  --md-on-surface: #e6e1e5;
+  --md-on-surface-variant: #c9c5d0;
+  --md-outline: #79747e;
+  --md-outline-variant: #49454f;
 
-  /* Glass */
-  --glass-border: rgba(120, 80, 255, 0.15);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  /* ---- M3 Primary (Purple) ---- */
+  --md-primary: #cfbcff;
+  --md-on-primary: #381e72;
+  --md-primary-container: #4f378b;
+  --md-on-primary-container: #e9ddff;
+  --md-inverse-primary: #6750a4;
 
-  /* Text */
-  --text-primary: #eeeef5;
-  --text-secondary: #9898b8;
-  --text-muted: #5a5a78;
-  --text-accent: #a78bfa;
+  /* ---- M3 Secondary (Muted Purple) ---- */
+  --md-secondary: #ccc2dc;
+  --md-on-secondary: #332d41;
+  --md-secondary-container: #4a4458;
+  --md-on-secondary-container: #e8def8;
 
-  /* Accent */
-  --accent-purple: #8b5cf6;
-  --accent-purple-dim: rgba(139, 92, 246, 0.15);
-  --accent-cyan: #22d3ee;
-  --accent-cyan-dim: rgba(34, 211, 238, 0.1);
-  --accent-green: #34d399;
-  --accent-green-dim: rgba(52, 211, 153, 0.12);
-  --accent-amber: #fbbf24;
-  --accent-amber-dim: rgba(251, 191, 36, 0.12);
-  --accent-red: #f87171;
-  --accent-red-dim: rgba(248, 113, 113, 0.12);
+  /* ---- M3 Tertiary (Cyan) ---- */
+  --md-tertiary: #7dd8e7;
+  --md-on-tertiary: #003d48;
+  --md-tertiary-container: #1d5b68;
+  --md-on-tertiary-container: #b0ecf8;
 
-  /* Gradient */
-  --gradient-brand: linear-gradient(135deg, #8b5cf6 0%, #22d3ee 100%);
-  --gradient-card: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(34, 211, 238, 0.03) 100%);
-  --gradient-glow: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(139, 92, 246, 0.06), transparent 40%);
+  /* ---- M3 Error ---- */
+  --md-error: #ffb4ab;
+  --md-on-error: #690005;
+  --md-error-container: #93000a;
+  --md-on-error-container: #ffdad6;
 
-  /* Radius */
+  /* ---- Additional semantic colors ---- */
+  --md-success: #81d994;
+  --md-success-container: rgba(129, 217, 148, 0.12);
+  --md-warning: #f0c755;
+  --md-warning-container: rgba(240, 199, 85, 0.12);
+
+  /* ---- Mapped variables for backward compatibility ---- */
+  --bg-primary: var(--md-surface-dim);
+  --bg-secondary: var(--md-surface);
+  --bg-card: var(--md-surface-container);
+  --bg-card-hover: var(--md-surface-container-high);
+  --bg-input: var(--md-surface-container-low);
+  --border: var(--md-outline-variant);
+
+  --text-primary: var(--md-on-surface);
+  --text-secondary: var(--md-on-surface-variant);
+  --text-muted: var(--md-outline);
+  --text-accent: var(--md-primary);
+
+  --accent-purple: var(--md-primary);
+  --accent-purple-dim: rgba(207, 188, 255, 0.12);
+  --accent-cyan: var(--md-tertiary);
+  --accent-cyan-dim: rgba(125, 216, 231, 0.10);
+  --accent-green: var(--md-success);
+  --accent-green-dim: var(--md-success-container);
+  --accent-amber: var(--md-warning);
+  --accent-amber-dim: var(--md-warning-container);
+  --accent-red: var(--md-error);
+  --accent-red-dim: rgba(255, 180, 171, 0.12);
+
+  /* ---- Gradients (toned down for M3) ---- */
+  --gradient-brand: linear-gradient(135deg, var(--md-primary) 0%, var(--md-tertiary) 100%);
+  --gradient-card: none;
+  --gradient-glow: none;
+
+  /* Glass (replaced with M3 tonal elevation) */
+  --glass-border: var(--md-outline-variant);
+  --glass-shadow: none;
+
+  /* ---- M3 Shape ---- */
+  --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-xl: 28px;
+  --radius-full: 100px;
 
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* ---- M3 Elevation (shadow + tonal overlay) ---- */
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+  --elevation-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
+  --elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --elevation-4: 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px rgba(0, 0, 0, 0.3);
+  --elevation-5: 0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.3);
+
+  /* ---- M3 Motion ---- */
+  --transition-fast: 150ms cubic-bezier(0.2, 0, 0, 1);
+  --transition-smooth: 300ms cubic-bezier(0.2, 0, 0, 1);
+  --motion-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --motion-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-decelerate: cubic-bezier(0, 0, 0, 1);
+  --motion-accelerate: cubic-bezier(0.3, 0, 1, 1);
+
+  /* ---- M3 State Layers ---- */
+  --state-hover: rgba(207, 188, 255, 0.08);
+  --state-press: rgba(207, 188, 255, 0.12);
+  --state-focus: rgba(207, 188, 255, 0.12);
+  --state-drag: rgba(207, 188, 255, 0.16);
 }
 
 *,
@@ -61,32 +124,33 @@
 
 html,
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  font-family: 'Roboto', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--md-surface-dim);
+  color: var(--md-on-surface);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0.25px;
 }
 
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(34, 211, 238, 0.06) 0%, transparent 50%);
+  background: var(--md-surface-dim);
   pointer-events: none;
   z-index: 0;
 }
 
 a {
-  color: var(--accent-purple);
+  color: var(--md-primary);
   text-decoration: none;
 }
 
 a:hover {
-  color: var(--accent-cyan);
+  color: var(--md-tertiary);
 }
 
 /* ---- Layout ---- */
@@ -103,10 +167,10 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px;
-  border-bottom: 1px solid var(--glass-border);
-  backdrop-filter: blur(12px);
-  background: rgba(8, 8, 15, 0.6);
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--md-outline-variant);
+  background: var(--md-surface-container);
+  box-shadow: var(--elevation-2);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -116,16 +180,17 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 20px;
-  letter-spacing: -0.5px;
+  letter-spacing: 0;
 }
 
 .topbar-logo .icon {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  background: var(--gradient-brand);
+  border-radius: var(--radius-md);
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -148,29 +213,23 @@ a:hover {
 /* ---- Cards ---- */
 
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
+  background: var(--md-surface-container-low);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--radius-md);
   padding: 24px;
-  backdrop-filter: blur(12px);
-  box-shadow: var(--glass-shadow);
+  box-shadow: var(--elevation-1);
   transition: all var(--transition-smooth);
   position: relative;
   overflow: hidden;
 }
 
 .card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-card);
-  pointer-events: none;
+  content: none;
 }
 
 .card:hover {
-  border-color: rgba(139, 92, 246, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 60px rgba(139, 92, 246, 0.05);
+  border-color: var(--md-outline);
+  box-shadow: var(--elevation-2);
 }
 
 .card-static {
@@ -181,100 +240,114 @@ a:hover {
   transform: none;
 }
 
-/* ---- Buttons ---- */
+/* ---- Buttons (M3 Filled / Tonal / Outlined / Text) ---- */
 
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  border-radius: var(--radius-sm);
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
   font-family: inherit;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
+  letter-spacing: 0.1px;
   cursor: pointer;
-  border: 1px solid transparent;
+  border: none;
   transition: all var(--transition-fast);
-  line-height: 1.4;
+  line-height: 1.43;
+  position: relative;
+  overflow: hidden;
 }
 
+/* M3 Filled button */
 .btn-primary {
-  background: var(--gradient-brand);
-  color: white;
-  border: none;
-  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  box-shadow: var(--elevation-1);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 6px 28px rgba(139, 92, 246, 0.45);
-  transform: translateY(-1px);
+  box-shadow: var(--elevation-2);
+  background: color-mix(in srgb, var(--md-primary) 92%, white 8%);
 }
 
+.btn-primary:active {
+  box-shadow: var(--elevation-1);
+}
+
+/* M3 Tonal button */
 .btn-secondary {
-  background: var(--accent-purple-dim);
-  color: var(--accent-purple);
-  border: 1px solid rgba(139, 92, 246, 0.25);
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+  border: none;
 }
 
 .btn-secondary:hover {
-  background: rgba(139, 92, 246, 0.2);
-  border-color: var(--accent-purple);
+  background: color-mix(in srgb, var(--md-secondary-container) 92%, white 8%);
+  box-shadow: var(--elevation-1);
 }
 
+/* M3 Outlined button */
 .btn-ghost {
   background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--glass-border);
+  color: var(--md-on-surface-variant);
+  border: 1px solid var(--md-outline);
 }
 
 .btn-ghost:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--state-hover);
+  color: var(--md-on-surface);
 }
 
+/* M3 Success tonal button */
 .btn-success {
-  background: var(--accent-green-dim);
-  color: var(--accent-green);
-  border: 1px solid rgba(52, 211, 153, 0.25);
+  background: var(--md-success-container);
+  color: var(--md-success);
+  border: none;
 }
 
 .btn-success:hover {
-  background: rgba(52, 211, 153, 0.2);
-  border-color: var(--accent-green);
+  background: rgba(129, 217, 148, 0.18);
 }
 
 .btn-sm {
-  padding: 6px 14px;
+  padding: 6px 16px;
   font-size: 13px;
 }
 
 .btn-lg {
-  padding: 14px 28px;
+  padding: 14px 32px;
   font-size: 16px;
-  border-radius: var(--radius-md);
 }
 
-/* ---- Inputs ---- */
+/* ---- Inputs (M3 Outlined text field) ---- */
 
 .input,
 .textarea {
   width: 100%;
   padding: 12px 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--glass-border);
-  background: var(--bg-input);
-  color: var(--text-primary);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--md-outline);
+  background: transparent;
+  color: var(--md-on-surface);
   font-family: inherit;
   font-size: 14px;
+  letter-spacing: 0.25px;
   transition: all var(--transition-fast);
   outline: none;
 }
 
+.input:hover,
+.textarea:hover {
+  border-color: var(--md-on-surface);
+}
+
 .input:focus,
 .textarea:focus {
-  border-color: var(--accent-purple);
-  box-shadow: 0 0 0 3px var(--accent-purple-dim);
+  border-color: var(--md-primary);
+  border-width: 2px;
+  padding: 11px 15px;
 }
 
 .input::placeholder,
@@ -294,12 +367,12 @@ a:hover {
 
 .form-label {
   display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--md-on-surface-variant);
   margin-bottom: 6px;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .form-row {
@@ -308,70 +381,73 @@ a:hover {
   gap: 16px;
 }
 
-/* ---- Badges ---- */
+/* ---- Badges (M3 Assist Chip style) ---- */
 
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  border-radius: 100px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 .badge-inquiry {
   background: var(--accent-purple-dim);
-  color: var(--accent-purple);
+  color: var(--md-primary);
 }
 
 .badge-quoting {
-  background: var(--accent-amber-dim);
-  color: var(--accent-amber);
+  background: var(--md-warning-container);
+  color: var(--md-warning);
 }
 
 .badge-confirmed {
-  background: var(--accent-green-dim);
-  color: var(--accent-green);
+  background: var(--md-success-container);
+  color: var(--md-success);
 }
 
 .badge-draft {
   background: var(--accent-cyan-dim);
-  color: var(--accent-cyan);
+  color: var(--md-tertiary);
 }
 
-/* ---- Tabs ---- */
+/* ---- Tabs (M3 Navigation Tab) ---- */
 
 .tabs {
   display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--glass-border);
+  gap: 0;
+  border-bottom: 1px solid var(--md-outline-variant);
   margin-bottom: 24px;
   overflow-x: auto;
 }
 
 .tab {
-  padding: 10px 18px;
+  padding: 12px 24px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-secondary);
+  letter-spacing: 0.1px;
+  color: var(--md-on-surface-variant);
   cursor: pointer;
   border: none;
   background: none;
   font-family: inherit;
-  border-bottom: 2px solid transparent;
+  border-bottom: 3px solid transparent;
   transition: all var(--transition-fast);
   white-space: nowrap;
+  position: relative;
 }
 
 .tab:hover {
-  color: var(--text-primary);
+  color: var(--md-on-surface);
+  background: var(--state-hover);
 }
 
 .tab.active {
-  color: var(--accent-purple);
-  border-bottom-color: var(--accent-purple);
+  color: var(--md-primary);
+  border-bottom-color: var(--md-primary);
 }
 
 /* ---- Document / Markdown Viewer ---- */
@@ -528,26 +604,22 @@ a:hover {
 }
 
 .stat-card {
-  background: var(--bg-card);
-  border: 1px solid var(--glass-border);
+  background: var(--md-surface-container);
+  border: 1px solid var(--md-outline-variant);
   border-radius: var(--radius-md);
   padding: 20px;
-  backdrop-filter: blur(12px);
 }
 
 .stat-value {
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -1px;
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--md-primary);
 }
 
 .stat-label {
-  font-size: 13px;
-  color: var(--text-muted);
+  font-size: 12px;
+  color: var(--md-on-surface-variant);
   margin-top: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
