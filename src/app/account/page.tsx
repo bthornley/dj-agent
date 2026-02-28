@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { UserButton, useUser } from '@clerk/nextjs';
 import AdminLink from '@/components/AdminLink';
@@ -33,6 +33,13 @@ export default function AccountPage() {
     const [regions, setRegions] = useState<string[]>(['Orange County', 'Long Beach']);
     const [savingType, setSavingType] = useState(false);
     const [savingRegion, setSavingRegion] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [avatarUploading, setAvatarUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (user?.imageUrl) setAvatarUrl(user.imageUrl);
+    }, [user?.imageUrl]);
 
     useEffect(() => {
         fetch('/api/leads/auto-scan', {
@@ -94,6 +101,46 @@ export default function AccountPage() {
             }
         } catch { /* ignore */ }
         setSavingRegion(false);
+    };
+
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setAvatarUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('avatar', file);
+            const res = await fetch('/api/profile/avatar', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await res.json();
+            if (data.imageUrl) {
+                setAvatarUrl(data.imageUrl);
+            } else if (data.error) {
+                alert(data.error);
+            }
+        } catch {
+            alert('Failed to upload avatar');
+        }
+        setAvatarUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const handleAvatarRemove = async () => {
+        if (!confirm('Remove your profile photo?')) return;
+        setAvatarUploading(true);
+        try {
+            const res = await fetch('/api/profile/avatar', { method: 'DELETE' });
+            const data = await res.json();
+            if (data.imageUrl) {
+                setAvatarUrl(data.imageUrl);
+            }
+        } catch {
+            alert('Failed to remove avatar');
+        }
+        setAvatarUploading(false);
     };
 
     const planNames: Record<string, string> = {
@@ -236,9 +283,88 @@ export default function AccountPage() {
 
                 <div className="card" style={{ marginBottom: '24px' }}>
                     <h3 className="card-title">Profile</h3>
-                    <div style={{ marginTop: '12px' }}>
-                        <p><strong>Email:</strong> {user?.primaryEmailAddress?.emailAddress || '—'}</p>
-                        <p style={{ marginTop: '8px' }}><strong>Member since:</strong> {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—'}</p>
+                    <div style={{ marginTop: '12px', display: 'flex', alignItems: 'flex-start', gap: '24px' }}>
+                        {/* Avatar Upload */}
+                        <div style={{ position: 'relative', flexShrink: 0 }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={avatarUrl || user?.imageUrl || ''}
+                                alt="Profile"
+                                onClick={() => fileInputRef.current?.click()}
+                                style={{
+                                    width: '80px',
+                                    height: '80px',
+                                    borderRadius: '50%',
+                                    objectFit: 'cover',
+                                    border: '3px solid var(--border)',
+                                    cursor: 'pointer',
+                                    opacity: avatarUploading ? 0.5 : 1,
+                                    transition: 'opacity 0.2s, border-color 0.2s',
+                                }}
+                                onMouseOver={e => (e.currentTarget.style.borderColor = 'var(--accent-purple)')}
+                                onMouseOut={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                            />
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                style={{
+                                    position: 'absolute',
+                                    bottom: '0',
+                                    right: '0',
+                                    background: 'var(--accent-purple)',
+                                    borderRadius: '50%',
+                                    width: '28px',
+                                    height: '28px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    border: '2px solid var(--bg-card)',
+                                }}
+                            >
+                                📷
+                            </div>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/jpeg,image/png,image/gif,image/webp"
+                                onChange={handleAvatarUpload}
+                                style={{ display: 'none' }}
+                            />
+                            {avatarUploading && (
+                                <div style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}>
+                                    <div className="spinner" />
+                                </div>
+                            )}
+                        </div>
+                        {/* Profile Info */}
+                        <div style={{ flex: 1 }}>
+                            <p><strong>Email:</strong> {user?.primaryEmailAddress?.emailAddress || '—'}</p>
+                            <p style={{ marginTop: '8px' }}><strong>Member since:</strong> {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—'}</p>
+                            <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                                <button
+                                    className="btn btn-ghost btn-sm"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={avatarUploading}
+                                >
+                                    📷 Change Photo
+                                </button>
+                                <button
+                                    className="btn btn-ghost btn-sm"
+                                    onClick={handleAvatarRemove}
+                                    disabled={avatarUploading}
+                                    style={{ color: 'var(--accent-red)' }}
+                                >
+                                    🗑️ Remove Photo
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
