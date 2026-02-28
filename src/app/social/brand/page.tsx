@@ -130,7 +130,7 @@ export default function BrandSetupPage() {
         <>
             <header className="topbar">
                 <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <div className="icon">🎧</div><span>GigLift</span>
+                    <img src="/logo.png" alt="GigLift" style={{ width: 28, height: 28, borderRadius: 6 }} /><span>GigLift</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/social" className="btn btn-ghost btn-sm">📱 Social</Link>
@@ -146,7 +146,7 @@ export default function BrandSetupPage() {
         <>
             <header className="topbar">
                 <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <div className="icon">🎧</div>
+                    <img src="/logo.png" alt="GigLift" style={{ width: 28, height: 28, borderRadius: 6 }} />
                     <span>GigLift</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
