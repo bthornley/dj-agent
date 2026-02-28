@@ -21,10 +21,11 @@ export async function GET() {
     const rawRegions = meta.regions;
     const regions: string[] = Array.isArray(rawRegions) ? rawRegions : ['Orange County', 'Long Beach'];
 
-    // Google Photos album URL
+    // Google Photos album URL + thumbnail
     const googlePhotosAlbumUrl = (meta.googlePhotosAlbumUrl as string) || '';
+    const googlePhotosThumbnail = (meta.googlePhotosThumbnail as string) || '';
 
-    return NextResponse.json({ artistTypes, regions, googlePhotosAlbumUrl });
+    return NextResponse.json({ artistTypes, regions, googlePhotosAlbumUrl, googlePhotosThumbnail });
 }
 
 // PUT /api/profile — Update user's artist types and/or regions
@@ -63,6 +64,20 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid Google Photos URL. Must start with https://photos.google.com/ or https://photos.app.goo.gl/' }, { status: 400 });
         }
         updates.googlePhotosAlbumUrl = url;
+
+        // Fetch og:image thumbnail from the album page
+        if (url) {
+            try {
+                const res = await fetch(url, { redirect: 'follow', headers: { 'User-Agent': 'Mozilla/5.0' } });
+                const html = await res.text();
+                const ogMatch = html.match(/property="og:image"\s*content="([^"]+)"/);
+                if (ogMatch?.[1]) {
+                    updates.googlePhotosThumbnail = ogMatch[1];
+                }
+            } catch { /* ignore fetch errors */ }
+        } else {
+            updates.googlePhotosThumbnail = '';
+        }
     }
 
     if (Object.keys(updates).length === 0) {

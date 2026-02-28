@@ -42,12 +42,28 @@ export async function POST(request: NextRequest) {
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     const allMedia = mediaAssets.filter(a => a.mediaType === 'image' || a.mediaType === 'video');
 
-    // Get Google Photos album URL from profile
-    let googlePhotosAlbumUrl = '';
+    // Get Google Photos album URL + thumbnail from profile
+    let googlePhotosThumbnail = '';
     try {
         const client = await clerkClient();
         const user = await client.users.getUser(userId);
-        googlePhotosAlbumUrl = (user.publicMetadata as Record<string, unknown>).googlePhotosAlbumUrl as string || '';
+        const meta = user.publicMetadata as Record<string, unknown>;
+        googlePhotosThumbnail = (meta.googlePhotosThumbnail as string) || '';
+        // If no thumbnail cached yet, try to fetch it now
+        if (!googlePhotosThumbnail && meta.googlePhotosAlbumUrl) {
+            try {
+                const res = await fetch(meta.googlePhotosAlbumUrl as string, { redirect: 'follow', headers: { 'User-Agent': 'Mozilla/5.0' } });
+                const html = await res.text();
+                const ogMatch = html.match(/property="og:image"\s*content="([^"]+)"/);
+                if (ogMatch?.[1]) {
+                    googlePhotosThumbnail = ogMatch[1];
+                    // Cache it for next time
+                    await client.users.updateUserMetadata(userId, {
+                        publicMetadata: { ...user.publicMetadata, googlePhotosThumbnail },
+                    });
+                }
+            } catch { /* ignore */ }
+        }
     } catch { /* ignore */ }
 
     // Step 1: Strategy Agent generates the plan + post shells
@@ -79,8 +95,8 @@ export async function POST(request: NextRequest) {
                 if (rand <= 0) { picked = i; break; }
             }
             post.mediaRefs = [allMedia[picked].url];
-        } else if (googlePhotosAlbumUrl) {
-            post.mediaRefs = [googlePhotosAlbumUrl];
+        } else if (googlePhotosThumbnail) {
+            post.mediaRefs = [googlePhotosThumbnail];
         } else {
             post.mediaRefs = [];
         }
