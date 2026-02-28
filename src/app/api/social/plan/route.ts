@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, clerkClient } from '@clerk/nextjs/server';
-import { dbGetLatestContentPlan, dbSaveContentPlan, dbGetAllEvents, dbGetBrandProfile, dbSaveSocialPost, dbGetAllSocialPosts, dbGetAllMediaAssets } from '@/lib/db';
+import { dbGetLatestContentPlan, dbSaveContentPlan, dbGetAllEvents, dbGetBrandProfile, dbSaveSocialPost, dbGetAllSocialPosts, dbGetAllMediaAssets, dbDeleteSocialPost } from '@/lib/db';
 import { generateWeeklyPlan } from '@/lib/agent/social/strategy';
 import { generatePostContent } from '@/lib/agent/social/content';
 
@@ -25,14 +25,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const weekOf = body.weekOf; // optional override
 
+    // Step 0: Clean up old posts with no media attached
+    const existingPosts = await dbGetAllSocialPosts(userId);
+    for (const p of existingPosts) {
+        if (!p.mediaRefs || p.mediaRefs.length === 0) {
+            await dbDeleteSocialPost(p.id, userId);
+        }
+    }
+
     // Gather inputs
     const events = await dbGetAllEvents(userId);
     const brand = await dbGetBrandProfile(userId);
 
-    // Gather media sources
-    const mediaAssets = await dbGetAllMediaAssets(userId);
-    const imageAssets = mediaAssets.filter(a => a.mediaType === 'image');
-    const videoAssets = mediaAssets.filter(a => a.mediaType === 'video');
+    // Gather media sources — sorted newest first
+    const mediaAssets = (await dbGetAllMediaAssets(userId))
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const allMedia = mediaAssets.filter(a => a.mediaType === 'image' || a.mediaType === 'video');
 
     // Get Google Photos album URL from profile
     let googlePhotosAlbumUrl = '';
@@ -57,35 +65,25 @@ export async function POST(request: NextRequest) {
         }
     }
 
-    // Step 3: Attach media to posts
-    let imgIdx = 0;
-    let vidIdx = 0;
+    // Step 3: Attach exactly 1 media per post (recency-weighted random)
     for (const post of allPosts) {
-        const refs: string[] = [];
-
-        if (post.postType === 'reel' && videoAssets.length > 0) {
-            // Reels prefer video
-            refs.push(videoAssets[vidIdx % videoAssets.length].url);
-            vidIdx++;
-        } else if (post.postType === 'carousel' && imageAssets.length > 0) {
-            // Carousels get 3-5 images
-            const count = Math.min(imageAssets.length, 3 + Math.floor(Math.random() * 3));
-            for (let i = 0; i < count; i++) {
-                refs.push(imageAssets[(imgIdx + i) % imageAssets.length].url);
+        if (allMedia.length > 0) {
+            // Recency-weighted random: newer assets get higher weight
+            // Weight decays linearly — index 0 (newest) gets highest weight
+            const weights = allMedia.map((_, i) => Math.max(1, allMedia.length - i));
+            const totalWeight = weights.reduce((s, w) => s + w, 0);
+            let rand = Math.random() * totalWeight;
+            let picked = 0;
+            for (let i = 0; i < weights.length; i++) {
+                rand -= weights[i];
+                if (rand <= 0) { picked = i; break; }
             }
-            imgIdx += count;
-        } else if (imageAssets.length > 0) {
-            // Single image for posts and stories
-            refs.push(imageAssets[imgIdx % imageAssets.length].url);
-            imgIdx++;
+            post.mediaRefs = [allMedia[picked].url];
+        } else if (googlePhotosAlbumUrl) {
+            post.mediaRefs = [googlePhotosAlbumUrl];
+        } else {
+            post.mediaRefs = [];
         }
-
-        // Append Google Photos album as a source reference
-        if (googlePhotosAlbumUrl && refs.length === 0) {
-            refs.push(googlePhotosAlbumUrl);
-        }
-
-        post.mediaRefs = refs;
     }
 
     // Update plan with all post IDs (including B variants)
