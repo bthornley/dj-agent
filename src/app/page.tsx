@@ -193,7 +193,14 @@ export default async function LandingPage() {
         </div>
       </main>
 
-      <footer className="landing-footer">
+      <footer className="landing-footer" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '16px', fontSize: '13px' }}>
+          <Link href="/terms" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Terms of Service</Link>
+          <span style={{ color: 'var(--text-muted)' }}>·</span>
+          <Link href="/privacy" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Privacy Policy</Link>
+          <span style={{ color: 'var(--text-muted)' }}>·</span>
+          <Link href="/pricing" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Pricing</Link>
+        </div>
         <p>© 2026 GigLift. Your AI agent team for the music hustle.</p>
       </footer>
     </>
