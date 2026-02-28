@@ -25,10 +25,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const weekOf = body.weekOf; // optional override
 
-    // Step 0: Clean up old posts with no media attached
+    // Step 0: Delete all existing draft posts so queue only has current plan
     const existingPosts = await dbGetAllSocialPosts(userId);
     for (const p of existingPosts) {
-        if (!p.mediaRefs || p.mediaRefs.length === 0) {
+        if (p.status === 'draft' || p.status === 'rejected') {
             await dbDeleteSocialPost(p.id, userId);
         }
     }
