@@ -118,8 +118,11 @@ export default function BrandSetupPage() {
             accounts.push(account);
         }
         (account as unknown as Record<string, unknown>)[field] = value;
-        // Auto-set connected status based on whether we have a token + handle
-        account.connected = !!(account.accessToken && account.handle);
+        // Auto-set connected status based on platform requirements
+        const noTokenNeeded = ['soundcloud', 'spotify'].includes(platform);
+        account.connected = noTokenNeeded
+            ? !!(account.handle || account.profileUrl)
+            : !!(account.accessToken && account.handle);
         setProfile({ ...profile, connectedAccounts: accounts });
     }
 
@@ -320,9 +323,10 @@ export default function BrandSetupPage() {
                         </p>
 
                         <div className="connected-accounts-grid">
-                            {(['instagram', 'facebook', 'tiktok'] as SocialPlatform[]).map(platform => {
+                            {(Object.keys(PLATFORM_CONFIG) as SocialPlatform[]).map(platform => {
                                 const config = PLATFORM_CONFIG[platform];
                                 const existing = profile.connectedAccounts?.find(a => a.platform === platform);
+                                const needsToken = !['soundcloud', 'spotify'].includes(platform);
                                 return (
                                     <div key={platform} className={`connected-account-card ${existing?.connected ? 'account-connected' : ''}`}
                                         style={{ borderColor: existing?.connected ? config.color + '40' : undefined }}>
@@ -344,7 +348,7 @@ export default function BrandSetupPage() {
                                                 placeholder={`https://${platform}.com/...`}
                                                 onChange={e => updateAccount(platform, 'profileUrl', e.target.value)} />
                                         </div>
-                                        {platform !== 'tiktok' && (
+                                        {needsToken && platform !== 'tiktok' && (
                                             <div className="form-group">
                                                 <label className="form-label">{platform === 'instagram' ? 'IG Business Account ID' : 'Page ID'}</label>
                                                 <input className="input" value={existing?.pageId || ''}
@@ -352,13 +356,18 @@ export default function BrandSetupPage() {
                                                     onChange={e => updateAccount(platform, 'pageId', e.target.value)} />
                                             </div>
                                         )}
-                                        <div className="form-group">
-                                            <label className="form-label">Access Token</label>
-                                            <input className="input" type="password" value={existing?.accessToken || ''}
-                                                placeholder="Paste your API token"
-                                                onChange={e => updateAccount(platform, 'accessToken', e.target.value)} />
-                                            <p className="form-hint">{config.tokenHelp}</p>
-                                        </div>
+                                        {needsToken && (
+                                            <div className="form-group">
+                                                <label className="form-label">Access Token</label>
+                                                <input className="input" type="password" value={existing?.accessToken || ''}
+                                                    placeholder="Paste your API token"
+                                                    onChange={e => updateAccount(platform, 'accessToken', e.target.value)} />
+                                                <p className="form-hint">{config.tokenHelp}</p>
+                                            </div>
+                                        )}
+                                        {!needsToken && (
+                                            <p className="form-hint" style={{ marginTop: '8px' }}>{config.tokenHelp}</p>
+                                        )}
                                     </div>
                                 );
                             })}
