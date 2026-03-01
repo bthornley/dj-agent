@@ -33,8 +33,9 @@ export default function TermsPage() {
                     <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '12px' }}>2. Description of Service</h2>
                     <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
                         GigLift provides AI-powered tools for musicians, DJs, bands, solo artists, and music teachers to discover
-                        performance opportunities, manage leads, plan social media content, build electronic press kits, and
-                        streamline the booking process. The Service includes both free and paid subscription tiers.
+                        performance opportunities and teaching positions, manage leads, plan social media content, build electronic press kits, and
+                        streamline the booking process. The Service includes both free and paid subscription tiers, and supports
+                        switching between Performer Mode and Teacher Mode to tailor the experience to your needs.
                     </p>
                 </section>
 

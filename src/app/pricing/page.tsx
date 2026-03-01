@@ -31,14 +31,14 @@ const plans = [
         name: 'Pro',
         price: 19,
         period: '/mo',
-        description: 'For working DJs',
+        description: 'For working musicians',
         features: [
             '100 auto-scans per month',
             'Unlimited lead storage',
             '2 regions',
             'Auto-discovery from seeds',
             'Lead scoring & QC',
-            'DJ Agent handoff',
+            'AI Agent handoff',
             '—',
             'Brand voice setup',
             'Unlimited content plans',
@@ -62,7 +62,7 @@ const plans = [
             'Unlimited regions',
             'Auto-discovery from seeds',
             'Lead scoring & QC',
-            'DJ Agent handoff',
+            'AI Agent handoff',
             'Email templates',
             '—',
             'Brand voice setup',
@@ -81,14 +81,14 @@ const plans = [
         name: 'Agency',
         price: 149,
         period: '/mo',
-        description: 'For DJ agencies',
+        description: 'For agencies',
         features: [
-            '10 DJ sub-accounts',
-            'Everything in Unlimited, per DJ',
+            '10 artist sub-accounts',
+            'Everything in Unlimited, per artist',
             'Bulk lead distribution',
             'Shared media library',
             '—',
-            'Full Social Hype Agent per DJ',
+            'Full Social Hype Agent per artist',
             'Agency-wide analytics',
             'White-label EPK pages',
             'Dedicated account manager',
@@ -107,7 +107,7 @@ export default function PricingPage() {
     const handleUpgrade = async (planId: string) => {
         if (planId === 'free' || planId === currentPlan) return;
         if (planId === 'agency') {
-            window.location.href = 'mailto:hello@giglift.app?subject=Agency%20Tier%20Inquiry&body=Hi%2C%20I%27m%20interested%20in%20the%20Agency%20tier%20for%20my%20DJ%20agency.';
+            window.location.href = 'mailto:hello@giglift.app?subject=Agency%20Tier%20Inquiry&body=Hi%2C%20I%27m%20interested%20in%20the%20Agency%20tier.';
             return;
         }
         if (!user) {
@@ -159,7 +159,7 @@ export default function PricingPage() {
             <main className="main-content fade-in">
                 <div className="pricing-header">
                     <h1 className="pricing-title">Simple, Transparent Pricing</h1>
-                    <p className="pricing-subtitle">Start free. Upgrade when you&apos;re ready to scale your bookings.</p>
+                    <p className="pricing-subtitle">Start free. Upgrade when you&apos;re ready to scale your bookings and teaching business.</p>
                 </div>
 
                 <div className="pricing-grid">

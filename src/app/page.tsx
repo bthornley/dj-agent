@@ -32,6 +32,20 @@ export default async function LandingPage() {
             draft booking emails, build your press kit, and plan your social content — all on autopilot.
             For DJs, bands, solo artists &amp; music teachers.
           </p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '12px' }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 600,
+              background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(139, 92, 246, 0.1))',
+              border: '1px solid rgba(168, 85, 247, 0.3)', color: '#a855f7',
+            }}>🎵 Performer Mode</span>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 600,
+              background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(34, 211, 238, 0.1))',
+              border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8',
+            }}>📚 Teacher Mode</span>
+          </div>
 
           <div className="hero-actions">
             <Link href="/sign-up" className="btn btn-primary btn-xl">Deploy Your Agents Free</Link>
@@ -60,7 +74,7 @@ export default async function LandingPage() {
             🔍 Agent 1 — Lead Scout
           </h2>
           <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-            Autonomously discovers, enriches, and scores gig opportunities across the web
+            Autonomously discovers, enriches, and scores opportunities across the web — venues, schools, studios, and more
           </p>
         </div>
         <div className="feature-grid">
@@ -77,7 +91,7 @@ export default async function LandingPage() {
           <div className="feature-card">
             <div className="feature-icon">📧</div>
             <h3>Contact Extraction</h3>
-            <p>The agent pulls emails, phone numbers, Instagram handles, and booking forms from venue pages.</p>
+            <p>The agent pulls emails, phone numbers, Instagram handles, and booking forms from venue and organization pages.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">🎯</div>
@@ -102,7 +116,7 @@ export default async function LandingPage() {
             ✉️ Agent 2 — Outreach Writer
           </h2>
           <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-            Drafts personalized booking emails for every lead — 3 variants, one click
+            Drafts personalized outreach emails tailored to your mode — booking inquiries for performers, lesson proposals for teachers
           </p>
         </div>
         <div className="feature-grid">
@@ -114,7 +128,7 @@ export default async function LandingPage() {
           <div className="feature-card">
             <div className="feature-icon">😎</div>
             <h3>Casual Intro</h3>
-            <p>Friendly, conversational outreach that feels natural — perfect for bars and club managers.</p>
+            <p>Friendly, conversational outreach that feels natural — adapts to each lead type automatically.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">🔁</div>
@@ -178,7 +192,7 @@ export default async function LandingPage() {
           <div className="feature-card">
             <div className="feature-icon">📁</div>
             <h3>Media Library</h3>
-            <p>Upload event photos and DJ set videos. The agents attach them to the right posts automatically.</p>
+            <p>Upload event photos, performance videos, and lesson clips. The agents attach them to the right posts automatically.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">🤝</div>
