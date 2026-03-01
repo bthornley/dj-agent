@@ -368,23 +368,66 @@ export default function AccountPage() {
                     </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px' }}>
-                    {currentPlan === 'free' && (
-                        <Link href="/pricing" className="btn btn-primary">⬆ Upgrade Plan</Link>
-                    )}
-                    {currentPlan !== 'free' && (
-                        <button className="btn btn-secondary" onClick={async () => {
-                            const res = await fetch('/api/checkout', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ planId: currentPlan }),
-                            });
-                            const data = await res.json();
-                            if (data.url) window.location.href = data.url;
-                        }}>
-                            Manage Billing
-                        </button>
-                    )}
+                {/* Billing Management */}
+                <div className="card" style={{ marginTop: '20px', padding: '20px' }}>
+                    <h3 style={{ marginBottom: '12px' }}>💳 Billing</h3>
+                    <p style={{ color: 'var(--text-muted)', marginBottom: '16px' }}>
+                        Current plan: <span className="badge badge-confirmed" style={{ marginLeft: '6px' }}>
+                            {currentPlan === 'free' ? 'Free' : currentPlan === 'pro' ? 'Pro — $19/mo' : currentPlan === 'unlimited' ? 'Unlimited — $39/mo' : currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}
+                        </span>
+                    </p>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                        {currentPlan === 'free' && (
+                            <Link href="/pricing" className="btn btn-primary">⬆ Upgrade Plan</Link>
+                        )}
+                        {currentPlan !== 'free' && (
+                            <>
+                                <button className="btn btn-secondary" onClick={async () => {
+                                    try {
+                                        const res = await fetch('/api/billing-portal', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ action: 'portal' }),
+                                        });
+                                        const data = await res.json();
+                                        if (data.url) {
+                                            window.location.href = data.url;
+                                        } else if (data.fallback) {
+                                            alert(`Your ${currentPlan.toUpperCase()} plan is active. Stripe billing portal is not configured — contact support to manage your subscription.\n\nTo change plans, visit the Pricing page.`);
+                                        } else if (data.error) {
+                                            alert(data.error);
+                                        }
+                                    } catch {
+                                        alert('Failed to open billing portal. Please try again.');
+                                    }
+                                }}>
+                                    💳 Manage Billing
+                                </button>
+                                <Link href="/pricing" className="btn btn-ghost btn-sm">Change Plan</Link>
+                                <button className="btn btn-ghost btn-sm" style={{ color: 'var(--accent-red)' }} onClick={async () => {
+                                    if (!confirm('Are you sure you want to downgrade to the Free plan? You will lose access to premium features.')) return;
+                                    try {
+                                        const res = await fetch('/api/billing-portal', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ action: 'downgrade' }),
+                                        });
+                                        const data = await res.json();
+                                        if (data.success) {
+                                            alert('Plan downgraded to Free. Refreshing...');
+                                            window.location.reload();
+                                        } else {
+                                            alert(data.error || 'Failed to downgrade.');
+                                        }
+                                    } catch {
+                                        alert('Failed to downgrade. Please try again.');
+                                    }
+                                }}>
+                                    Cancel Subscription
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </main>
         </>
