@@ -5,7 +5,7 @@
 
 ## Executive Summary
 
-GigLift's Brand Ambassador Program turns our most engaged users — working DJs, bands, solo artists, and music teachers — into advocates who drive organic sign-ups in exchange for free product access, revenue share, and exclusive perks. Ambassadors promote GigLift within their local music scenes, online communities, and professional networks, creating a scalable, low-CAC growth engine.
+GigLift's Brand Ambassador Program turns our most engaged users — working DJs, bands, solo artists, and music instructors — into advocates who drive organic sign-ups in exchange for free product access, revenue share, and exclusive perks. Ambassadors promote GigLift within their local music scenes, online communities, and professional networks, creating a scalable, low-CAC growth engine.
 
 ---
 
@@ -24,7 +24,7 @@ GigLift's Brand Ambassador Program turns our most engaged users — working DJs,
 | Type | Profile | Primary Channels | Target |
 |---|---|---|---|
 | **Scene Leaders** | DJs/musicians with 1K+ local following | Instagram, TikTok, local Facebook groups | Performers in their metro area |
-| **Music Educators** | Teachers with studio/school networks | Facebook groups, teacher forums, Wyzant/Lessonface | Music teachers and instructors |
+| **Music Educators** | Instructors with studio/school networks | Facebook groups, instructor forums, Wyzant/Lessonface | Music instructors |
 | **Content Creators** | YouTube/TikTok music creators | YouTube tutorials, TikTok demos | Aspiring and working musicians nationwide |
 | **Venue Insiders** | Bookers, promoters, venue managers | Direct referrals, industry events | Venues recommending GigLift to artists they work with |
 
@@ -57,8 +57,8 @@ GigLift's Brand Ambassador Program turns our most engaged users — working DJs,
 
 - **Internal outreach**: Identify top 50 most active GigLift users by scan count, leads generated, and outreach emails sent
 - **Direct message**: Personalized invite via email highlighting their usage stats
-- **Local music communities**: Post in DJ forums (r/DJs, r/mobileDJ, DJ TechTools), music teacher Facebook groups, local musician Slack/Discord channels
-- **Music schools**: Partner with 5 music schools to offer GigLift free to graduating students, with teacher as ambassador
+- **Local music communities**: Post in DJ forums (r/DJs, r/mobileDJ, DJ TechTools), music instructor Facebook groups, local musician Slack/Discord channels
+- **Music schools**: Partner with 5 music schools to offer GigLift free to graduating students, with instructor as ambassador
 
 ### Phase 2: Scale (Month 3-6) — Target: 100 ambassadors
 
@@ -84,7 +84,7 @@ Each month, ambassadors receive a content kit with:
 - **3 social post templates** (carousel, story, reel scripts) — customizable with their branding
 - **1 demo video script** — "How I found 50 leads in 10 minutes with GigLift"
 - **Branded graphics** — Story stickers, post backgrounds, before/after comparisons
-- **Talking points** — Key features to highlight that month (e.g., Teacher Mode launch)
+- **Talking points** — Key features to highlight that month (e.g., Instructor Mode launch)
 
 ### Content Themes by Week
 
@@ -92,7 +92,7 @@ Each month, ambassadors receive a content kit with:
 |---|---|---|
 | **1** | Lead Discovery | "Just found 47 new venues in my area with one click 🔍" |
 | **2** | Outreach Results | "Sent 15 booking emails in 5 minutes — got 3 replies already ✉️" |
-| **3** | Mode Switcher | "Teacher Mode just found me 12 schools looking for music instructors 📚" |
+| **3** | Mode Switcher | "Instructor Mode just found me 12 schools looking for music instructors 📚" |
 | **4** | Social Proof | "Booked 2 gigs this month from GigLift leads — here's how 🎵" |
 
 ### Platform-Specific Strategy
@@ -102,7 +102,7 @@ Each month, ambassadors receive a content kit with:
 | **Instagram** | Reels, Stories, Carousels | 3x/week | Visual demos, before/after |
 | **TikTok** | Short-form video | 2x/week | "Watch me find 50 leads" demos |
 | **YouTube** | Tutorials, reviews | 2x/month | Deep-dive walkthroughs |
-| **Facebook Groups** | Text posts, testimonials | 3x/week | Music teacher communities |
+| **Facebook Groups** | Text posts, testimonials | 3x/week | Music instructor communities |
 | **Reddit** | Value-add comments | As needed | r/DJs, r/WeAreTheMusicMakers |
 
 ---
