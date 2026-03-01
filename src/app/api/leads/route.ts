@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { dbGetAllLeads, dbSaveLead, dbGetLeadStats } from '@/lib/db';
 import { computeDedupeKey } from '@/lib/agent/lead-finder/dedup';
 import { scoreLead } from '@/lib/agent/lead-finder/scoring';
@@ -13,9 +13,10 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const statsOnly = searchParams.get('stats') === 'true';
+    const mode = searchParams.get('mode') || undefined;
 
     if (statsOnly) {
-        const stats = await dbGetLeadStats(userId);
+        const stats = await dbGetLeadStats(userId, mode);
         return NextResponse.json(stats);
     }
 
@@ -24,6 +25,7 @@ export async function GET(request: NextRequest) {
         priority: searchParams.get('priority') || undefined,
         minScore: searchParams.get('minScore') ? parseInt(searchParams.get('minScore')!) : undefined,
         search: searchParams.get('search') || undefined,
+        mode,
     };
 
     const leads = await dbGetAllLeads(userId, filters);
@@ -38,6 +40,15 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         const now = new Date().toISOString();
+
+        // Get user's active mode
+        let activeMode = 'performer';
+        try {
+            const client = await clerkClient();
+            const user = await client.users.getUser(userId);
+            const meta = user.publicMetadata as Record<string, unknown>;
+            activeMode = (meta.activeMode as string) || 'performer';
+        } catch { /* default to performer */ }
 
         const lead: Lead = {
             lead_id: uuid(),
@@ -83,7 +94,7 @@ export async function POST(request: NextRequest) {
             lead.priority = scoreResult.priority;
         }
 
-        await dbSaveLead(lead, userId);
+        await dbSaveLead(lead, userId, activeMode);
         return NextResponse.json({ success: true, lead }, { status: 201 });
     } catch (error) {
         console.error('Failed to create lead:', error);

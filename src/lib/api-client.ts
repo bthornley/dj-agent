@@ -54,12 +54,14 @@ export async function fetchLeads(filters?: {
     priority?: string;
     minScore?: number;
     search?: string;
+    mode?: string;
 }): Promise<Lead[]> {
     const params = new URLSearchParams();
     if (filters?.status) params.set('status', filters.status);
     if (filters?.priority) params.set('priority', filters.priority);
     if (filters?.minScore !== undefined) params.set('minScore', String(filters.minScore));
     if (filters?.search) params.set('search', filters.search);
+    if (filters?.mode) params.set('mode', filters.mode);
 
     const url = params.toString() ? `${LEADS_BASE}?${params}` : LEADS_BASE;
     const res = await fetch(url);
@@ -126,13 +128,15 @@ export async function scanUrl(input: {
     return res.json();
 }
 
-export async function fetchLeadStats(): Promise<{
+export async function fetchLeadStats(mode?: string): Promise<{
     total: number;
     byStatus: Record<string, number>;
     byPriority: Record<string, number>;
     avgScore: number;
 }> {
-    const res = await fetch(`${LEADS_BASE}?stats=true`);
+    const params = new URLSearchParams({ stats: 'true' });
+    if (mode) params.set('mode', mode);
+    const res = await fetch(`${LEADS_BASE}?${params}`);
     if (!res.ok) throw new Error('Failed to fetch lead stats');
     return res.json();
 }

@@ -41,6 +41,7 @@ async function ensureSchema(): Promise<Client> {
         lead_score INTEGER DEFAULT 0,
         status TEXT DEFAULT 'new',
         priority TEXT DEFAULT 'P3',
+        mode TEXT DEFAULT 'performer',
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
@@ -115,6 +116,12 @@ async function ensureSchema(): Promise<Client> {
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
     `);
+
+    // Migration: add mode column if it doesn't exist
+    try {
+      await db.execute({ sql: `ALTER TABLE leads ADD COLUMN mode TEXT DEFAULT 'performer'`, args: [] });
+    } catch { /* column already exists */ }
+
     _migrated = true;
   }
   return db;
@@ -208,6 +215,7 @@ export interface LeadFilters {
   priority?: string;
   minScore?: number;
   search?: string;
+  mode?: string;
 }
 
 export async function dbGetAllLeads(userId: string, filters?: LeadFilters): Promise<Lead[]> {
@@ -215,6 +223,10 @@ export async function dbGetAllLeads(userId: string, filters?: LeadFilters): Prom
   let sql = 'SELECT data FROM leads WHERE user_id = ?';
   const params: (string | number)[] = [userId];
 
+  if (filters?.mode) {
+    sql += ' AND mode = ?';
+    params.push(filters.mode);
+  }
   if (filters?.status) {
     sql += ' AND status = ?';
     params.push(filters.status);
@@ -244,22 +256,23 @@ export async function dbGetLead(id: string, userId: string): Promise<Lead | null
   return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
-export async function dbSaveLead(lead: Lead, userId: string): Promise<void> {
+export async function dbSaveLead(lead: Lead, userId: string, mode: string = 'performer'): Promise<void> {
   const db = await ensureSchema();
   const now = new Date().toISOString();
   const data = JSON.stringify(lead);
 
   await db.execute({
-    sql: `INSERT INTO leads (lead_id, user_id, data, dedupe_key, lead_score, status, priority, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    sql: `INSERT INTO leads (lead_id, user_id, data, dedupe_key, lead_score, status, priority, mode, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(lead_id) DO UPDATE SET
             data = excluded.data,
             dedupe_key = excluded.dedupe_key,
             lead_score = excluded.lead_score,
             status = excluded.status,
             priority = excluded.priority,
+            mode = excluded.mode,
             updated_at = excluded.updated_at`,
-    args: [lead.lead_id, userId, data, lead.dedupe_key, lead.lead_score, lead.status, lead.priority, lead.found_at || now, now],
+    args: [lead.lead_id, userId, data, lead.dedupe_key, lead.lead_score, lead.status, lead.priority, mode, lead.found_at || now, now],
   });
 }
 
@@ -274,20 +287,23 @@ export async function dbFindLeadByDedupeKey(key: string, userId: string): Promis
   return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
-export async function dbGetLeadStats(userId: string): Promise<{ total: number; byStatus: Record<string, number>; byPriority: Record<string, number>; avgScore: number }> {
+export async function dbGetLeadStats(userId: string, mode?: string): Promise<{ total: number; byStatus: Record<string, number>; byPriority: Record<string, number>; avgScore: number }> {
   const db = await ensureSchema();
-  const totalRow = await db.execute({ sql: 'SELECT COUNT(*) as c FROM leads WHERE user_id = ?', args: [userId] });
+  const modeFilter = mode ? ' AND mode = ?' : '';
+  const modeArgs = mode ? [mode] : [];
+
+  const totalRow = await db.execute({ sql: `SELECT COUNT(*) as c FROM leads WHERE user_id = ?${modeFilter}`, args: [userId, ...modeArgs] });
   const total = Number(totalRow.rows[0].c);
 
-  const statusRows = await db.execute({ sql: 'SELECT status, COUNT(*) as c FROM leads WHERE user_id = ? GROUP BY status', args: [userId] });
+  const statusRows = await db.execute({ sql: `SELECT status, COUNT(*) as c FROM leads WHERE user_id = ?${modeFilter} GROUP BY status`, args: [userId, ...modeArgs] });
   const byStatus: Record<string, number> = {};
   for (const r of statusRows.rows) byStatus[r.status as string] = Number(r.c);
 
-  const priorityRows = await db.execute({ sql: 'SELECT priority, COUNT(*) as c FROM leads WHERE user_id = ? GROUP BY priority', args: [userId] });
+  const priorityRows = await db.execute({ sql: `SELECT priority, COUNT(*) as c FROM leads WHERE user_id = ?${modeFilter} GROUP BY priority`, args: [userId, ...modeArgs] });
   const byPriority: Record<string, number> = {};
   for (const r of priorityRows.rows) byPriority[r.priority as string] = Number(r.c);
 
-  const avgRow = await db.execute({ sql: 'SELECT AVG(lead_score) as avg FROM leads WHERE user_id = ?', args: [userId] });
+  const avgRow = await db.execute({ sql: `SELECT AVG(lead_score) as avg FROM leads WHERE user_id = ?${modeFilter}`, args: [userId, ...modeArgs] });
   const avgScore = Math.round(Number(avgRow.rows[0].avg) || 0);
 
   return { total, byStatus, byPriority, avgScore };

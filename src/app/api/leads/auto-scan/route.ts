@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { dbGetAllSeeds, dbGetSearchQuota } from '@/lib/db';
 import { discoverFromSeeds, batchScanUrls, BatchScanResult } from '@/lib/agent/lead-finder/discovery';
 import { rateLimit } from '@/lib/rate-limit';
@@ -29,7 +29,15 @@ export async function POST(request: NextRequest) {
 
         // Mode 1: Batch URL scan
         if (body.urls && Array.isArray(body.urls)) {
-            const result: BatchScanResult = await batchScanUrls(body.urls, userId);
+            // Get user's active mode
+            let activeMode = 'performer';
+            try {
+                const client = await clerkClient();
+                const user = await client.users.getUser(userId);
+                const meta = user.publicMetadata as Record<string, unknown>;
+                activeMode = (meta.activeMode as string) || 'performer';
+            } catch { /* default */ }
+            const result: BatchScanResult = await batchScanUrls(body.urls, userId, activeMode);
             return NextResponse.json({ mode: 'batch', ...result });
         }
 
@@ -56,7 +64,16 @@ export async function POST(request: NextRequest) {
             const maxSeeds = Math.min(body.limit || 5, filteredSeeds.length, quota.remaining);
             const seedsToProcess = filteredSeeds.slice(0, maxSeeds);
 
-            const results = await discoverFromSeeds(seedsToProcess, userId);
+            // Get user's active mode
+            let activeMode = 'performer';
+            try {
+                const client = await clerkClient();
+                const user = await client.users.getUser(userId);
+                const meta = user.publicMetadata as Record<string, unknown>;
+                activeMode = (meta.activeMode as string) || 'performer';
+            } catch { /* default */ }
+
+            const results = await discoverFromSeeds(seedsToProcess, userId, activeMode);
 
             const totalUrls = results.reduce((s, r) => s + r.urlsFound, 0);
             const totalCreated = results.reduce((s, r) => s + r.leadsCreated, 0);

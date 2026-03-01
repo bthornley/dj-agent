@@ -35,7 +35,7 @@ export interface BatchScanResult {
  * Searches the web, extracts venue URLs, runs pipeline on each.
  * Only keeps leads scoring ≥ threshold (high-value).
  */
-export async function discoverFromSeed(seed: QuerySeed, userId: string = ''): Promise<DiscoveryResult> {
+export async function discoverFromSeed(seed: QuerySeed, userId: string = '', mode: string = 'performer'): Promise<DiscoveryResult> {
     const errors: string[] = [];
     const results: PipelineResult[] = [];
 
@@ -146,6 +146,7 @@ export async function discoverFromSeed(seed: QuerySeed, userId: string = ''): Pr
                     city: extractCityFromSeed(seed),
                     state: 'CA',
                     userId,
+                    mode,
                 });
 
                 // Only keep high-value leads
@@ -177,11 +178,11 @@ export async function discoverFromSeed(seed: QuerySeed, userId: string = ''): Pr
 /**
  * Run auto-discovery across multiple seeds.
  */
-export async function discoverFromSeeds(seeds: QuerySeed[], userId: string = ''): Promise<DiscoveryResult[]> {
+export async function discoverFromSeeds(seeds: QuerySeed[], userId: string = '', mode: string = 'performer'): Promise<DiscoveryResult[]> {
     const results: DiscoveryResult[] = [];
     for (const seed of seeds) {
         if (!seed.active) continue;
-        const result = await discoverFromSeed(seed, userId);
+        const result = await discoverFromSeed(seed, userId, mode);
         results.push(result);
         // Rate limit between seeds
         await sleep(2000);
@@ -194,7 +195,8 @@ export async function discoverFromSeeds(seeds: QuerySeed[], userId: string = '')
  */
 export async function batchScanUrls(
     urls: { url: string; entity_name?: string; city?: string }[],
-    userId: string = ''
+    userId: string = '',
+    mode: string = 'performer'
 ): Promise<BatchScanResult> {
     const results: PipelineResult[] = [];
     const errors: string[] = [];
@@ -210,6 +212,7 @@ export async function batchScanUrls(
                 city: input.city,
                 state: 'CA',
                 userId,
+                mode,
             });
 
             if (result.lead.lead_score >= HIGH_VALUE_THRESHOLD) {

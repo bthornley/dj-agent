@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
 import { Lead, LeadStatus, Priority } from '@/lib/types';
 import { fetchLeads, fetchLeadStats, updateLead, deleteLead, handoffLeads } from '@/lib/api-client';
 import ModeSwitch from '@/components/ModeSwitch';
+
+type AppMode = 'performer' | 'teacher';
 
 const statusLabels: Record<LeadStatus, { label: string; cls: string }> = {
     new: { label: '● New', cls: 'badge badge-lead-new' },
@@ -31,17 +33,21 @@ export default function LeadsDashboard() {
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<Set<string>>(new Set());
     const [page, setPage] = useState(1);
+    const [activeMode, setActiveMode] = useState<AppMode>('performer');
     const PAGE_SIZE = 25;
 
-    const loadData = async () => {
+    const isTeacher = activeMode === 'teacher';
+
+    const loadData = useCallback(async () => {
         try {
             const [leadsData, statsData] = await Promise.all([
                 fetchLeads({
                     status: filterStatus || undefined,
                     priority: filterPriority || undefined,
                     search: search || undefined,
+                    mode: activeMode,
                 }),
-                fetchLeadStats(),
+                fetchLeadStats(activeMode),
             ]);
             setLeads(leadsData);
             setStats(statsData);
@@ -50,13 +56,13 @@ export default function LeadsDashboard() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filterStatus, filterPriority, search, activeMode]);
 
     useEffect(() => {
         setLoading(true);
         setPage(1);
         loadData();
-    }, [filterStatus, filterPriority]);
+    }, [filterStatus, filterPriority, activeMode, loadData]);
 
     const handleSearch = () => {
         setLoading(true);
@@ -94,38 +100,73 @@ export default function LeadsDashboard() {
 
     return (
         <>
-            <header className="topbar">
+            <header className="topbar" style={isTeacher ? {
+                borderBottom: '1px solid rgba(56, 189, 248, 0.2)',
+                background: 'linear-gradient(135deg, rgba(15,15,35,0.98), rgba(10,30,50,0.98))',
+            } : undefined}>
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                    <span>Lead Finder</span>
+                    <img src="/logo.png" alt="GigLift" style={{
+                        width: 48, height: 48, borderRadius: 10,
+                        filter: isTeacher
+                            ? 'drop-shadow(0 0 6px rgba(56,189,248,0.4))'
+                            : 'drop-shadow(0 0 6px rgba(168,85,247,0.4))',
+                    }} />
+                    <span style={isTeacher ? { color: '#38bdf8' } : undefined}>
+                        {isTeacher ? '📚 Teaching Leads' : '🎵 Gig Leads'}
+                    </span>
                 </Link>
                 <nav className="topbar-nav">
                     <Link href="/" className="btn btn-ghost btn-sm">← Events</Link>
-                    <Link href="/leads/scan" className="btn btn-primary">🔍 Scan URL</Link>
+                    <Link href="/leads/scan" className="btn btn-primary" style={isTeacher ? {
+                        background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
+                        boxShadow: '0 0 16px rgba(56,189,248,0.2)',
+                    } : undefined}>🔍 Scan URL</Link>
                     <Link href="/leads/seeds" className="btn btn-secondary btn-sm">⚙ Seeds</Link>
-                    <ModeSwitch />
+                    <ModeSwitch onChange={(m) => setActiveMode(m as AppMode)} />
                     <UserButton />
                 </nav>
             </header>
 
             <main className="main-content fade-in">
+                {/* Mode indicator banner */}
+                <div style={{
+                    padding: '10px 16px',
+                    borderRadius: '10px',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    background: isTeacher
+                        ? 'linear-gradient(135deg, rgba(56,189,248,0.08), rgba(34,211,238,0.04))'
+                        : 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(139,92,246,0.04))',
+                    border: `1px solid ${isTeacher ? 'rgba(56,189,248,0.2)' : 'rgba(168,85,247,0.2)'}`,
+                    color: isTeacher ? '#38bdf8' : '#a855f7',
+                }}>
+                    <span style={{ fontSize: '18px' }}>{isTeacher ? '📚' : '🎵'}</span>
+                    {isTeacher
+                        ? 'Teacher Mode — Showing leads for schools, studios, and teaching opportunities'
+                        : 'Performer Mode — Showing leads for venues, events, and booking opportunities'}
+                </div>
+
                 {/* Stats */}
                 {stats && (
                     <div className="stats-grid">
-                        <div className="stat-card">
-                            <div className="stat-value">{stats.total}</div>
+                        <div className="stat-card" style={isTeacher ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
+                            <div className="stat-value" style={isTeacher ? { color: '#38bdf8' } : undefined}>{stats.total}</div>
                             <div className="stat-label">Total Leads</div>
                         </div>
-                        <div className="stat-card">
-                            <div className="stat-value">{stats.byPriority['P1'] || 0}</div>
+                        <div className="stat-card" style={isTeacher ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
+                            <div className="stat-value" style={isTeacher ? { color: '#38bdf8' } : undefined}>{stats.byPriority['P1'] || 0}</div>
                             <div className="stat-label">🔥 P1 Hot</div>
                         </div>
-                        <div className="stat-card">
-                            <div className="stat-value">{stats.byStatus['queued_for_dj_agent'] || 0}</div>
-                            <div className="stat-label">Queued for DJ</div>
+                        <div className="stat-card" style={isTeacher ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
+                            <div className="stat-value" style={isTeacher ? { color: '#38bdf8' } : undefined}>{stats.byStatus['queued_for_dj_agent'] || 0}</div>
+                            <div className="stat-label">{isTeacher ? 'Queued' : 'Queued for DJ'}</div>
                         </div>
-                        <div className="stat-card">
-                            <div className="stat-value">{stats.avgScore}</div>
+                        <div className="stat-card" style={isTeacher ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
+                            <div className="stat-value" style={isTeacher ? { color: '#38bdf8' } : undefined}>{stats.avgScore}</div>
                             <div className="stat-label">Avg Score</div>
                         </div>
                     </div>

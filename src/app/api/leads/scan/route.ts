@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { runPipeline } from '@/lib/agent/lead-finder/pipeline';
 import { validateExternalUrl } from '@/lib/security';
 import { rateLimit } from '@/lib/rate-limit';
@@ -30,6 +30,15 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: urlCheck.error }, { status: 400 });
         }
 
+        // Get user's active mode
+        let activeMode = 'performer';
+        try {
+            const client = await clerkClient();
+            const user = await client.users.getUser(userId);
+            const meta = user.publicMetadata as Record<string, unknown>;
+            activeMode = (meta.activeMode as string) || 'performer';
+        } catch { /* default to performer */ }
+
         const result = await runPipeline({
             url: body.url.trim(),
             entity_name: body.entity_name,
@@ -37,6 +46,7 @@ export async function POST(request: NextRequest) {
             state: body.state,
             entity_type: body.entity_type,
             userId,
+            mode: activeMode,
         });
 
         return NextResponse.json({

@@ -31,6 +31,7 @@ export async function runPipeline(input: {
     state?: string;
     entity_type?: string;
     userId?: string;
+    mode?: string;
 }): Promise<PipelineResult> {
     const now = new Date().toISOString();
 
@@ -111,7 +112,7 @@ export async function runPipeline(input: {
     const qcResult = qualityCheck(finalLead);
 
     // Step 9: Save to DB
-    await dbSaveLead(finalLead, input.userId || '');
+    await dbSaveLead(finalLead, input.userId || '', input.mode || 'performer');
 
     return {
         lead: finalLead,
