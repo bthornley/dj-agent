@@ -65,7 +65,7 @@ export default function DashboardPage() {
                     <Link href="/leads/scan" className="btn btn-ghost btn-sm">📡 Scan</Link>
                     <Link href="/social" className="btn btn-ghost btn-sm">📱 Social</Link>
                     <Link href="/pricing" className="btn btn-ghost btn-sm">💎 Plans</Link>
-                    <Link href="/epk/builder" className="btn btn-ghost btn-sm">📋 EPK Builder</Link>
+                    {!isTeacher && <Link href="/epk/builder" className="btn btn-ghost btn-sm">📋 EPK Builder</Link>}
                     <Link href="/account" className="btn btn-ghost btn-sm">⚙️ Account</Link>
                     <ModeSwitch onChange={(m) => setActiveMode(m as AppMode)} />
                     <AdminLink />
