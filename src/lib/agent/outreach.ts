@@ -1,9 +1,10 @@
-import { Lead, BrandProfile } from '../types';
+import { Lead, BrandProfile, ArtistType } from '../types';
 
 // ============================================================
 // Outreach Agent — Email Drafter
 // Generates personalized booking inquiry emails using
 // lead data + user's brand profile. Template-based.
+// Tailored per artist type: DJ, band, solo_artist, music_teacher
 // ============================================================
 
 export interface OutreachEmail {
@@ -20,22 +21,84 @@ export interface OutreachResult {
     emails: OutreachEmail[];
 }
 
+// ---- Artist-type context ----
+
+interface ArtistContext {
+    roleLabel: string;       // "DJ", "band", "solo musician", "music teacher"
+    roleLabelCap: string;    // "DJ", "Band", "Solo Musician", "Music Teacher"
+    actionVerb: string;      // "perform", "teach", "play"
+    offerLine: string;       // what they offer
+    demoOffer: string;       // what they can send as proof
+    subjectPrefix: string;   // for email subjects
+    casualEmoji: string;     // default emoji if no brand emojis
+    followUpAction: string;  // what they'd like to do
+}
+
+function getArtistContext(artistType: ArtistType, brand: BrandProfile | null): ArtistContext {
+    switch (artistType) {
+        case 'band':
+            return {
+                roleLabel: 'live band',
+                roleLabelCap: 'Live Band',
+                actionVerb: 'perform',
+                offerLine: 'live music for events, private parties, and regular bookings',
+                demoOffer: 'demo recordings, set lists, or a video of a recent performance',
+                subjectPrefix: 'Live Band',
+                casualEmoji: brand?.emojis?.[0] || '🎸',
+                followUpAction: 'performing at your venue',
+            };
+        case 'solo_artist':
+            return {
+                roleLabel: 'solo musician',
+                roleLabelCap: 'Solo Musician',
+                actionVerb: 'perform',
+                offerLine: 'live acoustic and solo performances for events, dining, cocktail hours, and private parties',
+                demoOffer: 'demo recordings, a song list, or a video of a recent performance',
+                subjectPrefix: 'Solo Musician',
+                casualEmoji: brand?.emojis?.[0] || '🎵',
+                followUpAction: 'performing at your venue',
+            };
+        case 'music_teacher':
+            return {
+                roleLabel: 'music teacher',
+                roleLabelCap: 'Music Teacher',
+                actionVerb: 'teach',
+                offerLine: 'music lessons and programs for students of all ages and skill levels',
+                demoOffer: 'my teaching credentials, curriculum samples, or references from current students and parents',
+                subjectPrefix: 'Music Lessons',
+                casualEmoji: brand?.emojis?.[0] || '🎹',
+                followUpAction: 'offering lessons or running a music program at your location',
+            };
+        case 'dj':
+        default:
+            return {
+                roleLabel: 'DJ',
+                roleLabelCap: 'DJ',
+                actionVerb: 'perform',
+                offerLine: 'DJ sets for events, parties, and regular nights',
+                demoOffer: 'demo mixes, a press kit, or references',
+                subjectPrefix: 'DJ',
+                casualEmoji: brand?.emojis?.[0] || '🎧',
+                followUpAction: 'DJing at your venue',
+            };
+    }
+}
+
 // ---- Template helpers ----
 
-function djLabel(brand: BrandProfile | null): string {
+function artistName(brand: BrandProfile | null): string {
     return brand?.djName || 'I';
 }
 
 function genreLine(brand: BrandProfile | null, lead: Lead): string {
     const tags = lead.music_fit_tags?.length
         ? lead.music_fit_tags.slice(0, 3).join(', ')
-        : brand?.vibeWords?.slice(0, 3).join(', ') || 'open format';
+        : brand?.vibeWords?.slice(0, 3).join(', ') || 'various styles';
     return tags;
 }
 
 function bioSnippet(brand: BrandProfile | null): string {
     if (brand?.bio && brand.bio.length > 10) {
-        // Trim to ~120 chars at a sentence boundary
         const trimmed = brand.bio.length > 120 ? brand.bio.substring(0, 120).replace(/[^.!?]*$/, '') : brand.bio;
         return trimmed || brand.bio.substring(0, 120) + '...';
     }
@@ -49,12 +112,12 @@ function contactFirstName(lead: Lead): string {
 
 function greeting(lead: Lead, formal: boolean): string {
     const name = contactFirstName(lead);
-    if (formal) return name ? `Dear ${name}` : 'Dear Booking Team';
+    if (formal) return name ? `Dear ${name}` : 'Dear Team';
     return name ? `Hey ${name}` : 'Hey there';
 }
 
 function venueRef(lead: Lead): string {
-    return lead.entity_name || 'your venue';
+    return lead.entity_name || 'your organization';
 }
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -80,89 +143,108 @@ function connectedAccountsLine(brand: BrandProfile | null): string {
 
 // ---- Email generators ----
 
-function formalEmail(lead: Lead, brand: BrandProfile | null): OutreachEmail {
-    const dj = djLabel(brand);
+function formalEmail(lead: Lead, brand: BrandProfile | null, ctx: ArtistContext): OutreachEmail {
+    const name = artistName(brand);
     const genre = genreLine(brand, lead);
     const bio = bioSnippet(brand);
     const venue = venueRef(lead);
+    const isTeacher = ctx.roleLabel === 'music teacher';
 
-    const subject = `Booking Inquiry — ${dj === 'I' ? 'DJ' : dj} at ${venue}`;
+    const subject = `${ctx.subjectPrefix} Inquiry — ${name === 'I' ? ctx.roleLabelCap : name} at ${venue}`;
+
+    const introLine = name === 'I'
+        ? `My name is a ${ctx.roleLabel} in the area`
+        : `${name}, a ${ctx.roleLabel} based in ${brand?.locations?.[0] || 'the area'}`;
 
     const bodyParts = [
         `${greeting(lead, true)},`,
         '',
-        `I hope this message finds you well. My name is ${dj === 'I' ? 'a DJ in the area' : dj + ', a DJ based in ' + (brand?.locations?.[0] || 'the area')}. I came across ${venue} and was impressed by the atmosphere and events you host.`,
+        `I hope this message finds you well. I'm ${introLine}. I came across ${venue} and ${isTeacher ? 'was excited to learn about your programs' : 'was impressed by the atmosphere and events you host'}.`,
         '',
-        `I specialize in ${genre} and have experience performing at ${brand?.typicalVenues?.length ? brand.typicalVenues.slice(0, 2).join(' and ') : 'venues in the area'}. ${bio ? bio + ' ' : ''}I believe my style would be a great fit for your clientele.`,
+        isTeacher
+            ? `I specialize in teaching ${genre} and have experience working with ${brand?.typicalVenues?.length ? brand.typicalVenues.slice(0, 2).join(' and ') : 'students of all ages and levels'}. ${bio ? bio + ' ' : ''}I'd love to explore how I could contribute to your music programming.`
+            : `I specialize in ${genre} and have experience performing at ${brand?.typicalVenues?.length ? brand.typicalVenues.slice(0, 2).join(' and ') : 'venues in the area'}. ${bio ? bio + ' ' : ''}I believe my style would be a great fit for your clientele.`,
         '',
-        `I'd love the opportunity to discuss a potential booking or audition set. I'm flexible on dates and happy to provide references, a press kit, or demo mixes.`,
+        isTeacher
+            ? `I'd love the opportunity to discuss offering lessons or a music program at your location. I'm flexible on scheduling and happy to provide ${ctx.demoOffer}.`
+            : `I'd love the opportunity to discuss a potential booking. I'm flexible on dates and happy to provide ${ctx.demoOffer}.`,
         '',
-        lead.capacity_estimate ? `I noticed your venue has a capacity around ${lead.capacity_estimate}, which is right in my sweet spot for creating an incredible atmosphere.` : '',
+        lead.capacity_estimate && !isTeacher ? `I noticed your venue has a capacity around ${lead.capacity_estimate}, which is right in my sweet spot for creating an incredible atmosphere.` : '',
         connectedAccountsLine(brand),
         `Would you be open to a brief call or email exchange to explore this further?`,
         '',
         `Thank you for your time and consideration.`,
         '',
         `Best regards,`,
-        dj === 'I' ? '' : dj,
+        name === 'I' ? '' : name,
     ].filter(line => line !== undefined);
 
     return { variant: 'formal', subject, body: bodyParts.join('\n') };
 }
 
-function casualEmail(lead: Lead, brand: BrandProfile | null): OutreachEmail {
-    const dj = djLabel(brand);
+function casualEmail(lead: Lead, brand: BrandProfile | null, ctx: ArtistContext): OutreachEmail {
+    const name = artistName(brand);
     const genre = genreLine(brand, lead);
     const bio = bioSnippet(brand);
     const venue = venueRef(lead);
-    const emojis = brand?.emojis?.length ? brand.emojis.slice(0, 2).join('') : '🎧';
+    const emoji = ctx.casualEmoji;
+    const isTeacher = ctx.roleLabel === 'music teacher';
 
-    const subject = `${emojis} DJ for ${venue}?`;
+    const subject = `${emoji} ${ctx.roleLabelCap} for ${venue}?`;
 
     const bodyParts = [
-        `${greeting(lead, false)} ${emojis}`,
+        `${greeting(lead, false)} ${emoji}`,
         '',
-        `I'm ${dj === 'I' ? 'a DJ' : dj} — I play ${genre} and I've been checking out ${venue}. Love what you've got going on there.`,
+        `I'm ${name === 'I' ? `a ${ctx.roleLabel}` : name} — I ${isTeacher ? 'teach' : 'play'} ${genre} and I've been checking out ${venue}. ${isTeacher ? "Love what you've got going on there." : "Love what you've got going on there."}`,
         '',
-        bio ? bio : `I've been DJing for years and love bringing energy to the right venue.`,
+        bio ? bio : isTeacher
+            ? `I've been teaching music for years and love helping students discover their potential.`
+            : `I've been ${ctx.actionVerb}ing for years and love bringing energy to the right venue.`,
         '',
         brand?.typicalVenues?.length
-            ? `I've played at ${brand.typicalVenues.slice(0, 3).join(', ')} and I think my vibe would fit your crowd perfectly.`
-            : `I think my vibe would fit your crowd perfectly.`,
+            ? isTeacher
+                ? `I've worked with ${brand.typicalVenues.slice(0, 3).join(', ')} and I think I could add a lot of value to your program.`
+                : `I've played at ${brand.typicalVenues.slice(0, 3).join(', ')} and I think my vibe would fit your crowd perfectly.`
+            : isTeacher
+                ? `I think I could add a lot of value to your music programming.`
+                : `I think my vibe would fit your crowd perfectly.`,
         '',
-        lead.event_types_seen?.length
+        lead.event_types_seen?.length && !isTeacher
             ? `I saw you host ${lead.event_types_seen.slice(0, 2).join(' and ')} — that's exactly what I'm looking for.`
             : '',
         '',
-        `Would love to chat about doing a set. I can send over mixes, a press kit, whatever you need.`,
+        isTeacher
+            ? `Would love to chat about offering lessons or a workshop. I can send over ${ctx.demoOffer} — whatever would be helpful.`
+            : `Would love to chat about doing a set. I can send over ${ctx.demoOffer} — whatever you need.`,
         connectedAccountsLine(brand),
-        `Let me know! ${emojis}`,
+        `Let me know! ${emoji}`,
         '',
-        dj === 'I' ? '' : `— ${dj}`,
+        name === 'I' ? '' : `— ${name}`,
     ].filter(line => line !== undefined);
 
     return { variant: 'casual', subject, body: bodyParts.join('\n') };
 }
 
-function followUpEmail(lead: Lead, brand: BrandProfile | null): OutreachEmail {
-    const dj = djLabel(brand);
+function followUpEmail(lead: Lead, brand: BrandProfile | null, ctx: ArtistContext): OutreachEmail {
+    const name = artistName(brand);
     const venue = venueRef(lead);
-    const emojis = brand?.emojis?.length ? brand.emojis[0] : '🎵';
+    const emoji = ctx.casualEmoji;
+    const isTeacher = ctx.roleLabel === 'music teacher';
 
-    const subject = `Following up — DJ booking at ${venue}`;
+    const subject = `Following up — ${ctx.roleLabelCap.toLowerCase()} ${isTeacher ? 'lessons' : 'booking'} at ${venue}`;
 
     const bodyParts = [
         `${greeting(lead, false)},`,
         '',
-        `Just following up on my earlier message about DJing at ${venue}. Totally understand if you're swamped — just wanted to make sure it didn't get buried.`,
+        `Just following up on my earlier message about ${ctx.followUpAction}. Totally understand if you're swamped — just wanted to make sure it didn't get buried.`,
         '',
-        `I'm ${dj === 'I' ? 'a local DJ' : dj} and I'd love a shot at performing at your venue. Happy to do an audition set, send demo mixes, or jump on a quick call — whatever works best for you.`,
+        `I'm ${name === 'I' ? `a local ${ctx.roleLabel}` : name} and I'd love a shot at ${ctx.followUpAction}. Happy to ${isTeacher ? 'do a trial lesson, share my curriculum, or jump on a quick call' : `do an audition set, send ${ctx.demoOffer}, or jump on a quick call`} — whatever works best for you.`,
         connectedAccountsLine(brand),
         `No pressure at all. If the timing isn't right, I'd love to stay on your radar for the future.`,
         '',
-        `Thanks! ${emojis}`,
+        `Thanks! ${emoji}`,
         '',
-        dj === 'I' ? '' : `— ${dj}`,
+        name === 'I' ? '' : `— ${name}`,
     ].filter(line => line !== undefined);
 
     return { variant: 'follow_up', subject, body: bodyParts.join('\n') };
@@ -170,16 +252,17 @@ function followUpEmail(lead: Lead, brand: BrandProfile | null): OutreachEmail {
 
 // ---- Main entry point ----
 
-export function generateOutreachEmails(lead: Lead, brand: BrandProfile | null): OutreachResult {
+export function generateOutreachEmails(lead: Lead, brand: BrandProfile | null, artistType: ArtistType = 'dj'): OutreachResult {
+    const ctx = getArtistContext(artistType, brand);
     return {
         leadId: lead.lead_id,
         venueName: lead.entity_name,
         contactName: lead.contact_name || '',
         contactEmail: lead.email || '',
         emails: [
-            formalEmail(lead, brand),
-            casualEmail(lead, brand),
-            followUpEmail(lead, brand),
+            formalEmail(lead, brand, ctx),
+            casualEmail(lead, brand, ctx),
+            followUpEmail(lead, brand, ctx),
         ],
     };
 }

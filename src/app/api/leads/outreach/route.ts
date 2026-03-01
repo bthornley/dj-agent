@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { dbGetLead, dbGetBrandProfile } from '@/lib/db';
 import { generateOutreachEmails } from '@/lib/agent/outreach';
+import { ArtistType } from '@/lib/types';
 
 // POST /api/leads/outreach — Generate outreach emails for a lead
 export async function POST(request: NextRequest) {
@@ -17,7 +18,18 @@ export async function POST(request: NextRequest) {
 
         const brand = await dbGetBrandProfile(userId);
 
-        const result = generateOutreachEmails(lead, brand);
+        // Get artist type from user profile
+        let artistType: ArtistType = 'dj';
+        try {
+            const client = await clerkClient();
+            const user = await client.users.getUser(userId);
+            const meta = user.publicMetadata as Record<string, unknown>;
+            const rawTypes = meta.artistTypes ?? meta.artistType;
+            const types: ArtistType[] = Array.isArray(rawTypes) ? rawTypes : [((rawTypes as string) || 'dj') as ArtistType];
+            artistType = types[0]; // Use primary artist type
+        } catch { /* fallback to dj */ }
+
+        const result = generateOutreachEmails(lead, brand, artistType);
         return NextResponse.json(result);
     } catch (err) {
         console.error('Outreach generation error:', err);
