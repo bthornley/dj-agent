@@ -4,6 +4,27 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { UserButton, useUser } from '@clerk/nextjs';
 import AdminLink from '@/components/AdminLink';
+import ModeSwitch from '@/components/ModeSwitch';
+
+type AppMode = 'performer' | 'teacher';
+
+const PERFORMER_SPECIALTIES = [
+    'EDM', 'House', 'Deep House', 'Tech House', 'Techno', 'Trance',
+    'Hip-Hop', 'R&B', 'Top 40', 'Pop', 'Latin', 'Reggaeton', 'Salsa',
+    'Rock', 'Indie', 'Alternative', 'Jazz', 'Blues', 'Country', 'Folk',
+    'Funk', 'Soul', 'Disco', 'Afrobeats', 'Dancehall', 'Reggae',
+    'Classical', 'Acoustic', 'World Music', 'Karaoke', 'Open Format',
+];
+
+const TEACHER_SPECIALTIES = [
+    'Piano', 'Guitar', 'Bass', 'Drums', 'Violin', 'Viola', 'Cello',
+    'Flute', 'Clarinet', 'Saxophone', 'Trumpet', 'Trombone',
+    'Voice / Vocal', 'Music Theory', 'Composition', 'Songwriting',
+    'Music Production', 'Audio Engineering', 'Ear Training',
+    'Music History', 'Group Classes', 'Private Lessons',
+    'Early Childhood Music', 'Suzuki Method', 'Orff Method', 'Kodály Method',
+    'Band Directing', 'Choir Directing', 'Orchestra',
+];
 
 const ARTIST_TYPES = [
     { value: 'dj', label: '🎧 DJ', desc: 'Clubs, lounges, events' },
@@ -36,6 +57,11 @@ export default function AccountPage() {
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [avatarUploading, setAvatarUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [specialties, setSpecialties] = useState<string[]>([]);
+    const [savingSpecialty, setSavingSpecialty] = useState(false);
+    const [activeMode, setActiveMode] = useState<AppMode | null>(null);
+
+    const isTeacher = activeMode === 'teacher';
 
     useEffect(() => {
         if (user?.imageUrl) setAvatarUrl(user.imageUrl);
@@ -61,6 +87,7 @@ export default function AccountPage() {
             .then(d => {
                 if (d.artistTypes) setArtistTypes(d.artistTypes);
                 if (d.regions) setRegions(d.regions);
+                if (d.specialties) setSpecialties(d.specialties);
             })
             .catch(() => { });
     }, []);
@@ -101,6 +128,24 @@ export default function AccountPage() {
             }
         } catch { /* ignore */ }
         setSavingRegion(false);
+    };
+
+    const handleSpecialtyToggle = async (specialty: string) => {
+        const newSpecialties = specialties.includes(specialty)
+            ? specialties.filter(s => s !== specialty)
+            : [...specialties, specialty];
+        setSavingSpecialty(true);
+        try {
+            const res = await fetch('/api/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ specialties: newSpecialties }),
+            });
+            if (res.ok) {
+                setSpecialties(newSpecialties);
+            }
+        } catch { /* ignore */ }
+        setSavingSpecialty(false);
     };
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -158,6 +203,7 @@ export default function AccountPage() {
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/dashboard" className="btn btn-ghost btn-sm">← Dashboard</Link>
+                    <ModeSwitch onChange={(m) => setActiveMode(m as AppMode)} />
                     <AdminLink />
                     <UserButton />
                 </nav>
@@ -216,6 +262,57 @@ export default function AccountPage() {
                             >
                                 <span style={{ fontSize: '15px', fontWeight: 600 }}>{t.label}</span>
                                 <span className="text-muted" style={{ fontSize: '12px' }}>{t.desc}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Specialties Selector */}
+                <div className="card" style={{
+                    marginBottom: '24px',
+                    ...(isTeacher ? { borderColor: 'rgba(56,189,248,0.2)' } : {}),
+                }}>
+                    <h3 className="card-title" style={isTeacher ? { color: '#38bdf8' } : undefined}>
+                        {isTeacher ? '📚 Teaching Specialties' : '🎵 Genre & Style Specialties'}
+                    </h3>
+                    <p className="text-muted" style={{ fontSize: '13px', margin: '4px 0 16px' }}>
+                        {isTeacher
+                            ? 'Select instruments, methods, and teaching areas. These appear in your outreach emails and proposals.'
+                            : 'Select your genres and styles. These appear in your outreach emails and marketing materials.'}
+                    </p>
+                    {specialties.length > 0 && (
+                        <div style={{
+                            padding: '8px 12px', borderRadius: '8px', marginBottom: '12px',
+                            fontSize: '13px', color: 'var(--text-muted)',
+                            background: isTeacher
+                                ? 'linear-gradient(135deg, rgba(56,189,248,0.06), rgba(34,211,238,0.03))'
+                                : 'linear-gradient(135deg, rgba(168,85,247,0.06), rgba(139,92,246,0.03))',
+                            border: `1px solid ${isTeacher ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'}`,
+                        }}>
+                            <strong style={{ color: isTeacher ? '#38bdf8' : '#a855f7' }}>Selected ({specialties.length}):</strong>{' '}
+                            {specialties.join(', ')}
+                        </div>
+                    )}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {(isTeacher ? TEACHER_SPECIALTIES : PERFORMER_SPECIALTIES).map(s => (
+                            <button
+                                key={s}
+                                onClick={() => handleSpecialtyToggle(s)}
+                                disabled={savingSpecialty}
+                                className={`btn btn-sm ${specialties.includes(s) ? 'btn-primary' : 'btn-ghost'}`}
+                                style={{
+                                    opacity: savingSpecialty ? 0.6 : 1,
+                                    fontSize: '12px', padding: '4px 10px',
+                                    border: specialties.includes(s)
+                                        ? `1px solid ${isTeacher ? 'rgba(56,189,248,0.5)' : 'var(--accent-purple)'}`
+                                        : '1px solid var(--border)',
+                                    ...(specialties.includes(s) && isTeacher ? {
+                                        background: 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(34,211,238,0.1))',
+                                        color: '#38bdf8',
+                                    } : {}),
+                                }}
+                            >
+                                {s}
                             </button>
                         ))}
                     </div>

@@ -90,7 +90,11 @@ function artistName(brand: BrandProfile | null): string {
     return brand?.djName || 'I';
 }
 
-function genreLine(brand: BrandProfile | null, lead: Lead): string {
+function genreLine(brand: BrandProfile | null, lead: Lead, specialties?: string[]): string {
+    // Use specialties first, then fall back to music fit tags / vibe words
+    if (specialties?.length) {
+        return specialties.slice(0, 4).join(', ');
+    }
     const tags = lead.music_fit_tags?.length
         ? lead.music_fit_tags.slice(0, 3).join(', ')
         : brand?.vibeWords?.slice(0, 3).join(', ') || 'various styles';
@@ -143,9 +147,9 @@ function connectedAccountsLine(brand: BrandProfile | null): string {
 
 // ---- Email generators ----
 
-function formalEmail(lead: Lead, brand: BrandProfile | null, ctx: ArtistContext): OutreachEmail {
+function formalEmail(lead: Lead, brand: BrandProfile | null, ctx: ArtistContext, specialties?: string[]): OutreachEmail {
     const name = artistName(brand);
-    const genre = genreLine(brand, lead);
+    const genre = genreLine(brand, lead, specialties);
     const bio = bioSnippet(brand);
     const venue = venueRef(lead);
     const isTeacher = ctx.roleLabel === 'music teacher';
@@ -182,9 +186,9 @@ function formalEmail(lead: Lead, brand: BrandProfile | null, ctx: ArtistContext)
     return { variant: 'formal', subject, body: bodyParts.join('\n') };
 }
 
-function casualEmail(lead: Lead, brand: BrandProfile | null, ctx: ArtistContext): OutreachEmail {
+function casualEmail(lead: Lead, brand: BrandProfile | null, ctx: ArtistContext, specialties?: string[]): OutreachEmail {
     const name = artistName(brand);
-    const genre = genreLine(brand, lead);
+    const genre = genreLine(brand, lead, specialties);
     const bio = bioSnippet(brand);
     const venue = venueRef(lead);
     const emoji = ctx.casualEmoji;
@@ -252,7 +256,7 @@ function followUpEmail(lead: Lead, brand: BrandProfile | null, ctx: ArtistContex
 
 // ---- Main entry point ----
 
-export function generateOutreachEmails(lead: Lead, brand: BrandProfile | null, artistType: ArtistType = 'dj'): OutreachResult {
+export function generateOutreachEmails(lead: Lead, brand: BrandProfile | null, artistType: ArtistType = 'dj', specialties?: string[]): OutreachResult {
     const ctx = getArtistContext(artistType, brand);
     return {
         leadId: lead.lead_id,
@@ -260,8 +264,8 @@ export function generateOutreachEmails(lead: Lead, brand: BrandProfile | null, a
         contactName: lead.contact_name || '',
         contactEmail: lead.email || '',
         emails: [
-            formalEmail(lead, brand, ctx),
-            casualEmail(lead, brand, ctx),
+            formalEmail(lead, brand, ctx, specialties),
+            casualEmail(lead, brand, ctx, specialties),
             followUpEmail(lead, brand, ctx),
         ],
     };

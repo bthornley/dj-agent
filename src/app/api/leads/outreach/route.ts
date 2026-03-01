@@ -18,8 +18,9 @@ export async function POST(request: NextRequest) {
 
         const brand = await dbGetBrandProfile(userId);
 
-        // Get active mode + artist type from user profile
+        // Get active mode + artist type + specialties from user profile
         let artistType: ArtistType = 'dj';
+        let specialties: string[] = [];
         try {
             const client = await clerkClient();
             const user = await client.users.getUser(userId);
@@ -33,9 +34,11 @@ export async function POST(request: NextRequest) {
                 const types: ArtistType[] = Array.isArray(rawTypes) ? rawTypes : [((rawTypes as string) || 'dj') as ArtistType];
                 artistType = types[0];
             }
+
+            specialties = Array.isArray(meta.specialties) ? meta.specialties as string[] : [];
         } catch { /* fallback to dj */ }
 
-        const result = generateOutreachEmails(lead, brand, artistType);
+        const result = generateOutreachEmails(lead, brand, artistType, specialties);
         return NextResponse.json(result);
     } catch (err) {
         console.error('Outreach generation error:', err);

@@ -25,7 +25,10 @@ export async function GET() {
     const googlePhotosAlbumUrl = (meta.googlePhotosAlbumUrl as string) || '';
     const googlePhotosThumbnail = (meta.googlePhotosThumbnail as string) || '';
 
-    return NextResponse.json({ artistTypes, regions, googlePhotosAlbumUrl, googlePhotosThumbnail });
+    // Specialties
+    const specialties: string[] = Array.isArray(meta.specialties) ? meta.specialties as string[] : [];
+
+    return NextResponse.json({ artistTypes, regions, googlePhotosAlbumUrl, googlePhotosThumbnail, specialties });
 }
 
 // PUT /api/profile — Update user's artist types and/or regions
@@ -55,6 +58,15 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: 'Select at least one region' }, { status: 400 });
         }
         updates.regions = regions;
+    }
+
+    // Update specialties if provided
+    if (body.specialties !== undefined) {
+        const specialties: string[] = body.specialties;
+        if (!Array.isArray(specialties)) {
+            return NextResponse.json({ error: 'Specialties must be an array' }, { status: 400 });
+        }
+        updates.specialties = specialties;
     }
 
     // Update Google Photos album URL if provided
