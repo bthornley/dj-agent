@@ -36,6 +36,7 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
     const [error, setError] = useState('');
     const [roleUpdating, setRoleUpdating] = useState(false);
     const [planUpdating, setPlanUpdating] = useState(false);
+    const [ambassadorUpdating, setAmbassadorUpdating] = useState(false);
     const [activeTab, setActiveTab] = useState<'events' | 'leads' | 'posts'>('events');
 
     useEffect(() => {
@@ -127,6 +128,47 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
         setPlanUpdating(false);
     }
 
+    function isAmbassador(): boolean {
+        return Boolean(data?.user?.publicMetadata?.ambassador);
+    }
+
+    function ambassadorSince(): string {
+        const since = data?.user?.publicMetadata?.ambassadorSince;
+        if (!since) return '';
+        return new Date(since as string).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    async function toggleAmbassador() {
+        if (!data || !userId) return;
+        const newValue = !isAmbassador();
+        const action = newValue ? 'add to' : 'remove from';
+        if (!confirm(`${action} Ambassador Program? ${newValue ? 'This will give them a free Pro account.' : 'This will remove their free Pro access.'}`)) return;
+
+        setAmbassadorUpdating(true);
+        try {
+            const res = await fetch(`/api/admin/users/${userId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ambassador: newValue }),
+            });
+            if (res.ok) {
+                setData(prev => prev ? {
+                    ...prev,
+                    user: {
+                        ...prev.user,
+                        publicMetadata: {
+                            ...prev.user.publicMetadata,
+                            ambassador: newValue,
+                            planId: newValue ? 'pro' : 'free',
+                            ambassadorSince: newValue ? new Date().toISOString() : null,
+                        },
+                    },
+                } : null);
+            }
+        } catch (e) { console.error(e); }
+        setAmbassadorUpdating(false);
+    }
+
     const formatDate = (ts: number | null | string) => {
         if (!ts) return '—';
         const d = typeof ts === 'number' ? new Date(ts) : new Date(ts);
@@ -180,6 +222,13 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
                                     <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
                                         Joined {formatDate(data.user.createdAt)} • Last active {formatDate(data.user.lastSignInAt)}
                                     </span>
+                                    {isAmbassador() && (
+                                        <span className="badge" style={{
+                                            background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.1))',
+                                            border: '1px solid rgba(251,191,36,0.3)',
+                                            color: '#fbbf24', fontSize: '11px',
+                                        }}>🌟 Ambassador</span>
+                                    )}
                                 </div>
                             </div>
                             <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -224,6 +273,61 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
                                     {planUpdating && <span style={{ marginLeft: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Saving...</span>}
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Ambassador Program */}
+                        <div className="card" style={{
+                            marginTop: '16px', padding: '20px',
+                            ...(isAmbassador() ? {
+                                borderColor: 'rgba(251,191,36,0.3)',
+                                background: 'linear-gradient(135deg, rgba(251,191,36,0.04), rgba(245,158,11,0.02))',
+                            } : {}),
+                        }}>
+                            <h3 className="card-title" style={{ marginBottom: '12px' }}>🌟 Ambassador Program</h3>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                                <div>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Status</div>
+                                    {isAmbassador() ? (
+                                        <span className="badge" style={{
+                                            background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.1))',
+                                            border: '1px solid rgba(251,191,36,0.3)',
+                                            color: '#fbbf24', fontSize: '13px', padding: '6px 12px',
+                                        }}>🌟 Active Ambassador</span>
+                                    ) : (
+                                        <span className="badge badge-draft" style={{ fontSize: '13px', padding: '6px 12px' }}>Not an Ambassador</span>
+                                    )}
+                                </div>
+                                {isAmbassador() && ambassadorSince() && (
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Since</div>
+                                        <span style={{ fontSize: '14px', color: 'var(--text-primary)' }}>{ambassadorSince()}</span>
+                                    </div>
+                                )}
+                                {isAmbassador() && (
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Benefit</div>
+                                        <span style={{ fontSize: '13px', color: '#fbbf24' }}>⭐ Free Pro plan</span>
+                                    </div>
+                                )}
+                                <div style={{ marginLeft: 'auto' }}>
+                                    <button
+                                        className={`btn ${isAmbassador() ? 'btn-ghost' : 'btn-primary'} btn-sm`}
+                                        onClick={toggleAmbassador}
+                                        disabled={ambassadorUpdating}
+                                        style={!isAmbassador() ? {
+                                            background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                                            color: '#000', fontWeight: 700,
+                                        } : { color: 'var(--accent-red)' }}
+                                    >
+                                        {ambassadorUpdating ? '⏳ Updating...' : isAmbassador() ? '✕ Remove Ambassador' : '🌟 Add to Ambassador Program'}
+                                    </button>
+                                </div>
+                            </div>
+                            {!isAmbassador() && (
+                                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '10px', marginBottom: 0 }}>
+                                    Adding a user to the Ambassador Program gives them a free Pro account.
+                                </p>
+                            )}
                         </div>
 
                         {/* Stats Row */}

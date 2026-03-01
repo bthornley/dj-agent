@@ -75,6 +75,27 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             });
         }
 
+        // Ambassador toggle — sets ambassador flag + auto-upgrades to pro
+        if (body.ambassador !== undefined) {
+            const isAmbassador = Boolean(body.ambassador);
+            const metaUpdates: Record<string, unknown> = { ambassador: isAmbassador };
+            if (isAmbassador) {
+                metaUpdates.planId = 'pro';
+                metaUpdates.ambassadorSince = new Date().toISOString();
+            } else {
+                // Revert to free unless they have a paid subscription
+                const user = await client.users.getUser(userId);
+                const currentMeta = user.publicMetadata as Record<string, unknown>;
+                if (!currentMeta.stripeSubscriptionId) {
+                    metaUpdates.planId = 'free';
+                }
+                metaUpdates.ambassadorSince = null;
+            }
+            await client.users.updateUserMetadata(userId, {
+                publicMetadata: metaUpdates,
+            });
+        }
+
         return NextResponse.json({ success: true });
     } catch (err) {
         console.error('Admin user update error:', err);
