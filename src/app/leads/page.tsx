@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { UserButton } from '@clerk/nextjs';
 import { Lead, LeadStatus, Priority } from '@/lib/types';
 import { fetchLeads, fetchLeadStats, updateLead, deleteLead, handoffLeads } from '@/lib/api-client';
 import ModeSwitch from '@/components/ModeSwitch';
@@ -103,6 +104,7 @@ export default function LeadsDashboard() {
                     <Link href="/leads/scan" className="btn btn-primary">🔍 Scan URL</Link>
                     <Link href="/leads/seeds" className="btn btn-secondary btn-sm">⚙ Seeds</Link>
                     <ModeSwitch />
+                    <UserButton />
                 </nav>
             </header>
 

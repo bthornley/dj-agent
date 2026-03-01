@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { UserButton } from '@clerk/nextjs';
 import { parseInquiry } from '@/lib/agent/intake';
 import { plan } from '@/lib/agent/planner';
 import { createDoc } from '@/lib/agent/tools';
@@ -235,6 +236,7 @@ export default function NewInquiry() {
                 </Link>
                 <nav className="topbar-nav">
                     <Link href="/" className="btn btn-ghost">← Back</Link>
+                    <UserButton />
                 </nav>
             </header>
 

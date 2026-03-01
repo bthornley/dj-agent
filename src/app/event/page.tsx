@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { UserButton } from '@clerk/nextjs';
 import { Event, Deliverable, DeliverableType } from '@/lib/types';
 import { renderMarkdown } from '@/lib/markdown';
 import { createDoc } from '@/lib/agent/tools';
@@ -268,6 +269,7 @@ export default function EventDetail() {
                 <nav className="topbar-nav">
                     <Link href="/" className="btn btn-ghost btn-sm">← Dashboard</Link>
                     <Link href="/new" className="btn btn-secondary btn-sm">+ New</Link>
+                    <UserButton />
                 </nav>
             </header>
             <Suspense fallback={

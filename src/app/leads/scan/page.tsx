@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { UserButton } from '@clerk/nextjs';
 import { Lead } from '@/lib/types';
 import { scanUrl, autoScan, batchScanUrls } from '@/lib/api-client';
 
@@ -147,6 +148,7 @@ export default function ScanPage() {
                 </Link>
                 <nav className="topbar-nav">
                     <Link href="/leads" className="btn btn-ghost btn-sm">← Leads</Link>
+                    <UserButton />
                 </nav>
             </header>
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { UserButton } from '@clerk/nextjs';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { Lead } from '@/lib/types';
@@ -382,6 +383,7 @@ export default function LeadDetailPage() {
                     <Link href="/leads" className="btn btn-ghost btn-sm">← Back to Leads</Link>
                     <Link href="/leads/scan" className="btn btn-secondary btn-sm">🔍 Scan</Link>
                     <ModeSwitch />
+                    <UserButton />
                 </nav>
             </header>
             <Suspense fallback={<div className="loading-overlay"><div className="spinner" /><span>Loading...</span></div>}>

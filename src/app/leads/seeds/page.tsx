@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { QuerySeed } from '@/lib/types';
 import { fetchSeeds, createSeed, deleteSeed } from '@/lib/api-client';
+import { UserButton } from '@clerk/nextjs';
 
 function generateId() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -150,6 +151,7 @@ export default function SeedsPage() {
                     <button className="btn btn-primary btn-sm" onClick={() => setShowForm(!showForm)}>
                         + Add Seed
                     </button>
+                    <UserButton />
                 </nav>
             </header>
 
