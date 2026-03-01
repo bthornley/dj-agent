@@ -15,8 +15,14 @@ export default function ModeSwitch({ onChange }: ModeSwitchProps) {
     useEffect(() => {
         fetch('/api/profile/mode')
             .then(r => r.json())
-            .then(data => { setMode(data.mode || 'performer'); setLoading(false); })
+            .then(data => {
+                const loaded = data.mode || 'performer';
+                setMode(loaded);
+                onChange?.(loaded);
+                setLoading(false);
+            })
             .catch(() => setLoading(false));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const toggle = async () => {
