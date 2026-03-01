@@ -51,6 +51,7 @@ async function ensureSchema(): Promise<Client> {
         user_id TEXT NOT NULL DEFAULT '',
         data TEXT NOT NULL,
         active INTEGER DEFAULT 1,
+        mode TEXT DEFAULT 'performer',
         created_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
 
@@ -120,6 +121,11 @@ async function ensureSchema(): Promise<Client> {
     // Migration: add mode column if it doesn't exist
     try {
       await db.execute({ sql: `ALTER TABLE leads ADD COLUMN mode TEXT DEFAULT 'performer'`, args: [] });
+    } catch { /* column already exists */ }
+
+    // Migration: add mode column to query_seeds if it doesn't exist
+    try {
+      await db.execute({ sql: `ALTER TABLE query_seeds ADD COLUMN mode TEXT DEFAULT 'performer'`, args: [] });
     } catch { /* column already exists */ }
 
     _migrated = true;
@@ -317,22 +323,30 @@ export async function dbGetHandoffQueue(userId: string): Promise<Lead[]> {
 
 // ---- Query Seed CRUD (user-scoped) ----
 
-export async function dbGetAllSeeds(userId: string): Promise<QuerySeed[]> {
+export async function dbGetAllSeeds(userId: string, mode?: string): Promise<QuerySeed[]> {
   const db = await ensureSchema();
-  const result = await db.execute({ sql: 'SELECT data FROM query_seeds WHERE user_id = ? ORDER BY created_at DESC', args: [userId] });
+  let sql = 'SELECT data FROM query_seeds WHERE user_id = ?';
+  const args: (string | number)[] = [userId];
+  if (mode) {
+    sql += ' AND mode = ?';
+    args.push(mode);
+  }
+  sql += ' ORDER BY created_at DESC';
+  const result = await db.execute({ sql, args });
   return result.rows.map((row) => JSON.parse(row.data as string));
 }
 
-export async function dbSaveSeed(seed: QuerySeed, userId: string): Promise<void> {
+export async function dbSaveSeed(seed: QuerySeed, userId: string, mode: string = 'performer'): Promise<void> {
   const db = await ensureSchema();
-  const data = JSON.stringify(seed);
+  const data = JSON.stringify({ ...seed, mode });
   await db.execute({
-    sql: `INSERT INTO query_seeds (id, user_id, data, active, created_at)
-          VALUES (?, ?, ?, ?, ?)
+    sql: `INSERT INTO query_seeds (id, user_id, data, active, mode, created_at)
+          VALUES (?, ?, ?, ?, ?, ?)
           ON CONFLICT(id) DO UPDATE SET
             data = excluded.data,
-            active = excluded.active`,
-    args: [seed.id, userId, data, seed.active ? 1 : 0, seed.created_at || new Date().toISOString()],
+            active = excluded.active,
+            mode = excluded.mode`,
+    args: [seed.id, userId, data, seed.active ? 1 : 0, mode, seed.created_at || new Date().toISOString()],
   });
 }
 

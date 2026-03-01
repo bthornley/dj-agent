@@ -141,8 +141,11 @@ export async function fetchLeadStats(mode?: string): Promise<{
     return res.json();
 }
 
-export async function fetchSeeds(): Promise<QuerySeed[]> {
-    const res = await fetch(`${LEADS_BASE}/seeds`);
+export async function fetchSeeds(mode?: string): Promise<QuerySeed[]> {
+    const params = new URLSearchParams();
+    if (mode) params.set('mode', mode);
+    const url = params.toString() ? `${LEADS_BASE}/seeds?${params}` : `${LEADS_BASE}/seeds`;
+    const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch seeds');
     return res.json();
 }

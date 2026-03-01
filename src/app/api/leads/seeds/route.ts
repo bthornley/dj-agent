@@ -5,11 +5,14 @@ import { getDefaultSeeds } from '@/lib/agent/lead-finder/sources';
 import { ArtistType } from '@/lib/types';
 
 // GET /api/leads/seeds — Get user's seeds (auto-populate defaults on first access)
-export async function GET() {
+export async function GET(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    let seeds = await dbGetAllSeeds(userId);
+    const { searchParams } = new URL(request.url);
+    const mode = searchParams.get('mode') || undefined;
+
+    let seeds = await dbGetAllSeeds(userId, mode);
 
     // Auto-populate defaults for new users based on artist types + regions
     if (seeds.length === 0) {
@@ -23,10 +26,22 @@ export async function GET() {
         const rawRegions = meta.regions;
         const regions: string[] = Array.isArray(rawRegions) ? rawRegions : ['Orange County', 'Long Beach'];
 
-        // Merge seeds from all selected types + regions, deduplicate
+        // Determine which mode to populate for
+        const seedMode = mode || 'performer';
+
+        // For performer mode, use DJ/band/solo seeds; for teacher mode, use music_teacher seeds
+        const typesForMode = seedMode === 'teacher'
+            ? (['music_teacher'] as ArtistType[])
+            : artistTypes.filter(t => t !== 'music_teacher');
+
+        // If none match, default to 'dj' for performer
+        if (typesForMode.length === 0 && seedMode === 'performer') {
+            typesForMode.push('dj');
+        }
+
         const seen = new Set<string>();
         const allSeeds: ReturnType<typeof getDefaultSeeds> = [];
-        for (const type of artistTypes) {
+        for (const type of typesForMode) {
             for (const s of getDefaultSeeds(type, regions)) {
                 const key = s.keywords.join('|');
                 if (!seen.has(key)) {
@@ -36,9 +51,9 @@ export async function GET() {
             }
         }
         for (const seed of allSeeds) {
-            await dbSaveSeed(seed, userId);
+            await dbSaveSeed(seed, userId, seedMode);
         }
-        seeds = await dbGetAllSeeds(userId);
+        seeds = await dbGetAllSeeds(userId, mode);
     }
 
     return NextResponse.json(seeds);
@@ -49,9 +64,11 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const seed = await request.json();
-    await dbSaveSeed(seed, userId);
-    return NextResponse.json({ success: true, seed }, { status: 201 });
+    const body = await request.json();
+    const seedMode = body.mode || 'performer';
+
+    await dbSaveSeed(body, userId, seedMode);
+    return NextResponse.json({ success: true, seed: body }, { status: 201 });
 }
 
 // DELETE /api/leads/seeds — Delete a seed

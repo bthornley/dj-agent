@@ -22,6 +22,15 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const quota = await dbGetSearchQuota(userId);
 
+        // Get user's active mode (shared across all branches)
+        let activeMode = 'performer';
+        try {
+            const client = await clerkClient();
+            const user = await client.users.getUser(userId);
+            const meta = user.publicMetadata as Record<string, unknown>;
+            activeMode = (meta.activeMode as string) || 'performer';
+        } catch { /* default to performer */ }
+
         // Mode 0: Quota check
         if (body.quota_check) {
             return NextResponse.json({ quota });
@@ -29,19 +38,11 @@ export async function POST(request: NextRequest) {
 
         // Mode 1: Batch URL scan
         if (body.urls && Array.isArray(body.urls)) {
-            // Get user's active mode
-            let activeMode = 'performer';
-            try {
-                const client = await clerkClient();
-                const user = await client.users.getUser(userId);
-                const meta = user.publicMetadata as Record<string, unknown>;
-                activeMode = (meta.activeMode as string) || 'performer';
-            } catch { /* default */ }
             const result: BatchScanResult = await batchScanUrls(body.urls, userId, activeMode);
             return NextResponse.json({ mode: 'batch', ...result });
         }
 
-        // Mode 2: Auto-discover from seeds
+        // Mode 2: Auto-discover from seeds (filtered by active mode)
         if (body.auto) {
             if (quota.remaining <= 0) {
                 return NextResponse.json({
@@ -50,11 +51,11 @@ export async function POST(request: NextRequest) {
                 }, { status: 429 });
             }
 
-            const seeds = await dbGetAllSeeds(userId);
+            const seeds = await dbGetAllSeeds(userId, activeMode);
             const activeSeeds = seeds.filter(s => s.active);
 
             if (activeSeeds.length === 0) {
-                return NextResponse.json({ error: 'No active seeds. Add seeds at /leads/seeds first.' }, { status: 400 });
+                return NextResponse.json({ error: `No active ${activeMode} seeds. Add seeds at /leads/seeds first.` }, { status: 400 });
             }
 
             const filteredSeeds = body.region
@@ -63,15 +64,6 @@ export async function POST(request: NextRequest) {
 
             const maxSeeds = Math.min(body.limit || 5, filteredSeeds.length, quota.remaining);
             const seedsToProcess = filteredSeeds.slice(0, maxSeeds);
-
-            // Get user's active mode
-            let activeMode = 'performer';
-            try {
-                const client = await clerkClient();
-                const user = await client.users.getUser(userId);
-                const meta = user.publicMetadata as Record<string, unknown>;
-                activeMode = (meta.activeMode as string) || 'performer';
-            } catch { /* default */ }
 
             const results = await discoverFromSeeds(seedsToProcess, userId, activeMode);
 

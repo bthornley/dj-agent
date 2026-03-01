@@ -241,6 +241,7 @@ export interface QuerySeed {
   keywords: string[];     // e.g. ["nightclub", "lounge", "DJ night"]
   source: string;         // google_maps, web_search, etc.
   active: boolean;
+  mode?: string;           // 'performer' | 'teacher'
   created_at: string;
 }
 
