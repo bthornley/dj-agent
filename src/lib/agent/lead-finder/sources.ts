@@ -99,19 +99,46 @@ function soloArtistSeeds(regions: string[]): QuerySeed[] {
 /** Generate Music Teacher seeds for given regions */
 function musicTeacherSeeds(regions: string[]): QuerySeed[] {
     return regions.flatMap(r => [
-        seed(r, ['music school', r]), seed(r, ['music lessons', r]),
-        seed(r, ['music store lessons', r]), seed(r, ['community center music', r]),
+        // Schools & education
+        seed(r, ['music school', r]), seed(r, ['music academy', r]),
         seed(r, ['school district music program', r]),
+        seed(r, ['elementary school music teacher', r]),
+        seed(r, ['middle school music teacher', r]),
         seed(r, ['after school music program', r]),
-        seed(r, ['summer camp music', r]), seed(r, ['church music program', r]),
-        seed(r, ['youth music program', r]), seed(r, ['private music studio', r]),
-        // Marketplace
+        seed(r, ['preschool music class', r]),
+        seed(r, ['Montessori music program', r]),
+        seed(r, ['homeschool co-op music', r]),
+        seed(r, ['homeschool music classes', r]),
+        // Community & recreation
+        seed(r, ['community center music', r]),
+        seed(r, ['parks and recreation music class', r]),
+        seed(r, ['recreation department music lessons', r]),
+        seed(r, ['library music program', r]),
+        seed(r, ['YMCA music class', r]),
+        seed(r, ['boys and girls club music', r]),
+        // Religious & youth orgs
+        seed(r, ['church music program', r]),
+        seed(r, ['youth music program', r]),
+        seed(r, ['summer camp music', r]),
+        seed(r, ['vacation bible school music', r]),
+        // Seniors & therapy
+        seed(r, ['retirement home music program', r]),
+        seed(r, ['assisted living entertainment', r]),
+        seed(r, ['senior center music class', r]),
+        seed(r, ['music therapy', r]),
+        // Retail & studios
+        seed(r, ['music store lessons', r]),
+        seed(r, ['private music studio', r]),
+        seed(r, ['guitar center lessons', r]),
+        // Marketplace & platforms
         seed(r, ['site:craigslist.org', 'music teacher', r]),
         seed(r, ['site:craigslist.org', 'music lessons', r]),
         seed(r, ['site:facebook.com/marketplace', 'music teacher', r]),
         seed(r, ['site:thumbtack.com', 'music lessons', r]),
         seed(r, ['site:care.com', 'music teacher', r]),
         seed(r, ['site:takelessons.com', r]),
+        seed(r, ['site:wyzant.com', 'music', r]),
+        seed(r, ['site:lessonface.com', r]),
     ]);
 }
 /**
