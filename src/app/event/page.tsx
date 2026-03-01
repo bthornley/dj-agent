@@ -4,6 +4,8 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
+import ModeSwitch from '@/components/ModeSwitch';
+import { useAppMode } from '@/hooks/useAppMode';
 import { Event, Deliverable, DeliverableType } from '@/lib/types';
 import { renderMarkdown } from '@/lib/markdown';
 import { createDoc } from '@/lib/agent/tools';
@@ -259,16 +261,19 @@ function EventDetailInner() {
 }
 
 export default function EventDetail() {
+    const { isTeacher, headerStyle, logoFilter } = useAppMode();
+
     return (
         <>
-            <header className="topbar">
+            <header className="topbar" style={headerStyle}>
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                    <span>DJ Agent</span>
+                    <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: logoFilter }} />
+                    <span style={isTeacher ? { color: '#38bdf8' } : undefined}>GigLift</span>
                 </Link>
                 <nav className="topbar-nav">
                     <Link href="/" className="btn btn-ghost btn-sm">← Dashboard</Link>
                     <Link href="/new" className="btn btn-secondary btn-sm">+ New</Link>
+                    <ModeSwitch />
                     <UserButton />
                 </nav>
             </header>

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
+import ModeSwitch from '@/components/ModeSwitch';
+import { useAppMode } from '@/hooks/useAppMode';
 import { parseInquiry } from '@/lib/agent/intake';
 import { plan } from '@/lib/agent/planner';
 import { createDoc } from '@/lib/agent/tools';
@@ -227,15 +229,18 @@ export default function NewInquiry() {
 
     const isFormReady = mode === 'paste' ? rawText.trim().length > 0 : form.clientName.trim().length > 0;
 
+    const { isTeacher, headerStyle, logoFilter } = useAppMode();
+
     return (
         <>
-            <header className="topbar">
+            <header className="topbar" style={headerStyle}>
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                    <span>DJ Agent</span>
+                    <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: logoFilter }} />
+                    <span style={isTeacher ? { color: '#38bdf8' } : undefined}>GigLift</span>
                 </Link>
                 <nav className="topbar-nav">
                     <Link href="/" className="btn btn-ghost">← Back</Link>
+                    <ModeSwitch />
                     <UserButton />
                 </nav>
             </header>

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser, UserButton } from '@clerk/nextjs';
+import ModeSwitch from '@/components/ModeSwitch';
+import { useAppMode } from '@/hooks/useAppMode';
 
 interface EPKConfig {
     headline: string;
@@ -166,13 +168,14 @@ export default function EPKBuilderPage() {
     if (!config) return null;
 
     const accent = config.accentColor || '#a855f7';
+    const { isTeacher, headerStyle, logoFilter } = useAppMode();
 
     return (
         <>
-            <header className="topbar">
+            <header className="topbar" style={headerStyle}>
                 <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                    <span>EPK Builder</span>
+                    <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: logoFilter }} />
+                    <span style={isTeacher ? { color: '#38bdf8' } : undefined}>EPK Builder</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/dashboard" className="btn btn-ghost btn-sm">← Dashboard</Link>
@@ -184,6 +187,7 @@ export default function EPKBuilderPage() {
                     <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving || saved}>
                         {saving ? '💾 Saving...' : saved ? '✅ Saved' : '💾 Save EPK'}
                     </button>
+                    <ModeSwitch />
                     <UserButton />
                 </nav>
             </header>

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
 import { Lead } from '@/lib/types';
 import { scanUrl, autoScan, batchScanUrls } from '@/lib/api-client';
+import ModeSwitch from '@/components/ModeSwitch';
+import { useAppMode } from '@/hooks/useAppMode';
 
 type ScanMode = 'single' | 'batch' | 'auto';
 
@@ -139,15 +141,20 @@ export default function ScanPage() {
     const scoreColor = (s: number) =>
         s >= 70 ? 'var(--accent-green)' : s >= 40 ? 'var(--accent-amber)' : 'var(--accent-red)';
 
+    const { isTeacher, headerStyle, logoFilter } = useAppMode();
+
     return (
         <>
-            <header className="topbar">
+            <header className="topbar" style={headerStyle}>
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                    <span>Lead Scanner</span>
+                    <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: logoFilter }} />
+                    <span style={isTeacher ? { color: '#38bdf8' } : undefined}>
+                        {isTeacher ? '📚 Lead Scanner' : '🔍 Lead Scanner'}
+                    </span>
                 </Link>
                 <nav className="topbar-nav">
                     <Link href="/leads" className="btn btn-ghost btn-sm">← Leads</Link>
+                    <ModeSwitch />
                     <UserButton />
                 </nav>
             </header>
