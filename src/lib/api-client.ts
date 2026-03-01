@@ -167,6 +167,16 @@ export async function deleteSeed(id: string): Promise<void> {
     if (!res.ok) throw new Error('Failed to delete seed');
 }
 
+export async function deleteAllSeeds(mode?: string): Promise<{ deleted: number }> {
+    const params = new URLSearchParams({ all: 'true' });
+    if (mode) params.set('mode', mode);
+    const res = await fetch(`${LEADS_BASE}/seeds?${params}`, {
+        method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Failed to delete seeds');
+    return res.json();
+}
+
 export async function handoffLeads(leadIds: string[]): Promise<{
     success: boolean;
     queued: number;

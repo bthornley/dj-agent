@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { QuerySeed } from '@/lib/types';
-import { fetchSeeds, createSeed, deleteSeed } from '@/lib/api-client';
+import { fetchSeeds, createSeed, deleteSeed, deleteAllSeeds } from '@/lib/api-client';
 import { UserButton } from '@clerk/nextjs';
 import ModeSwitch from '@/components/ModeSwitch';
 
@@ -68,6 +68,7 @@ export default function SeedsPage() {
     const [message, setMessage] = useState('');
     const [addingPresets, setAddingPresets] = useState(false);
     const [activeMode, setActiveMode] = useState<AppMode>('performer');
+    const [deleting, setDeleting] = useState(false);
 
     const isTeacher = activeMode === 'teacher';
 
@@ -153,6 +154,21 @@ export default function SeedsPage() {
         }
     };
 
+    const handleDeleteAll = async () => {
+        const modeLabel = isTeacher ? 'teaching' : 'performer';
+        if (!confirm(`Delete all ${seeds.length} ${modeLabel} seeds? This cannot be undone.`)) return;
+        setDeleting(true);
+        try {
+            const result = await deleteAllSeeds(activeMode);
+            setMessage(`🗑 Deleted ${result.deleted} ${modeLabel} seeds`);
+            setTimeout(() => setMessage(''), 4000);
+            loadSeeds();
+        } catch {
+            setMessage('Failed to delete seeds');
+        }
+        setDeleting(false);
+    };
+
     // Group seeds by region
     const grouped = seeds.reduce((acc, seed) => {
         const key = seed.region || 'Unknown';
@@ -210,6 +226,16 @@ export default function SeedsPage() {
                     } : undefined}>
                         + Add Seed
                     </button>
+                    {seeds.length > 0 && (
+                        <button
+                            className="btn btn-ghost btn-sm"
+                            onClick={handleDeleteAll}
+                            disabled={deleting}
+                            style={{ color: 'var(--accent-red)', opacity: deleting ? 0.6 : 1 }}
+                        >
+                            {deleting ? '⏳ Deleting...' : '🗑 Delete All'}
+                        </button>
+                    )}
                     <ModeSwitch onChange={(m) => setActiveMode(m as AppMode)} />
                     <UserButton />
                 </nav>

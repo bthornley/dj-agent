@@ -355,6 +355,18 @@ export async function dbDeleteSeed(id: string, userId: string): Promise<void> {
   await db.execute({ sql: 'DELETE FROM query_seeds WHERE id = ? AND user_id = ?', args: [id, userId] });
 }
 
+export async function dbDeleteAllSeeds(userId: string, mode?: string): Promise<number> {
+  const db = await ensureSchema();
+  let sql = 'DELETE FROM query_seeds WHERE user_id = ?';
+  const args: string[] = [userId];
+  if (mode) {
+    sql += ' AND mode = ?';
+    args.push(mode);
+  }
+  const result = await db.execute({ sql, args });
+  return result.rowsAffected;
+}
+
 // ============================================================
 // Social Hype Agent — CRUD
 // ============================================================

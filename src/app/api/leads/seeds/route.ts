@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, clerkClient } from '@clerk/nextjs/server';
-import { dbGetAllSeeds, dbSaveSeed, dbDeleteSeed } from '@/lib/db';
+import { dbGetAllSeeds, dbSaveSeed, dbDeleteSeed, dbDeleteAllSeeds } from '@/lib/db';
 import { getDefaultSeeds } from '@/lib/agent/lead-finder/sources';
 import { ArtistType } from '@/lib/types';
 
@@ -77,6 +77,14 @@ export async function DELETE(request: NextRequest) {
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { searchParams } = new URL(request.url);
+
+    // Delete all seeds (optionally filtered by mode)
+    if (searchParams.get('all') === 'true') {
+        const mode = searchParams.get('mode') || undefined;
+        const deleted = await dbDeleteAllSeeds(userId, mode);
+        return NextResponse.json({ success: true, deleted });
+    }
+
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
 
