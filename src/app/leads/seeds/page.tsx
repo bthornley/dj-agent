@@ -7,7 +7,7 @@ import { fetchSeeds, createSeed, deleteSeed, deleteAllSeeds } from '@/lib/api-cl
 import { UserButton } from '@clerk/nextjs';
 import ModeSwitch from '@/components/ModeSwitch';
 
-type AppMode = 'performer' | 'teacher';
+type AppMode = 'performer' | 'instructor';
 
 function generateId() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -33,7 +33,7 @@ const PERFORMER_PRESETS: Record<string, { keywords: string[]; label: string }[]>
     ],
 };
 
-const TEACHER_PRESETS: Record<string, { keywords: string[]; label: string }[]> = {
+const INSTRUCTOR_PRESETS: Record<string, { keywords: string[]; label: string }[]> = {
     'Orange County': [
         { keywords: ['music school', 'Orange County'], label: 'Music Schools' },
         { keywords: ['music academy', 'lessons', 'Orange County'], label: 'Music Academies' },
@@ -42,8 +42,8 @@ const TEACHER_PRESETS: Record<string, { keywords: string[]; label: string }[]> =
         { keywords: ['community center music class', 'Orange County'], label: 'Community Centers' },
         { keywords: ['preschool music class', 'Orange County'], label: 'Preschool Music' },
         { keywords: ['church music program', 'Orange County'], label: 'Church Programs' },
-        { keywords: ['site:thumbtack.com', 'music teacher', 'Orange County'], label: 'Thumbtack' },
-        { keywords: ['site:craigslist.org', 'music teacher wanted', 'Orange County'], label: 'Craigslist — Music Teacher' },
+        { keywords: ['site:thumbtack.com', 'music instructor', 'Orange County'], label: 'Thumbtack' },
+        { keywords: ['site:craigslist.org', 'music instructor wanted', 'Orange County'], label: 'Craigslist — Music Instructor' },
     ],
     'Long Beach': [
         { keywords: ['music school', 'Long Beach'], label: 'Music Schools' },
@@ -53,8 +53,8 @@ const TEACHER_PRESETS: Record<string, { keywords: string[]; label: string }[]> =
         { keywords: ['community center music class', 'Long Beach'], label: 'Community Centers' },
         { keywords: ['preschool music class', 'Long Beach'], label: 'Preschool Music' },
         { keywords: ['church music program', 'Long Beach'], label: 'Church Programs' },
-        { keywords: ['site:thumbtack.com', 'music teacher', 'Long Beach'], label: 'Thumbtack' },
-        { keywords: ['site:craigslist.org', 'music teacher wanted', 'Long Beach'], label: 'Craigslist — Music Teacher' },
+        { keywords: ['site:thumbtack.com', 'music instructor', 'Long Beach'], label: 'Thumbtack' },
+        { keywords: ['site:craigslist.org', 'music instructor wanted', 'Long Beach'], label: 'Craigslist — Music Instructor' },
     ],
 };
 
@@ -70,7 +70,7 @@ export default function SeedsPage() {
     const [activeMode, setActiveMode] = useState<AppMode | null>(null);
     const [deleting, setDeleting] = useState(false);
 
-    const isTeacher = activeMode === 'teacher';
+    const isInstructor = activeMode === 'instructor';
 
     const loadSeeds = useCallback(async () => {
         if (!activeMode) return; // Don't load until mode is known
@@ -118,7 +118,7 @@ export default function SeedsPage() {
     const handleAddPresets = async () => {
         setAddingPresets(true);
         try {
-            const presets = isTeacher ? TEACHER_PRESETS : PERFORMER_PRESETS;
+            const presets = isInstructor ? INSTRUCTOR_PRESETS : PERFORMER_PRESETS;
             const existingKeywords = new Set(seeds.map(s => s.keywords.join('|')));
             let added = 0;
             for (const [reg, regionPresets] of Object.entries(presets)) {
@@ -139,7 +139,7 @@ export default function SeedsPage() {
                 }
             }
             await loadSeeds();
-            setMessage(added > 0 ? `✅ Added ${added} ${isTeacher ? 'teaching' : 'marketplace'} seeds` : `All ${isTeacher ? 'teaching' : 'marketplace'} seeds already added`);
+            setMessage(added > 0 ? `✅ Added ${added} ${isInstructor ? 'teaching' : 'marketplace'} seeds` : `All ${isInstructor ? 'teaching' : 'marketplace'} seeds already added`);
             setTimeout(() => setMessage(''), 4000);
         } catch {
             setMessage('Failed to add preset seeds');
@@ -157,7 +157,7 @@ export default function SeedsPage() {
     };
 
     const handleDeleteAll = async () => {
-        const modeLabel = isTeacher ? 'teaching' : 'performer';
+        const modeLabel = isInstructor ? 'teaching' : 'performer';
         if (!confirm(`Delete all ${seeds.length} ${modeLabel} seeds? This cannot be undone.`)) return;
         setDeleting(true);
         try {
@@ -182,27 +182,27 @@ export default function SeedsPage() {
     const isMarketplaceSeed = (seed: QuerySeed) =>
         seed.keywords.some(k => k.startsWith('site:'));
 
-    const accentColor = isTeacher ? '#38bdf8' : '#a855f7';
-    const accentBg = isTeacher
+    const accentColor = isInstructor ? '#38bdf8' : '#a855f7';
+    const accentBg = isInstructor
         ? 'linear-gradient(135deg, rgba(56,189,248,0.08), rgba(34,211,238,0.04))'
         : 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(139,92,246,0.04))';
-    const accentBorder = isTeacher ? 'rgba(56,189,248,0.2)' : 'rgba(168,85,247,0.2)';
+    const accentBorder = isInstructor ? 'rgba(56,189,248,0.2)' : 'rgba(168,85,247,0.2)';
 
     return (
         <>
-            <header className="topbar" style={isTeacher ? {
+            <header className="topbar" style={isInstructor ? {
                 borderBottom: '1px solid rgba(56, 189, 248, 0.2)',
                 background: 'linear-gradient(135deg, rgba(15,15,35,0.98), rgba(10,30,50,0.98))',
             } : undefined}>
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
                     <img src="/logo.png" alt="GigLift" style={{
                         width: 48, height: 48, borderRadius: 10,
-                        filter: isTeacher
+                        filter: isInstructor
                             ? 'drop-shadow(0 0 6px rgba(56,189,248,0.4))'
                             : 'drop-shadow(0 0 6px rgba(168,85,247,0.4))',
                     }} />
-                    <span style={isTeacher ? { color: '#38bdf8' } : undefined}>
-                        {isTeacher ? '📚 Teaching Seeds' : '🎵 Query Seeds'}
+                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>
+                        {isInstructor ? '📚 Teaching Seeds' : '🎵 Query Seeds'}
                     </span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px' }}>
@@ -213,16 +213,16 @@ export default function SeedsPage() {
                         disabled={addingPresets}
                         style={{
                             opacity: addingPresets ? 0.6 : 1,
-                            ...(isTeacher ? {
+                            ...(isInstructor ? {
                                 background: 'linear-gradient(135deg, rgba(56,189,248,0.15), rgba(34,211,238,0.08))',
                                 borderColor: 'rgba(56,189,248,0.3)',
                                 color: '#38bdf8',
                             } : {}),
                         }}
                     >
-                        {addingPresets ? '⏳ Adding...' : isTeacher ? '🏫 Add Teaching Seeds' : '🏪 Add Marketplace Seeds'}
+                        {addingPresets ? '⏳ Adding...' : isInstructor ? '🏫 Add Teaching Seeds' : '🏪 Add Marketplace Seeds'}
                     </button>
-                    <button className="btn btn-primary btn-sm" onClick={() => setShowForm(!showForm)} style={isTeacher ? {
+                    <button className="btn btn-primary btn-sm" onClick={() => setShowForm(!showForm)} style={isInstructor ? {
                         background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
                         boxShadow: '0 0 16px rgba(56,189,248,0.2)',
                     } : undefined}>
@@ -258,19 +258,19 @@ export default function SeedsPage() {
                     border: `1px solid ${accentBorder}`,
                     color: accentColor,
                 }}>
-                    <span style={{ fontSize: '18px' }}>{isTeacher ? '📚' : '🎵'}</span>
-                    {isTeacher
-                        ? 'Teacher Mode — Seeds for finding music schools, studios, and teaching opportunities'
+                    <span style={{ fontSize: '18px' }}>{isInstructor ? '📚' : '🎵'}</span>
+                    {isInstructor
+                        ? 'Instructor Mode — Seeds for finding music schools, studios, and teaching opportunities'
                         : 'Performer Mode — Seeds for finding venues, events, and booking opportunities'}
                 </div>
 
                 <div className="section-header">
                     <div>
-                        <h2 className="section-title" style={isTeacher ? { color: '#38bdf8' } : undefined}>
-                            {isTeacher ? '📚 Teaching Seeds' : '🔍 Search Seeds'}
+                        <h2 className="section-title" style={isInstructor ? { color: '#38bdf8' } : undefined}>
+                            {isInstructor ? '📚 Teaching Seeds' : '🔍 Search Seeds'}
                         </h2>
                         <p className="section-subtitle">
-                            {isTeacher
+                            {isInstructor
                                 ? 'Configure what the Lead Finder searches for when finding teaching opportunities'
                                 : 'Configure what the Lead Finder searches for when finding gigs and venues'}
                         </p>
@@ -280,7 +280,7 @@ export default function SeedsPage() {
                         border: `1px solid ${accentBorder}`,
                         color: accentColor,
                     }}>
-                        {seeds.length} {isTeacher ? 'teaching' : 'performer'} seeds
+                        {seeds.length} {isInstructor ? 'teaching' : 'performer'} seeds
                     </div>
                 </div>
 
@@ -290,9 +290,9 @@ export default function SeedsPage() {
                 {showForm && (
                     <div className="card slide-up" style={{
                         marginBottom: '24px',
-                        ...(isTeacher ? { borderColor: 'rgba(56,189,248,0.2)' } : {}),
+                        ...(isInstructor ? { borderColor: 'rgba(56,189,248,0.2)' } : {}),
                     }}>
-                        <h3 className="card-title">Add New {isTeacher ? 'Teaching' : ''} Seed</h3>
+                        <h3 className="card-title">Add New {isInstructor ? 'Teaching' : ''} Seed</h3>
                         <div className="form-row">
                             <div className="form-group">
                                 <label className="form-label">Region</label>
@@ -351,7 +351,7 @@ export default function SeedsPage() {
                             <label className="form-label">Keywords (comma-separated)</label>
                             <input
                                 className="input"
-                                placeholder={isTeacher
+                                placeholder={isInstructor
                                     ? 'e.g. music school, after school program, Orange County'
                                     : 'e.g. site:craigslist.org, DJ gig, Orange County'}
                                 value={keywords}
@@ -359,13 +359,13 @@ export default function SeedsPage() {
                                 onKeyDown={e => e.key === 'Enter' && handleAdd()}
                             />
                             <p className="text-muted" style={{ fontSize: '12px', marginTop: '4px' }}>
-                                {isTeacher
-                                    ? 'Search for schools, studios, community centers, and programs that need music teachers'
+                                {isInstructor
+                                    ? 'Search for schools, studios, community centers, and programs that need music instructors'
                                     : <>Tip: Use <code>site:craigslist.org</code> or <code>site:facebook.com/marketplace</code> to target specific platforms</>}
                             </p>
                         </div>
                         <div style={{ display: 'flex', gap: '12px' }}>
-                            <button className="btn btn-primary" onClick={handleAdd} style={isTeacher ? {
+                            <button className="btn btn-primary" onClick={handleAdd} style={isInstructor ? {
                                 background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
                             } : undefined}>Add Seed</button>
                             <button className="btn btn-ghost" onClick={() => setShowForm(false)}>Cancel</button>
@@ -378,25 +378,25 @@ export default function SeedsPage() {
                     <div className="loading-overlay"><div className="spinner" /><span>Loading seeds...</span></div>
                 ) : seeds.length === 0 ? (
                     <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
-                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>{isTeacher ? '📚' : '🔍'}</div>
-                        <h3 style={{ marginBottom: '8px' }}>No {isTeacher ? 'teaching' : 'performer'} seeds yet</h3>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>{isInstructor ? '📚' : '🔍'}</div>
+                        <h3 style={{ marginBottom: '8px' }}>No {isInstructor ? 'teaching' : 'performer'} seeds yet</h3>
                         <p className="text-muted" style={{ marginBottom: '16px' }}>
-                            {isTeacher
+                            {isInstructor
                                 ? 'Add seeds to start discovering music schools, studios, and teaching opportunities.'
                                 : 'Add seeds to start discovering venues, events, and booking opportunities.'}
                         </p>
                         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                            <button className="btn btn-primary" onClick={() => setShowForm(true)} style={isTeacher ? {
+                            <button className="btn btn-primary" onClick={() => setShowForm(true)} style={isInstructor ? {
                                 background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
                             } : undefined}>
                                 + Add Custom Seed
                             </button>
-                            <button className="btn btn-secondary" onClick={handleAddPresets} style={isTeacher ? {
+                            <button className="btn btn-secondary" onClick={handleAddPresets} style={isInstructor ? {
                                 background: 'linear-gradient(135deg, rgba(56,189,248,0.15), rgba(34,211,238,0.08))',
                                 borderColor: 'rgba(56,189,248,0.3)',
                                 color: '#38bdf8',
                             } : undefined}>
-                                {isTeacher ? '🏫 Add Teaching Presets' : '🏪 Add Marketplace Presets'}
+                                {isInstructor ? '🏫 Add Teaching Presets' : '🏪 Add Marketplace Presets'}
                             </button>
                         </div>
                     </div>
@@ -411,7 +411,7 @@ export default function SeedsPage() {
                             </h3>
                             <div className="seeds-grid">
                                 {regionSeeds.map(seed => (
-                                    <div key={seed.id} className="seed-card" style={isTeacher ? {
+                                    <div key={seed.id} className="seed-card" style={isInstructor ? {
                                         borderColor: 'rgba(56,189,248,0.15)',
                                     } : undefined}>
                                         <div className="seed-keywords">
@@ -434,7 +434,7 @@ export default function SeedsPage() {
                                                 color: accentColor,
                                                 fontSize: '11px',
                                             }}>
-                                                {isTeacher ? '📚 teacher' : '🎵 performer'}
+                                                {isInstructor ? '📚 instructor' : '🎵 performer'}
                                             </span>
                                         </div>
                                         <button

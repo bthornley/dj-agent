@@ -32,10 +32,10 @@ export default function TermsPage() {
                 <section style={{ marginBottom: '32px' }}>
                     <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '12px' }}>2. Description of Service</h2>
                     <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-                        GigLift provides AI-powered tools for musicians, DJs, bands, solo artists, and music teachers to discover
+                        GigLift provides AI-powered tools for musicians, DJs, bands, solo artists, and music instructors to discover
                         performance opportunities and teaching positions, manage leads, plan social media content, build electronic press kits, and
                         streamline the booking process. The Service includes both free and paid subscription tiers, and supports
-                        switching between Performer Mode and Teacher Mode to tailor the experience to your needs.
+                        switching between Performer Mode and Instructor Mode to tailor the experience to your needs.
                     </p>
                 </section>
 

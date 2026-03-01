@@ -6,7 +6,7 @@ import { UserButton, useUser } from '@clerk/nextjs';
 import AdminLink from '@/components/AdminLink';
 import ModeSwitch from '@/components/ModeSwitch';
 
-type AppMode = 'performer' | 'teacher';
+type AppMode = 'performer' | 'instructor';
 
 const PERFORMER_SPECIALTIES = [
     'EDM', 'House', 'Deep House', 'Tech House', 'Techno', 'Trance',
@@ -16,7 +16,7 @@ const PERFORMER_SPECIALTIES = [
     'Classical', 'Acoustic', 'World Music', 'Karaoke', 'Open Format',
 ];
 
-const TEACHER_SPECIALTIES = [
+const INSTRUCTOR_SPECIALTIES = [
     'Piano', 'Guitar', 'Bass', 'Drums', 'Violin', 'Viola', 'Cello',
     'Flute', 'Clarinet', 'Saxophone', 'Trumpet', 'Trombone',
     'Voice / Vocal', 'Music Theory', 'Composition', 'Songwriting',
@@ -30,7 +30,7 @@ const ARTIST_TYPES = [
     { value: 'dj', label: '🎧 DJ', desc: 'Clubs, lounges, events' },
     { value: 'band', label: '🎸 Band', desc: 'Live music venues, festivals' },
     { value: 'solo_artist', label: '🎤 Solo Artist', desc: 'Restaurants, private events' },
-    { value: 'music_teacher', label: '🎹 Music Teacher', desc: 'Schools, community programs' },
+    { value: 'music_instructor', label: '🎹 Music Instructor', desc: 'Schools, community programs' },
 ] as const;
 
 const US_REGIONS: Record<string, string[]> = {
@@ -61,7 +61,7 @@ export default function AccountPage() {
     const [savingSpecialty, setSavingSpecialty] = useState(false);
     const [activeMode, setActiveMode] = useState<AppMode | null>(null);
 
-    const isTeacher = activeMode === 'teacher';
+    const isInstructor = activeMode === 'instructor';
 
     useEffect(() => {
         if (user?.imageUrl) setAvatarUrl(user.imageUrl);
@@ -270,13 +270,13 @@ export default function AccountPage() {
                 {/* Specialties Selector */}
                 <div className="card" style={{
                     marginBottom: '24px',
-                    ...(isTeacher ? { borderColor: 'rgba(56,189,248,0.2)' } : {}),
+                    ...(isInstructor ? { borderColor: 'rgba(56,189,248,0.2)' } : {}),
                 }}>
-                    <h3 className="card-title" style={isTeacher ? { color: '#38bdf8' } : undefined}>
-                        {isTeacher ? '📚 Teaching Specialties' : '🎵 Genre & Style Specialties'}
+                    <h3 className="card-title" style={isInstructor ? { color: '#38bdf8' } : undefined}>
+                        {isInstructor ? '📚 Teaching Specialties' : '🎵 Genre & Style Specialties'}
                     </h3>
                     <p className="text-muted" style={{ fontSize: '13px', margin: '4px 0 16px' }}>
-                        {isTeacher
+                        {isInstructor
                             ? 'Select instruments, methods, and teaching areas. These appear in your outreach emails and proposals.'
                             : 'Select your genres and styles. These appear in your outreach emails and marketing materials.'}
                     </p>
@@ -284,17 +284,17 @@ export default function AccountPage() {
                         <div style={{
                             padding: '8px 12px', borderRadius: '8px', marginBottom: '12px',
                             fontSize: '13px', color: 'var(--text-muted)',
-                            background: isTeacher
+                            background: isInstructor
                                 ? 'linear-gradient(135deg, rgba(56,189,248,0.06), rgba(34,211,238,0.03))'
                                 : 'linear-gradient(135deg, rgba(168,85,247,0.06), rgba(139,92,246,0.03))',
-                            border: `1px solid ${isTeacher ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'}`,
+                            border: `1px solid ${isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'}`,
                         }}>
-                            <strong style={{ color: isTeacher ? '#38bdf8' : '#a855f7' }}>Selected ({specialties.length}):</strong>{' '}
+                            <strong style={{ color: isInstructor ? '#38bdf8' : '#a855f7' }}>Selected ({specialties.length}):</strong>{' '}
                             {specialties.join(', ')}
                         </div>
                     )}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {(isTeacher ? TEACHER_SPECIALTIES : PERFORMER_SPECIALTIES).map(s => (
+                        {(isInstructor ? INSTRUCTOR_SPECIALTIES : PERFORMER_SPECIALTIES).map(s => (
                             <button
                                 key={s}
                                 onClick={() => handleSpecialtyToggle(s)}
@@ -304,9 +304,9 @@ export default function AccountPage() {
                                     opacity: savingSpecialty ? 0.6 : 1,
                                     fontSize: '12px', padding: '4px 10px',
                                     border: specialties.includes(s)
-                                        ? `1px solid ${isTeacher ? 'rgba(56,189,248,0.5)' : 'var(--accent-purple)'}`
+                                        ? `1px solid ${isInstructor ? 'rgba(56,189,248,0.5)' : 'var(--accent-purple)'}`
                                         : '1px solid var(--border)',
-                                    ...(specialties.includes(s) && isTeacher ? {
+                                    ...(specialties.includes(s) && isInstructor ? {
                                         background: 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(34,211,238,0.1))',
                                         color: '#38bdf8',
                                     } : {}),

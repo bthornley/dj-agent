@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "GigLift — AI Lead Finder for Musicians",
-  description: "Find your next gig automatically. AI-powered venue discovery, lead scoring, and booking pipeline for DJs, bands, solo artists, and music teachers.",
+  description: "Find your next gig automatically. AI-powered venue discovery, lead scoring, and booking pipeline for DJs, bands, solo artists, and music instructors.",
   icons: {
     icon: '/logo.png',
     apple: '/logo.png',

@@ -29,10 +29,10 @@ export async function GET(request: NextRequest) {
         // Determine which mode to populate for
         const seedMode = mode || 'performer';
 
-        // For performer mode, use DJ/band/solo seeds; for teacher mode, use music_teacher seeds
-        const typesForMode = seedMode === 'teacher'
-            ? (['music_teacher'] as ArtistType[])
-            : artistTypes.filter(t => t !== 'music_teacher');
+        // For performer mode, use DJ/band/solo seeds; for instructor mode, use music_instructor seeds
+        const typesForMode = seedMode === 'instructor'
+            ? (['music_instructor'] as ArtistType[])
+            : artistTypes.filter(t => t !== 'music_instructor');
 
         // If none match, default to 'dj' for performer
         if (typesForMode.length === 0 && seedMode === 'performer') {

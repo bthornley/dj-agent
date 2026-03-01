@@ -30,7 +30,7 @@ export default async function LandingPage() {
           <p className="hero-subtitle">
             GigLift deploys a crew of autonomous AI agents that discover venues, score leads,
             draft booking emails, build your press kit, and plan your social content — all on autopilot.
-            For DJs, bands, solo artists &amp; music teachers.
+            For DJs, bands, solo artists &amp; music instructors.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '12px' }}>
             <span style={{
@@ -44,7 +44,7 @@ export default async function LandingPage() {
               padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 600,
               background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(34, 211, 238, 0.1))',
               border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8',
-            }}>📚 Teacher Mode</span>
+            }}>📚 Instructor Mode</span>
           </div>
 
           <div className="hero-actions">
@@ -137,7 +137,7 @@ export default async function LandingPage() {
             </div>
           </div>
 
-          {/* Teacher Card */}
+          {/* Instructor Card */}
           <div style={{
             padding: '28px', borderRadius: '16px',
             background: 'linear-gradient(135deg, rgba(56,189,248,0.08), rgba(34,211,238,0.03), rgba(15,15,35,0.95))',
@@ -153,7 +153,7 @@ export default async function LandingPage() {
                 border: '1px solid rgba(56,189,248,0.3)',
               }}>📚</div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#38bdf8' }}>Teacher Mode</h3>
+                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#38bdf8' }}>Instructor Mode</h3>
                 <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
                   For music instructors &amp; educators
                 </p>
@@ -161,7 +161,7 @@ export default async function LandingPage() {
             </div>
             <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.6 }}>
               Your AI agents discover music schools, after-school programs, community centers, churches, and studios
-              that need music teachers — and rank them by opportunity quality.
+              that need music instructors — and rank them by opportunity quality.
             </p>
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '11px', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
@@ -237,7 +237,7 @@ export default async function LandingPage() {
             ✉️ Agent 2 — Outreach Writer
           </h2>
           <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-            Drafts personalized outreach emails tailored to your mode — booking inquiries for performers, lesson proposals for teachers
+            Drafts personalized outreach emails tailored to your mode — booking inquiries for performers, lesson proposals for instructors
           </p>
         </div>
         <div className="feature-grid">

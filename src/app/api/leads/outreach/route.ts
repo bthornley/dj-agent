@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
             const meta = user.publicMetadata as Record<string, unknown>;
             const activeMode = (meta.activeMode as string) || 'performer';
 
-            if (activeMode === 'teacher') {
-                artistType = 'music_teacher';
+            if (activeMode === 'instructor') {
+                artistType = 'music_instructor';
             } else {
                 const rawTypes = meta.artistTypes ?? meta.artistType;
                 const types: ArtistType[] = Array.isArray(rawTypes) ? rawTypes : [((rawTypes as string) || 'dj') as ArtistType];

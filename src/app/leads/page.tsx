@@ -7,7 +7,7 @@ import { Lead, LeadStatus, Priority } from '@/lib/types';
 import { fetchLeads, fetchLeadStats, updateLead, deleteLead, deleteAllLeads, handoffLeads } from '@/lib/api-client';
 import ModeSwitch from '@/components/ModeSwitch';
 
-type AppMode = 'performer' | 'teacher';
+type AppMode = 'performer' | 'instructor';
 
 const statusLabels: Record<LeadStatus, { label: string; cls: string }> = {
     new: { label: '● New', cls: 'badge badge-lead-new' },
@@ -37,7 +37,7 @@ export default function LeadsDashboard() {
     const [deletingAll, setDeletingAll] = useState(false);
     const PAGE_SIZE = 25;
 
-    const isTeacher = activeMode === 'teacher';
+    const isInstructor = activeMode === 'instructor';
 
     const loadData = useCallback(async () => {
         if (!activeMode) return; // Don't load until mode is known
@@ -102,7 +102,7 @@ export default function LeadsDashboard() {
     };
 
     const handleDeleteAll = async () => {
-        const modeLabel = isTeacher ? 'teaching' : 'performer';
+        const modeLabel = isInstructor ? 'teaching' : 'performer';
         if (!confirm(`Delete all ${stats?.total || 0} ${modeLabel} leads? This cannot be undone.`)) return;
         setDeletingAll(true);
         try {
@@ -116,24 +116,24 @@ export default function LeadsDashboard() {
 
     return (
         <>
-            <header className="topbar" style={isTeacher ? {
+            <header className="topbar" style={isInstructor ? {
                 borderBottom: '1px solid rgba(56, 189, 248, 0.2)',
                 background: 'linear-gradient(135deg, rgba(15,15,35,0.98), rgba(10,30,50,0.98))',
             } : undefined}>
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
                     <img src="/logo.png" alt="GigLift" style={{
                         width: 48, height: 48, borderRadius: 10,
-                        filter: isTeacher
+                        filter: isInstructor
                             ? 'drop-shadow(0 0 6px rgba(56,189,248,0.4))'
                             : 'drop-shadow(0 0 6px rgba(168,85,247,0.4))',
                     }} />
-                    <span style={isTeacher ? { color: '#38bdf8' } : undefined}>
-                        {isTeacher ? '📚 Teaching Leads' : '🎵 Gig Leads'}
+                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>
+                        {isInstructor ? '📚 Teaching Leads' : '🎵 Gig Leads'}
                     </span>
                 </Link>
                 <nav className="topbar-nav">
                     <Link href="/" className="btn btn-ghost btn-sm">← Events</Link>
-                    <Link href="/leads/scan" className="btn btn-primary" style={isTeacher ? {
+                    <Link href="/leads/scan" className="btn btn-primary" style={isInstructor ? {
                         background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
                         boxShadow: '0 0 16px rgba(56,189,248,0.2)',
                     } : undefined}>🔍 Scan URL</Link>
@@ -164,35 +164,35 @@ export default function LeadsDashboard() {
                     gap: '10px',
                     fontSize: '14px',
                     fontWeight: 600,
-                    background: isTeacher
+                    background: isInstructor
                         ? 'linear-gradient(135deg, rgba(56,189,248,0.08), rgba(34,211,238,0.04))'
                         : 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(139,92,246,0.04))',
-                    border: `1px solid ${isTeacher ? 'rgba(56,189,248,0.2)' : 'rgba(168,85,247,0.2)'}`,
-                    color: isTeacher ? '#38bdf8' : '#a855f7',
+                    border: `1px solid ${isInstructor ? 'rgba(56,189,248,0.2)' : 'rgba(168,85,247,0.2)'}`,
+                    color: isInstructor ? '#38bdf8' : '#a855f7',
                 }}>
-                    <span style={{ fontSize: '18px' }}>{isTeacher ? '📚' : '🎵'}</span>
-                    {isTeacher
-                        ? 'Teacher Mode — Showing leads for schools, studios, and teaching opportunities'
+                    <span style={{ fontSize: '18px' }}>{isInstructor ? '📚' : '🎵'}</span>
+                    {isInstructor
+                        ? 'Instructor Mode — Showing leads for schools, studios, and teaching opportunities'
                         : 'Performer Mode — Showing leads for venues, events, and booking opportunities'}
                 </div>
 
                 {/* Stats */}
                 {stats && (
                     <div className="stats-grid">
-                        <div className="stat-card" style={isTeacher ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
-                            <div className="stat-value" style={isTeacher ? { color: '#38bdf8' } : undefined}>{stats.total}</div>
+                        <div className="stat-card" style={isInstructor ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
+                            <div className="stat-value" style={isInstructor ? { color: '#38bdf8' } : undefined}>{stats.total}</div>
                             <div className="stat-label">Total Leads</div>
                         </div>
-                        <div className="stat-card" style={isTeacher ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
-                            <div className="stat-value" style={isTeacher ? { color: '#38bdf8' } : undefined}>{stats.byPriority['P1'] || 0}</div>
+                        <div className="stat-card" style={isInstructor ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
+                            <div className="stat-value" style={isInstructor ? { color: '#38bdf8' } : undefined}>{stats.byPriority['P1'] || 0}</div>
                             <div className="stat-label">🔥 P1 Hot</div>
                         </div>
-                        <div className="stat-card" style={isTeacher ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
-                            <div className="stat-value" style={isTeacher ? { color: '#38bdf8' } : undefined}>{stats.byStatus['queued_for_dj_agent'] || 0}</div>
-                            <div className="stat-label">{isTeacher ? 'Queued' : 'Queued for DJ'}</div>
+                        <div className="stat-card" style={isInstructor ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
+                            <div className="stat-value" style={isInstructor ? { color: '#38bdf8' } : undefined}>{stats.byStatus['queued_for_dj_agent'] || 0}</div>
+                            <div className="stat-label">{isInstructor ? 'Queued' : 'Queued for DJ'}</div>
                         </div>
-                        <div className="stat-card" style={isTeacher ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
-                            <div className="stat-value" style={isTeacher ? { color: '#38bdf8' } : undefined}>{stats.avgScore}</div>
+                        <div className="stat-card" style={isInstructor ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
+                            <div className="stat-value" style={isInstructor ? { color: '#38bdf8' } : undefined}>{stats.avgScore}</div>
                             <div className="stat-label">Avg Score</div>
                         </div>
                     </div>

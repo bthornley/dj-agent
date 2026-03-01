@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-export type AppMode = 'performer' | 'teacher';
+export type AppMode = 'performer' | 'instructor';
 
 interface ModeSwitchProps {
     onChange?: (mode: AppMode) => void;
@@ -26,7 +26,7 @@ export default function ModeSwitch({ onChange }: ModeSwitchProps) {
     }, []);
 
     const toggle = async () => {
-        const next: AppMode = mode === 'performer' ? 'teacher' : 'performer';
+        const next: AppMode = mode === 'performer' ? 'instructor' : 'performer';
         setMode(next);
         onChange?.(next);
         try {
@@ -46,7 +46,7 @@ export default function ModeSwitch({ onChange }: ModeSwitchProps) {
     return (
         <button
             onClick={toggle}
-            title={`Switch to ${mode === 'performer' ? 'Teacher' : 'Performer'} mode`}
+            title={`Switch to ${mode === 'performer' ? 'Instructor' : 'Performer'} mode`}
             style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -54,11 +54,11 @@ export default function ModeSwitch({ onChange }: ModeSwitchProps) {
                 padding: '4px 12px',
                 borderRadius: '20px',
                 border: '1px solid',
-                borderColor: mode === 'teacher' ? 'rgba(56, 189, 248, 0.3)' : 'rgba(168, 85, 247, 0.3)',
-                background: mode === 'teacher'
+                borderColor: mode === 'instructor' ? 'rgba(56, 189, 248, 0.3)' : 'rgba(168, 85, 247, 0.3)',
+                background: mode === 'instructor'
                     ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(34, 211, 238, 0.08))'
                     : 'linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(139, 92, 246, 0.08))',
-                color: mode === 'teacher' ? '#38bdf8' : '#a855f7',
+                color: mode === 'instructor' ? '#38bdf8' : '#a855f7',
                 fontSize: '12px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -66,8 +66,8 @@ export default function ModeSwitch({ onChange }: ModeSwitchProps) {
                 whiteSpace: 'nowrap',
             }}
         >
-            <span style={{ fontSize: '14px' }}>{mode === 'teacher' ? '📚' : '🎵'}</span>
-            {mode === 'teacher' ? 'Teacher' : 'Performer'}
+            <span style={{ fontSize: '14px' }}>{mode === 'instructor' ? '📚' : '🎵'}</span>
+            {mode === 'instructor' ? 'Instructor' : 'Performer'}
         </button>
     );
 }

@@ -141,15 +141,15 @@ export default function ScanPage() {
     const scoreColor = (s: number) =>
         s >= 70 ? 'var(--accent-green)' : s >= 40 ? 'var(--accent-amber)' : 'var(--accent-red)';
 
-    const { isTeacher, headerStyle, logoFilter } = useAppMode();
+    const { isInstructor, headerStyle, logoFilter } = useAppMode();
 
     return (
         <>
             <header className="topbar" style={headerStyle}>
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
                     <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: logoFilter }} />
-                    <span style={isTeacher ? { color: '#38bdf8' } : undefined}>
-                        {isTeacher ? '📚 Lead Scanner' : '🔍 Lead Scanner'}
+                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>
+                        {isInstructor ? '📚 Lead Scanner' : '🔍 Lead Scanner'}
                     </span>
                 </Link>
                 <nav className="topbar-nav">

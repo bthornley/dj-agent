@@ -373,14 +373,14 @@ function DetailField({ label, value, editing, editValue, onChange, isLink }: {
 }
 
 export default function LeadDetailPage() {
-    const { isTeacher, headerStyle, logoFilter } = useAppMode();
+    const { isInstructor, headerStyle, logoFilter } = useAppMode();
 
     return (
         <>
             <header className="topbar" style={headerStyle}>
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
                     <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: logoFilter }} />
-                    <span style={isTeacher ? { color: '#38bdf8' } : undefined}>Lead Detail</span>
+                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>Lead Detail</span>
                 </Link>
                 <nav className="topbar-nav">
                     <Link href="/leads" className="btn btn-ghost btn-sm">← Back to Leads</Link>

@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-export type AppMode = 'performer' | 'teacher';
+export type AppMode = 'performer' | 'instructor';
 
 export interface AppModeState {
     activeMode: AppMode | null;
     setActiveMode: (mode: AppMode) => void;
-    isTeacher: boolean;
+    isInstructor: boolean;
     modeLoaded: boolean;
     // Styling helpers
     accentColor: string;
@@ -38,11 +38,11 @@ export function useAppMode(): AppModeState {
         setActiveMode(mode);
     }, []);
 
-    const isTeacher = activeMode === 'teacher';
-    const accentColor = isTeacher ? '#38bdf8' : '#a855f7';
-    const accentGlow = isTeacher ? 'rgba(56,189,248,0.4)' : 'rgba(168,85,247,0.4)';
+    const isInstructor = activeMode === 'instructor';
+    const accentColor = isInstructor ? '#38bdf8' : '#a855f7';
+    const accentGlow = isInstructor ? 'rgba(56,189,248,0.4)' : 'rgba(168,85,247,0.4)';
 
-    const headerStyle: React.CSSProperties | undefined = isTeacher ? {
+    const headerStyle: React.CSSProperties | undefined = isInstructor ? {
         borderBottom: '1px solid rgba(56, 189, 248, 0.2)',
         background: 'linear-gradient(135deg, rgba(15,15,35,0.98), rgba(10,30,50,0.98))',
     } : undefined;
@@ -52,7 +52,7 @@ export function useAppMode(): AppModeState {
     return {
         activeMode,
         setActiveMode: handleSetMode,
-        isTeacher,
+        isInstructor,
         modeLoaded,
         accentColor,
         accentGlow,

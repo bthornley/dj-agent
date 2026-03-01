@@ -96,14 +96,14 @@ function soloArtistSeeds(regions: string[]): QuerySeed[] {
     ]);
 }
 
-/** Generate Music Teacher seeds for given regions */
-function musicTeacherSeeds(regions: string[]): QuerySeed[] {
+/** Generate Music Instructor seeds for given regions */
+function musicInstructorSeeds(regions: string[]): QuerySeed[] {
     return regions.flatMap(r => [
         // Schools & education
         seed(r, ['music school', r]), seed(r, ['music academy', r]),
         seed(r, ['school district music program', r]),
-        seed(r, ['elementary school music teacher', r]),
-        seed(r, ['middle school music teacher', r]),
+        seed(r, ['elementary school music instructor', r]),
+        seed(r, ['middle school music instructor', r]),
         seed(r, ['after school music program', r]),
         seed(r, ['preschool music class', r]),
         seed(r, ['Montessori music program', r]),
@@ -131,11 +131,11 @@ function musicTeacherSeeds(regions: string[]): QuerySeed[] {
         seed(r, ['private music studio', r]),
         seed(r, ['guitar center lessons', r]),
         // Marketplace & platforms
-        seed(r, ['site:craigslist.org', 'music teacher', r]),
+        seed(r, ['site:craigslist.org', 'music instructor', r]),
         seed(r, ['site:craigslist.org', 'music lessons', r]),
-        seed(r, ['site:facebook.com/marketplace', 'music teacher', r]),
+        seed(r, ['site:facebook.com/marketplace', 'music instructor', r]),
         seed(r, ['site:thumbtack.com', 'music lessons', r]),
-        seed(r, ['site:care.com', 'music teacher', r]),
+        seed(r, ['site:care.com', 'music instructor', r]),
         seed(r, ['site:takelessons.com', r]),
         seed(r, ['site:wyzant.com', 'music', r]),
         seed(r, ['site:lessonface.com', r]),
@@ -149,7 +149,7 @@ export function getDefaultSeeds(artistType: ArtistType = 'dj', regions?: string[
     switch (artistType) {
         case 'band': return bandSeeds(r);
         case 'solo_artist': return soloArtistSeeds(r);
-        case 'music_teacher': return musicTeacherSeeds(r);
+        case 'music_instructor': return musicInstructorSeeds(r);
         case 'dj':
         default: return djSeeds(r);
     }
