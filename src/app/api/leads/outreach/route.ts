@@ -18,15 +18,21 @@ export async function POST(request: NextRequest) {
 
         const brand = await dbGetBrandProfile(userId);
 
-        // Get artist type from user profile
+        // Get active mode + artist type from user profile
         let artistType: ArtistType = 'dj';
         try {
             const client = await clerkClient();
             const user = await client.users.getUser(userId);
             const meta = user.publicMetadata as Record<string, unknown>;
-            const rawTypes = meta.artistTypes ?? meta.artistType;
-            const types: ArtistType[] = Array.isArray(rawTypes) ? rawTypes : [((rawTypes as string) || 'dj') as ArtistType];
-            artistType = types[0]; // Use primary artist type
+            const activeMode = (meta.activeMode as string) || 'performer';
+
+            if (activeMode === 'teacher') {
+                artistType = 'music_teacher';
+            } else {
+                const rawTypes = meta.artistTypes ?? meta.artistType;
+                const types: ArtistType[] = Array.isArray(rawTypes) ? rawTypes : [((rawTypes as string) || 'dj') as ArtistType];
+                artistType = types[0];
+            }
         } catch { /* fallback to dj */ }
 
         const result = generateOutreachEmails(lead, brand, artistType);

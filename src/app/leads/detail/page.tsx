@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { Lead } from '@/lib/types';
 import { fetchLead, updateLead, handoffLeads } from '@/lib/api-client';
+import ModeSwitch from '@/components/ModeSwitch';
 
 function LeadDetailContent() {
     const searchParams = useSearchParams();
@@ -380,6 +381,7 @@ export default function LeadDetailPage() {
                 <nav className="topbar-nav">
                     <Link href="/leads" className="btn btn-ghost btn-sm">← Back to Leads</Link>
                     <Link href="/leads/scan" className="btn btn-secondary btn-sm">🔍 Scan</Link>
+                    <ModeSwitch />
                 </nav>
             </header>
             <Suspense fallback={<div className="loading-overlay"><div className="spinner" /><span>Loading...</span></div>}>

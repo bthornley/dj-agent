@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Lead, LeadStatus, Priority } from '@/lib/types';
 import { fetchLeads, fetchLeadStats, updateLead, deleteLead, handoffLeads } from '@/lib/api-client';
+import ModeSwitch from '@/components/ModeSwitch';
 
 const statusLabels: Record<LeadStatus, { label: string; cls: string }> = {
     new: { label: '● New', cls: 'badge badge-lead-new' },
@@ -101,6 +102,7 @@ export default function LeadsDashboard() {
                     <Link href="/" className="btn btn-ghost btn-sm">← Events</Link>
                     <Link href="/leads/scan" className="btn btn-primary">🔍 Scan URL</Link>
                     <Link href="/leads/seeds" className="btn btn-secondary btn-sm">⚙ Seeds</Link>
+                    <ModeSwitch />
                 </nav>
             </header>
 

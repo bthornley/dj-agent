@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { UserButton, useUser } from '@clerk/nextjs';
 import AdminLink from '@/components/AdminLink';
+import ModeSwitch from '@/components/ModeSwitch';
 import { Event } from '@/lib/types';
 
 export default function DashboardPage() {
@@ -40,6 +41,7 @@ export default function DashboardPage() {
                     <Link href="/pricing" className="btn btn-ghost btn-sm">💎 Plans</Link>
                     <Link href="/epk/builder" className="btn btn-ghost btn-sm">📋 EPK Builder</Link>
                     <Link href="/account" className="btn btn-ghost btn-sm">⚙️ Account</Link>
+                    <ModeSwitch />
                     <AdminLink />
                     <UserButton />
                 </nav>
