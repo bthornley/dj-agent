@@ -33,12 +33,13 @@ export default function LeadsDashboard() {
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<Set<string>>(new Set());
     const [page, setPage] = useState(1);
-    const [activeMode, setActiveMode] = useState<AppMode>('performer');
+    const [activeMode, setActiveMode] = useState<AppMode | null>(null);
     const PAGE_SIZE = 25;
 
     const isTeacher = activeMode === 'teacher';
 
     const loadData = useCallback(async () => {
+        if (!activeMode) return; // Don't load until mode is known
         try {
             const [leadsData, statsData] = await Promise.all([
                 fetchLeads({
@@ -59,6 +60,7 @@ export default function LeadsDashboard() {
     }, [filterStatus, filterPriority, search, activeMode]);
 
     useEffect(() => {
+        if (!activeMode) return; // Wait for ModeSwitch to provide the real mode
         setLoading(true);
         setPage(1);
         loadData();

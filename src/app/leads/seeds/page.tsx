@@ -67,12 +67,13 @@ export default function SeedsPage() {
     const [source, setSource] = useState('web_search');
     const [message, setMessage] = useState('');
     const [addingPresets, setAddingPresets] = useState(false);
-    const [activeMode, setActiveMode] = useState<AppMode>('performer');
+    const [activeMode, setActiveMode] = useState<AppMode | null>(null);
     const [deleting, setDeleting] = useState(false);
 
     const isTeacher = activeMode === 'teacher';
 
     const loadSeeds = useCallback(async () => {
+        if (!activeMode) return; // Don't load until mode is known
         try {
             const data = await fetchSeeds(activeMode);
             setSeeds(data);
@@ -84,6 +85,7 @@ export default function SeedsPage() {
     }, [activeMode]);
 
     useEffect(() => {
+        if (!activeMode) return; // Wait for ModeSwitch to provide the real mode
         setLoading(true);
         loadSeeds();
     }, [activeMode, loadSeeds]);
@@ -100,7 +102,7 @@ export default function SeedsPage() {
                 keywords: keywords.split(',').map(k => k.trim()).filter(Boolean),
                 source,
                 active: true,
-                mode: activeMode,
+                mode: activeMode || undefined,
                 created_at: new Date().toISOString(),
             });
             setKeywords('');
@@ -129,7 +131,7 @@ export default function SeedsPage() {
                             keywords: preset.keywords,
                             source: preset.keywords.some(k => k.startsWith('site:')) ? 'marketplace' : 'web_search',
                             active: true,
-                            mode: activeMode,
+                            mode: activeMode || undefined,
                             created_at: new Date().toISOString(),
                         });
                         added++;
@@ -159,7 +161,7 @@ export default function SeedsPage() {
         if (!confirm(`Delete all ${seeds.length} ${modeLabel} seeds? This cannot be undone.`)) return;
         setDeleting(true);
         try {
-            const result = await deleteAllSeeds(activeMode);
+            const result = await deleteAllSeeds(activeMode || undefined);
             setMessage(`🗑 Deleted ${result.deleted} ${modeLabel} seeds`);
             setTimeout(() => setMessage(''), 4000);
             loadSeeds();
