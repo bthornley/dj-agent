@@ -133,7 +133,7 @@ export default function BrandSetupPage() {
                     <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} /><span>GigLift</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
-                    <Link href="/social" className="btn btn-ghost btn-sm">📱 Social</Link>
+                    <Link href="/social" className="btn btn-ghost btn-sm">�� Social Crew</Link>
                     <Link href="/social/brand" className="btn btn-secondary btn-sm">🎨 Brand</Link>
                     <UserButton />
                 </nav>
@@ -150,7 +150,7 @@ export default function BrandSetupPage() {
                     <span>GigLift</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
-                    <Link href="/social" className="btn btn-ghost btn-sm">📱 Social</Link>
+                    <Link href="/social" className="btn btn-ghost btn-sm">�� Social Crew</Link>
                     <Link href="/social/queue" className="btn btn-ghost btn-sm">📝 Queue</Link>
                     <Link href="/social/brand" className="btn btn-secondary btn-sm">🎨 Brand</Link>
                     <Link href="/social/analytics" className="btn btn-ghost btn-sm">📊 Analytics</Link>

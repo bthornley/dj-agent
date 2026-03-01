@@ -77,7 +77,7 @@ export default function SocialDashboardPage() {
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/dashboard" className="btn btn-ghost btn-sm">📋 Events</Link>
                     <Link href="/leads" className="btn btn-ghost btn-sm">🔍 Leads</Link>
-                    <Link href="/social" className="btn btn-secondary btn-sm">📱 Social</Link>
+                    <Link href="/social" className="btn btn-secondary btn-sm">�� Social Crew</Link>
                     <Link href="/social/queue" className="btn btn-ghost btn-sm">📝 Queue</Link>
                     <Link href="/social/brand" className="btn btn-ghost btn-sm">🎨 Brand</Link>
                     <Link href="/social/analytics" className="btn btn-ghost btn-sm">📊 Analytics</Link>

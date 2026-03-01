@@ -58,7 +58,7 @@ export default function AnalyticsPage() {
                     <span>GigLift</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
-                    <Link href="/social" className="btn btn-ghost btn-sm">📱 Social</Link>
+                    <Link href="/social" className="btn btn-ghost btn-sm">�� Social Crew</Link>
                     <Link href="/social/queue" className="btn btn-ghost btn-sm">📝 Queue</Link>
                     <Link href="/social/brand" className="btn btn-ghost btn-sm">🎨 Brand</Link>
                     <Link href="/social/analytics" className="btn btn-secondary btn-sm">📊 Analytics</Link>
