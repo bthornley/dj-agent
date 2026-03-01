@@ -154,10 +154,8 @@ export async function createSeed(seed: Partial<QuerySeed>): Promise<{ success: b
 }
 
 export async function deleteSeed(id: string): Promise<void> {
-    const res = await fetch(`${LEADS_BASE}/seeds`, {
+    const res = await fetch(`${LEADS_BASE}/seeds?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
     });
     if (!res.ok) throw new Error('Failed to delete seed');
 }
