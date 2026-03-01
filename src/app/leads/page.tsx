@@ -337,21 +337,24 @@ export default function LeadsDashboard() {
                                         {lead.status === 'new' && (
                                             <>
                                                 <button
-                                                    className="btn btn-success btn-sm"
+                                                    className="btn btn-success"
                                                     onClick={() => handleQueue([lead.lead_id])}
                                                     title="Queue for DJ Agent"
+                                                    style={{ width: 30, height: 30, padding: 0, fontSize: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
                                                 >▶</button>
                                                 <button
-                                                    className="btn btn-ghost btn-sm"
+                                                    className="btn btn-ghost"
                                                     onClick={() => handleReject(lead.lead_id)}
                                                     title="Reject"
+                                                    style={{ width: 30, height: 30, padding: 0, fontSize: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
                                                 >✕</button>
                                             </>
                                         )}
                                         <button
-                                            className="btn btn-ghost btn-sm"
+                                            className="btn btn-ghost"
                                             onClick={() => handleDelete(lead.lead_id)}
                                             title="Delete"
+                                            style={{ width: 30, height: 30, padding: 0, fontSize: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
                                         >🗑</button>
                                     </div>
                                 </div>
