@@ -109,7 +109,7 @@ export default function DashboardPage() {
                             </h1>
                             <p style={{ color: 'var(--text-muted)', fontSize: '15px', margin: '4px 0 0 0' }}>
                                 {isInstructor
-                                    ? 'Finding music schools, studios, and teaching opportunities'
+                                    ? 'Finding music schools, studios, and instruction opportunities'
                                     : 'Finding venues, events, and booking opportunities'}
                             </p>
                         </div>
@@ -126,7 +126,7 @@ export default function DashboardPage() {
                                 {leadStats?.total ?? '—'}
                             </div>
                             <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                {isInstructor ? 'Teaching Leads' : 'Gig Leads'}
+                                {isInstructor ? 'Instruction Leads' : 'Gig Leads'}
                             </div>
                         </div>
                         <div style={{
@@ -173,7 +173,7 @@ export default function DashboardPage() {
                             background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
                             boxShadow: '0 0 16px rgba(56,189,248,0.2)',
                         } : undefined}>
-                            {isInstructor ? '📚 View Teaching Leads' : '🎵 View Gig Leads'}
+                            {isInstructor ? '📚 View Instruction Leads' : '🎵 View Gig Leads'}
                         </Link>
                         <Link href="/leads/scan" className="btn btn-secondary btn-sm" style={isInstructor ? {
                             background: 'linear-gradient(135deg, rgba(56,189,248,0.15), rgba(34,211,238,0.08))',
@@ -183,7 +183,7 @@ export default function DashboardPage() {
                             {isInstructor ? '🔍 Scan for Schools' : '🔍 Scan for Venues'}
                         </Link>
                         <Link href="/leads/seeds" className="btn btn-ghost btn-sm">
-                            {isInstructor ? '🏫 Teaching Seeds' : '⚙ Query Seeds'}
+                            {isInstructor ? '🏫 Instruction Seeds' : '⚙ Query Seeds'}
                         </Link>
                     </div>
                 </div>
@@ -242,7 +242,7 @@ export default function DashboardPage() {
                         </div>
                         <ul style={{ margin: 0, padding: '0 0 0 20px', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.8 }}>
                             <li>Find music schools & academies</li>
-                            <li>Discover teaching positions</li>
+                            <li>Discover instruction positions</li>
                             <li>Scan for after-school programs</li>
                             <li>Community centers & church programs</li>
                         </ul>
@@ -253,10 +253,10 @@ export default function DashboardPage() {
                 <div className="section-header">
                     <div>
                         <h2 className="section-title" style={isInstructor ? { color: '#38bdf8' } : undefined}>
-                            {isInstructor ? '📅 Teaching Assignments' : '🎧 Your Events'}
+                            {isInstructor ? '📅 Instruction Assignments' : '🎧 Your Events'}
                         </h2>
                         <p className="section-subtitle">
-                            {isInstructor ? 'Teaching gigs from your lead pipeline' : 'Gigs from your lead pipeline'}
+                            {isInstructor ? 'Instruction gigs from your lead pipeline' : 'Gigs from your lead pipeline'}
                         </p>
                     </div>
                     <Link href="/new" className="btn btn-primary btn-sm" style={isInstructor ? {
@@ -269,9 +269,9 @@ export default function DashboardPage() {
                 ) : events.length === 0 ? (
                     <div className="empty-state">
                         <div className="empty-icon">{isInstructor ? '📚' : '🎧'}</div>
-                        <h3>No {isInstructor ? 'teaching assignments' : 'events'} yet</h3>
+                        <h3>No {isInstructor ? 'instruction assignments' : 'events'} yet</h3>
                         <p>Start by <Link href="/leads/scan" style={{ color: accentColor }}>
-                            {isInstructor ? 'scanning for teaching opportunities' : 'scanning for leads'}
+                            {isInstructor ? 'scanning for instruction opportunities' : 'scanning for leads'}
                         </Link> and hand them off to create {isInstructor ? 'assignments' : 'events'}.</p>
                     </div>
                 ) : (
