@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, clerkClient } from '@clerk/nextjs/server';
-import { dbGetAllLeads, dbSaveLead, dbGetLeadStats } from '@/lib/db';
+import { dbGetAllLeads, dbSaveLead, dbGetLeadStats, dbDeleteAllLeads } from '@/lib/db';
 import { computeDedupeKey } from '@/lib/agent/lead-finder/dedup';
 import { scoreLead } from '@/lib/agent/lead-finder/scoring';
 import { Lead } from '@/lib/types';
@@ -100,4 +100,19 @@ export async function POST(request: NextRequest) {
         console.error('Failed to create lead:', error);
         return NextResponse.json({ error: 'Failed to create lead' }, { status: 500 });
     }
+}
+
+// DELETE /api/leads — Delete all leads (optionally by mode)
+export async function DELETE(request: NextRequest) {
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const { searchParams } = new URL(request.url);
+    if (searchParams.get('all') !== 'true') {
+        return NextResponse.json({ error: 'Use ?all=true to confirm bulk deletion' }, { status: 400 });
+    }
+
+    const mode = searchParams.get('mode') || undefined;
+    const deleted = await dbDeleteAllLeads(userId, mode);
+    return NextResponse.json({ success: true, deleted });
 }

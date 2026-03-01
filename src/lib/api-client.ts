@@ -101,6 +101,14 @@ export async function deleteLead(id: string): Promise<void> {
     if (!res.ok) throw new Error('Failed to delete lead');
 }
 
+export async function deleteAllLeads(mode?: string): Promise<{ deleted: number }> {
+    const params = new URLSearchParams({ all: 'true' });
+    if (mode) params.set('mode', mode);
+    const res = await fetch(`${LEADS_BASE}?${params}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete leads');
+    return res.json();
+}
+
 export async function scanUrl(input: {
     url: string;
     entity_name?: string;

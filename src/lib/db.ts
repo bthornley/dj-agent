@@ -287,6 +287,18 @@ export async function dbDeleteLead(id: string, userId: string): Promise<void> {
   await db.execute({ sql: 'DELETE FROM leads WHERE lead_id = ? AND user_id = ?', args: [id, userId] });
 }
 
+export async function dbDeleteAllLeads(userId: string, mode?: string): Promise<number> {
+  const db = await ensureSchema();
+  let sql = 'DELETE FROM leads WHERE user_id = ?';
+  const args: string[] = [userId];
+  if (mode) {
+    sql += ' AND mode = ?';
+    args.push(mode);
+  }
+  const result = await db.execute({ sql, args });
+  return result.rowsAffected;
+}
+
 export async function dbFindLeadByDedupeKey(key: string, userId: string): Promise<Lead | null> {
   const db = await ensureSchema();
   const result = await db.execute({ sql: 'SELECT data FROM leads WHERE dedupe_key = ? AND user_id = ?', args: [key, userId] });

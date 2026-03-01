@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
 import { Lead, LeadStatus, Priority } from '@/lib/types';
-import { fetchLeads, fetchLeadStats, updateLead, deleteLead, handoffLeads } from '@/lib/api-client';
+import { fetchLeads, fetchLeadStats, updateLead, deleteLead, deleteAllLeads, handoffLeads } from '@/lib/api-client';
 import ModeSwitch from '@/components/ModeSwitch';
 
 type AppMode = 'performer' | 'teacher';
@@ -34,6 +34,7 @@ export default function LeadsDashboard() {
     const [selected, setSelected] = useState<Set<string>>(new Set());
     const [page, setPage] = useState(1);
     const [activeMode, setActiveMode] = useState<AppMode | null>(null);
+    const [deletingAll, setDeletingAll] = useState(false);
     const PAGE_SIZE = 25;
 
     const isTeacher = activeMode === 'teacher';
@@ -100,6 +101,19 @@ export default function LeadsDashboard() {
         else setSelected(new Set(leads.map(l => l.lead_id)));
     };
 
+    const handleDeleteAll = async () => {
+        const modeLabel = isTeacher ? 'teaching' : 'performer';
+        if (!confirm(`Delete all ${stats?.total || 0} ${modeLabel} leads? This cannot be undone.`)) return;
+        setDeletingAll(true);
+        try {
+            await deleteAllLeads(activeMode || undefined);
+            loadData();
+        } catch {
+            console.error('Failed to delete all leads');
+        }
+        setDeletingAll(false);
+    };
+
     return (
         <>
             <header className="topbar" style={isTeacher ? {
@@ -124,6 +138,16 @@ export default function LeadsDashboard() {
                         boxShadow: '0 0 16px rgba(56,189,248,0.2)',
                     } : undefined}>🔍 Scan URL</Link>
                     <Link href="/leads/seeds" className="btn btn-secondary btn-sm">⚙ Seeds</Link>
+                    {leads.length > 0 && (
+                        <button
+                            className="btn btn-ghost btn-sm"
+                            onClick={handleDeleteAll}
+                            disabled={deletingAll}
+                            style={{ color: 'var(--accent-red)', opacity: deletingAll ? 0.6 : 1 }}
+                        >
+                            {deletingAll ? '⏳ Deleting...' : '🗑 Delete All'}
+                        </button>
+                    )}
                     <ModeSwitch onChange={(m) => setActiveMode(m as AppMode)} />
                     <UserButton />
                 </nav>
