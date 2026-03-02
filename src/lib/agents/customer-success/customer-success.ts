@@ -1,6 +1,5 @@
 import { createClient, Client } from '@libsql/client';
 import { v4 as uuid } from 'uuid';
-import { getPlanById, PlanId } from '@/lib/stripe';
 
 // ============================================================
 // Customer Success Agent — Health Scoring, Churn Prevention & Upgrades
