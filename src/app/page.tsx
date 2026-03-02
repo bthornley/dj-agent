@@ -326,6 +326,137 @@ export default async function LandingPage() {
             <p>Track post performance, engagement rates, and content pillar distribution across platforms.</p>
           </div>
         </div>
+
+        {/* ═══════ Brand Ambassador Program ═══════ */}
+        <div style={{
+          marginTop: '72px', padding: '48px 24px', borderRadius: '20px',
+          background: 'linear-gradient(135deg, rgba(168,85,247,0.06), rgba(56,189,248,0.06), rgba(15,15,35,0.98))',
+          border: '1px solid rgba(168,85,247,0.15)',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{
+            position: 'absolute', top: '-60px', right: '-60px', width: '200px', height: '200px',
+            background: 'radial-gradient(circle, rgba(168,85,247,0.08) 0%, transparent 70%)',
+            borderRadius: '50%', pointerEvents: 'none',
+          }} />
+          <div style={{
+            position: 'absolute', bottom: '-40px', left: '-40px', width: '160px', height: '160px',
+            background: 'radial-gradient(circle, rgba(56,189,248,0.06) 0%, transparent 70%)',
+            borderRadius: '50%', pointerEvents: 'none',
+          }} />
+
+          <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              padding: '6px 16px', borderRadius: '20px', fontSize: '12px', fontWeight: 700,
+              background: 'linear-gradient(135deg, rgba(240,199,85,0.15), rgba(251,191,36,0.1))',
+              border: '1px solid rgba(240,199,85,0.25)',
+              color: '#f0c755', letterSpacing: '1px', textTransform: 'uppercase',
+              marginBottom: '16px',
+            }}>
+              🌟 Now Accepting Applications
+            </div>
+            <h2 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px' }}>
+              <span style={{
+                background: 'linear-gradient(135deg, #f0c755, #fbbf24)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>Brand Ambassador</span> Program
+            </h2>
+            <p style={{ fontSize: '16px', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto 32px', lineHeight: 1.6 }}>
+              Represent GigLift in your local music scene. Get rewarded for spreading the word to fellow musicians and instructors.
+            </p>
+          </div>
+
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '16px', maxWidth: '900px', margin: '0 auto 32px', position: 'relative', zIndex: 1,
+          }}>
+            <div style={{
+              padding: '24px 20px', borderRadius: '14px',
+              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: '32px', marginBottom: '10px' }}>🎁</div>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '6px', color: 'var(--text-primary)' }}>
+                Free Pro Access
+              </h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                Full Pro tier ($19/mo) free for the duration of your ambassadorship
+              </p>
+            </div>
+
+            <div style={{
+              padding: '24px 20px', borderRadius: '14px',
+              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: '32px', marginBottom: '10px' }}>💰</div>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '6px', color: 'var(--text-primary)' }}>
+                20% Revenue Share
+              </h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                Earn 20% recurring commission on every user you refer who subscribes
+              </p>
+            </div>
+
+            <div style={{
+              padding: '24px 20px', borderRadius: '14px',
+              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: '32px', marginBottom: '10px' }}>🏷️</div>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '6px', color: 'var(--text-primary)' }}>
+                Custom Referral Link
+              </h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                Your own branded referral URL and tracking dashboard
+              </p>
+            </div>
+
+            <div style={{
+              padding: '24px 20px', borderRadius: '14px',
+              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: '32px', marginBottom: '10px' }}>🎤</div>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '6px', color: 'var(--text-primary)' }}>
+                Featured Spotlight
+              </h3>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                Monthly showcase on our social channels and ambassador hall of fame
+              </p>
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+            <div style={{
+              maxWidth: '600px', margin: '0 auto 24px', padding: '20px',
+              borderRadius: '12px', background: 'rgba(240,199,85,0.05)',
+              border: '1px solid rgba(240,199,85,0.12)',
+            }}>
+              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
+                <strong style={{ color: '#f0c755' }}>Who can apply?</strong> Any active musician, DJ, band member, or music instructor
+                who uses GigLift and is active in their local music community — online or offline.
+                We&apos;re looking for passionate advocates, not follower counts.
+              </p>
+            </div>
+            <a
+              href="mailto:hello@giglift.app?subject=Ambassador%20Application&body=Hi%20GigLift%20team!%0A%0AI'd%20like%20to%20apply%20for%20the%20Brand%20Ambassador%20Program.%0A%0AMy%20name%3A%0AMy%20artist%2Fband%20name%3A%0AMy%20role%3A%20(DJ%20%2F%20musician%20%2F%20instructor%20%2F%20other)%0ACity%3A%0ASocial%20media%20links%3A%0A%0AWhy%20I'd%20be%20a%20great%20ambassador%3A%0A"
+              className="btn btn-xl"
+              style={{
+                background: 'linear-gradient(135deg, #f0c755, #fbbf24)',
+                color: '#1a1a2e', fontWeight: 700, boxShadow: '0 0 24px rgba(240,199,85,0.2)',
+                textDecoration: 'none', display: 'inline-flex',
+              }}
+            >
+              🌟 Apply to Be an Ambassador
+            </a>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '12px' }}>
+              Applications reviewed within 48 hours · No minimum follower count required
+            </p>
+          </div>
+        </div>
       </main>
 
       <footer className="landing-footer" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
