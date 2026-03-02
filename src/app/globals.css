@@ -5,6 +5,12 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@400;500;600;700;800&display=swap');
 
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 :root {
   /* ---- M3 Tonal Surfaces ---- */
   --md-surface-dim: #0f0d13;
@@ -1848,6 +1854,9 @@ a:hover {
   font-size: 28px;
   font-weight: 700;
   color: var(--text-primary);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .landing-mode-card {
@@ -1871,11 +1880,51 @@ a:hover {
     padding: 28px 14px 20px;
     overflow-x: hidden;
     word-break: break-word;
+    text-align: center;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+
+  .landing-hero .hero-content {
+    margin-bottom: 40px;
+  }
+
+  .landing-hero .hero-badge {
+    font-size: 12px !important;
+    padding: 6px 14px !important;
+  }
+
+  .landing-hero .hero-title {
+    font-size: 24px !important;
+    line-height: 1.2 !important;
+  }
+
+  .landing-hero .hero-subtitle {
+    font-size: 14px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .landing-hero .btn-xl {
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+    width: 100%;
+    max-width: 320px;
+    box-sizing: border-box;
+  }
+
+  .landing-hero .hero-stat-value {
+    font-size: 22px !important;
+  }
+
+  .landing-hero .hero-stat-label {
+    font-size: 11px !important;
   }
 
   .landing-modes-grid {
-    grid-template-columns: 1fr;
-    padding: 0 !important;
+    grid-template-columns: 1fr !important;
+    padding: 0 12px !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
   }
 
   .landing-modes-title {
@@ -1884,6 +1933,7 @@ a:hover {
 
   .landing-mode-card {
     padding: 18px 14px !important;
+    box-sizing: border-box;
   }
 
   .landing-mode-card h3 {
@@ -1907,10 +1957,23 @@ a:hover {
     font-size: 20px !important;
   }
 
+  .hero-actions {
+    flex-direction: column !important;
+    align-items: center;
+    gap: 10px !important;
+  }
+
+  .hero-stats {
+    gap: 24px !important;
+  }
+
   .landing-ambassador {
     margin-top: 40px !important;
     padding: 28px 14px !important;
     border-radius: 14px !important;
+    box-sizing: border-box;
+    max-width: 100vw;
+    overflow: hidden;
   }
 
   .landing-ambassador h2 {
@@ -1923,12 +1986,29 @@ a:hover {
 }
 
 @media (max-width: 480px) {
-  .landing-modes-title {
-    font-size: 18px;
+  .landing-hero {
+    padding: 16px 10px 12px;
   }
 
-  .landing-hero {
-    padding: 20px 10px 16px;
+  .landing-hero .hero-title,
+  .hero-title {
+    font-size: 20px !important;
+    line-height: 1.3 !important;
+  }
+
+  .landing-hero .hero-badge,
+  .hero-badge {
+    font-size: 11px !important;
+    padding: 5px 10px !important;
+  }
+
+  .landing-hero .hero-subtitle,
+  .hero-subtitle {
+    font-size: 13px !important;
+  }
+
+  .landing-modes-title {
+    font-size: 16px !important;
   }
 
   .landing-mode-card {
@@ -1936,17 +2016,11 @@ a:hover {
   }
 
   .landing-hero h2 {
-    font-size: 18px !important;
+    font-size: 16px !important;
   }
 
   .landing-ambassador h2 {
     font-size: 20px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .landing-modes-title {
-    font-size: 19px;
   }
 }
 
@@ -1959,6 +2033,8 @@ a:hover {
 
 .hero-content {
   margin-bottom: 80px;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .hero-badge {
@@ -1978,6 +2054,9 @@ a:hover {
   font-weight: 800;
   line-height: 1.1;
   margin-bottom: 20px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   background: linear-gradient(135deg, #fff, #c4b5fd);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1989,6 +2068,8 @@ a:hover {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  display: inline;
+  overflow-wrap: anywhere;
 }
 
 .hero-subtitle {

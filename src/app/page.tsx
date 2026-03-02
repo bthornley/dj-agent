@@ -91,7 +91,6 @@ export default async function LandingPage() {
 
         <div className="landing-modes-grid" style={{
           maxWidth: '960px', margin: '0 auto 40px auto', padding: '0 16px',
-          gridTemplateColumns: 'repeat(2, 1fr)',
         }}>
           {/* Performer Card */}
           <div className="landing-mode-card" style={{
