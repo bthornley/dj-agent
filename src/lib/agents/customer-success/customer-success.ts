@@ -1,5 +1,5 @@
 import { createClient, Client } from '@libsql/client';
-import { v4 as uuid } from 'uuid';
+import { randomUUID as uuid } from 'crypto';
 
 // ============================================================
 // Customer Success Agent — Health Scoring, Churn Prevention & Upgrades

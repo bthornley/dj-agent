@@ -1,6 +1,6 @@
 import { createClient, Client } from '@libsql/client';
 import { getRecentSnapshots, DailyMetrics, generateWeeklyInvestorUpdate } from '@/lib/agents/analytics/analytics-agent';
-import { v4 as uuid } from 'uuid';
+import { randomUUID as uuid } from 'crypto';
 
 // ============================================================
 // Investor Pipeline Agent — CRM, Scoring & Outreach
