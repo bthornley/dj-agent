@@ -75,7 +75,11 @@ export default function AdminAgentsDashboard() {
         setRunningAgent(agentId);
         setAgentResult(null);
         try {
-            const res = await fetch(`/api/agents/${agentId}`);
+            const res = await fetch('/api/admin/agents', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ agentId }),
+            });
             const json = await res.json();
             setAgentResult(JSON.stringify(json, null, 2));
             // Refresh dashboard data

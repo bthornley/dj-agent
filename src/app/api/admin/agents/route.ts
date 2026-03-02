@@ -1,8 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-guard';
-import { getSnapshot, getRecentSnapshots, generateWeeklyInvestorUpdate } from '@/lib/agents/analytics/analytics-agent';
-import { getInvestors, getPipelineSummary } from '@/lib/agents/fundraising/investor-pipeline';
-import { getContentQueue } from '@/lib/agents/content/content-marketing';
+import { getSnapshot, getRecentSnapshots, generateWeeklyInvestorUpdate, runAnalyticsAgent } from '@/lib/agents/analytics/analytics-agent';
+import { getInvestors, getPipelineSummary, runInvestorPipelineAgent } from '@/lib/agents/fundraising/investor-pipeline';
+import { getContentQueue, runContentMarketingAgent } from '@/lib/agents/content/content-marketing';
+import { runGrowthOpsAgent } from '@/lib/agents/growth/growth-ops';
+import { runCustomerSuccessAgent } from '@/lib/agents/customer-success/customer-success';
+import { runCommunityAgent } from '@/lib/agents/community/community-agent';
+
+export const maxDuration = 120;
 
 // GET /api/admin/agents — Aggregated agent dashboard data
 export async function GET() {
@@ -60,4 +65,37 @@ export async function GET() {
         contentQueue,
         weeklyUpdate,
     });
+}
+
+// POST /api/admin/agents — Trigger an agent run (admin auth, no CRON_SECRET needed)
+export async function POST(request: NextRequest) {
+    const guard = await requireAdmin();
+    if (guard instanceof NextResponse) return guard;
+
+    try {
+        const { agentId } = await request.json();
+
+        const runners: Record<string, () => Promise<unknown>> = {
+            'analytics': runAnalyticsAgent,
+            'growth-ops': runGrowthOpsAgent,
+            'customer-success': runCustomerSuccessAgent,
+            'investor-pipeline': runInvestorPipelineAgent,
+            'content-marketing': runContentMarketingAgent,
+            'community': runCommunityAgent,
+        };
+
+        const runner = runners[agentId];
+        if (!runner) {
+            return NextResponse.json({ error: `Unknown agent: ${agentId}` }, { status: 400 });
+        }
+
+        const result = await runner();
+        return NextResponse.json({ success: true, agentId, result });
+    } catch (error) {
+        console.error('[admin/agents] run failed:', error);
+        return NextResponse.json({
+            error: 'Agent run failed',
+            details: error instanceof Error ? error.message : 'Unknown error',
+        }, { status: 500 });
+    }
 }
