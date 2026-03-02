@@ -547,6 +547,33 @@ export default function AccountPage() {
                         )}
                     </div>
                 </div>
+
+                {/* Ambassador CTA — only show if not already an ambassador */}
+                {user && !(user.publicMetadata as Record<string, unknown>)?.ambassador && (
+                    <div style={{
+                        marginTop: '32px', padding: '24px', borderRadius: '16px',
+                        background: 'linear-gradient(135deg, rgba(251,191,36,0.08), rgba(245,158,11,0.04))',
+                        border: '1px solid rgba(251,191,36,0.2)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        flexWrap: 'wrap', gap: '16px',
+                    }}>
+                        <div>
+                            <h3 style={{ color: '#fbbf24', fontSize: '16px', fontWeight: 700, margin: '0 0 4px 0' }}>
+                                🌟 Brand Ambassador Program
+                            </h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: 0 }}>
+                                Get a free Pro account, early access to features, and showcase your work to our community.
+                            </p>
+                        </div>
+                        <Link href="/ambassador" className="btn" style={{
+                            background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                            color: '#1a1a2e', fontWeight: 700, fontSize: '14px',
+                            textDecoration: 'none', flexShrink: 0,
+                        }}>
+                            Apply Now →
+                        </Link>
+                    </div>
+                )}
             </main>
         </>
     );
