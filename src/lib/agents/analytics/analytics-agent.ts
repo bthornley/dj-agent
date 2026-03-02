@@ -1,5 +1,6 @@
 import { createClient, Client } from '@libsql/client';
 import { getStripe } from '@/lib/stripe';
+import { dbGetPlatformStats } from '@/lib/db';
 
 // ============================================================
 // Analytics Agent — KPI Compiler & Metrics Store
@@ -76,24 +77,10 @@ export async function compileKPIs(): Promise<DailyMetrics> {
     const db = await ensureAnalyticsSchema();
     const today = new Date().toISOString().split('T')[0];
 
-    // --- User metrics from Turso ---
-    // Count distinct users across ALL tables (same as main admin page)
-    const usersResult = await db.execute({
-        sql: `SELECT COUNT(*) as count FROM (
-            SELECT DISTINCT user_id FROM events
-            UNION SELECT DISTINCT user_id FROM leads
-            UNION SELECT DISTINCT user_id FROM social_posts
-            UNION SELECT DISTINCT user_id FROM brand_profiles
-        ) WHERE user_id IS NOT NULL AND user_id != ''`,
-        args: [],
-    });
-    const totalDbUsers = Number(usersResult.rows[0]?.count ?? 0);
-
-    const leadsResult = await db.execute({
-        sql: `SELECT COUNT(*) as count FROM leads`,
-        args: [],
-    });
-    const totalLeads = Number(leadsResult.rows[0]?.count ?? 0);
+    // --- User & product metrics via shared DB function (same as main admin page) ---
+    const platformStats = await dbGetPlatformStats();
+    const totalDbUsers = platformStats.uniqueUserIds.length;
+    const totalLeads = platformStats.totalLeads;
 
     const seedsResult = await db.execute({
         sql: `SELECT COUNT(*) as count FROM query_seeds`,
