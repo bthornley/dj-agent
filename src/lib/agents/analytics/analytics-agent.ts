@@ -77,11 +77,17 @@ export async function compileKPIs(): Promise<DailyMetrics> {
     const today = new Date().toISOString().split('T')[0];
 
     // --- User metrics from Turso ---
+    // Count distinct users across ALL tables (same as main admin page)
     const usersResult = await db.execute({
-        sql: `SELECT COUNT(DISTINCT user_id) as count FROM leads`,
+        sql: `SELECT COUNT(*) as count FROM (
+            SELECT DISTINCT user_id FROM events
+            UNION SELECT DISTINCT user_id FROM leads
+            UNION SELECT DISTINCT user_id FROM social_posts
+            UNION SELECT DISTINCT user_id FROM brand_profiles
+        ) WHERE user_id IS NOT NULL AND user_id != ''`,
         args: [],
     });
-    const totalLeadUsers = Number(usersResult.rows[0]?.count ?? 0);
+    const totalDbUsers = Number(usersResult.rows[0]?.count ?? 0);
 
     const leadsResult = await db.execute({
         sql: `SELECT COUNT(*) as count FROM leads`,
@@ -151,21 +157,26 @@ export async function compileKPIs(): Promise<DailyMetrics> {
         console.error('[analytics] Stripe fetch failed:', err);
     }
 
-    // Clerk user count (via API if available)
-    let totalUsers = totalLeadUsers;
+    // Clerk user count (authoritative source)
+    let totalUsers = totalDbUsers;
     let newUsersToday = 0;
     try {
         if (process.env.CLERK_SECRET_KEY) {
+            // Clerk v4+ API: GET /v1/users/count returns { object, total_count }
             const res = await fetch('https://api.clerk.com/v1/users/count', {
                 headers: { Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}` },
             });
             if (res.ok) {
                 const data = await res.json();
-                totalUsers = data.total_count ?? totalUsers;
+                // Handle both response formats
+                const count = data.total_count ?? data;
+                if (typeof count === 'number' && count > 0) {
+                    totalUsers = count;
+                }
             }
 
             // New users today
-            const todayStart = new Date(today).getTime();
+            const todayStart = new Date(today + 'T00:00:00Z').getTime();
             const usersRes = await fetch(
                 `https://api.clerk.com/v1/users?created_at_since=${todayStart}&limit=100`,
                 { headers: { Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}` } }
@@ -179,6 +190,9 @@ export async function compileKPIs(): Promise<DailyMetrics> {
         console.error('[analytics] Clerk fetch failed:', err);
     }
 
+    // Use the larger of DB count and Clerk count
+    totalUsers = Math.max(totalUsers, totalDbUsers);
+
     const arr = mrr * 12;
     planBreakdown.free = Math.max(0, totalUsers - paidSubscribers);
 
@@ -186,7 +200,7 @@ export async function compileKPIs(): Promise<DailyMetrics> {
         date: today,
         totalUsers,
         newUsersToday,
-        activeUsersLast7d: totalLeadUsers, // Approximation: users with leads
+        activeUsersLast7d: totalDbUsers, // Approximation: users with any activity
         usersByMode,
         mrr,
         arr,
