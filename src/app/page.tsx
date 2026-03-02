@@ -8,7 +8,7 @@ export default async function LandingPage() {
 
   return (
     <>
-      <header className="landing-topbar">
+      <header className="topbar landing-topbar">
         <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
           <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
           <span>GigLift</span>
@@ -69,7 +69,7 @@ export default async function LandingPage() {
         </div>
 
         {/* ═══════ Two Modes Section ═══════ */}
-        <div style={{ textAlign: 'center', marginTop: '56px', marginBottom: '16px' }}>
+        <div style={{ textAlign: 'center', marginTop: '40px', marginBottom: '16px' }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '8px',
             padding: '6px 16px', borderRadius: '20px', fontSize: '12px', fontWeight: 700,
@@ -80,7 +80,7 @@ export default async function LandingPage() {
           }}>
             ✨ Two Modes · One Platform
           </div>
-          <h2 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
+          <h2 className="landing-modes-title" style={{ marginBottom: '6px' }}>
             Whether You <span style={{ color: '#a855f7' }}>Perform</span> or <span style={{ color: '#38bdf8' }}>Teach</span> — We&apos;ve Got You
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
@@ -88,12 +88,11 @@ export default async function LandingPage() {
           </p>
         </div>
 
-        <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px',
+        <div className="landing-modes-grid" style={{
           maxWidth: '900px', margin: '0 auto 56px auto', padding: '0 16px',
         }}>
           {/* Performer Card */}
-          <div style={{
+          <div className="landing-mode-card" style={{
             padding: '28px', borderRadius: '16px',
             background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(139,92,246,0.03), rgba(15,15,35,0.95))',
             border: '1px solid rgba(168,85,247,0.25)',
@@ -138,7 +137,7 @@ export default async function LandingPage() {
           </div>
 
           {/* Instructor Card */}
-          <div style={{
+          <div className="landing-mode-card" style={{
             padding: '28px', borderRadius: '16px',
             background: 'linear-gradient(135deg, rgba(56,189,248,0.08), rgba(34,211,238,0.03), rgba(15,15,35,0.95))',
             border: '1px solid rgba(56,189,248,0.25)',
@@ -328,7 +327,7 @@ export default async function LandingPage() {
         </div>
 
         {/* ═══════ Brand Ambassador Program ═══════ */}
-        <div style={{
+        <div className="landing-ambassador" style={{
           marginTop: '72px', padding: '48px 24px', borderRadius: '20px',
           background: 'linear-gradient(135deg, rgba(168,85,247,0.06), rgba(56,189,248,0.06), rgba(15,15,35,0.98))',
           border: '1px solid rgba(168,85,247,0.15)',
