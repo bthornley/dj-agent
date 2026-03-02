@@ -7,6 +7,14 @@
         {
             "path": "/api/agents/investor-pipeline",
             "schedule": "0 9 * * 1-5"
+        },
+        {
+            "path": "/api/agents/growth-ops",
+            "schedule": "0 7 * * *"
+        },
+        {
+            "path": "/api/agents/customer-success",
+            "schedule": "0 8 * * *"
         }
     ]
 }
