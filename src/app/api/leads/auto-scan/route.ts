@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, clerkClient } from '@clerk/nextjs/server';
-import { dbGetAllSeeds, dbGetSearchQuota } from '@/lib/db';
+import { dbGetAllSeeds, dbGetSearchQuota, dbIncrementSearchQuota } from '@/lib/db';
 import { discoverFromSeeds, batchScanUrls, BatchScanResult } from '@/lib/agent/lead-finder/discovery';
 import { rateLimit } from '@/lib/rate-limit';
 import { getPlanById, PlanId } from '@/lib/stripe';
+
+const TRIAL_AUTO_SCANS = 5; // Free users get 5 lifetime auto-discovery trial scans
 
 // POST /api/leads/auto-scan — Automated discovery or batch scan
 export async function POST(request: NextRequest) {
@@ -35,12 +37,17 @@ export async function POST(request: NextRequest) {
 
         const plan = getPlanById(planId);
 
-        // Auto-discovery is a paid feature (Pro+)
+        // Auto-discovery: free users get a trial of 5 lifetime auto-scans
         if (body.auto && planId === 'free') {
-            return NextResponse.json({
-                error: 'Auto-discovery requires a Pro or Unlimited plan.',
-                upgradeUrl: '/pricing',
-            }, { status: 403 });
+            const trialQuota = await dbGetSearchQuota(userId, TRIAL_AUTO_SCANS, `trial_auto:${userId}`);
+            if (trialQuota.remaining <= 0) {
+                return NextResponse.json({
+                    error: `You've used all ${TRIAL_AUTO_SCANS} free trial auto-discoveries. Upgrade to Pro for 100 auto-scans/month.`,
+                    trialUsed: trialQuota.used,
+                    trialLimit: TRIAL_AUTO_SCANS,
+                    upgradeUrl: '/pricing',
+                }, { status: 403 });
+            }
         }
 
         const quota = await dbGetSearchQuota(userId, plan.scansPerMonth);
@@ -77,7 +84,13 @@ export async function POST(request: NextRequest) {
                 ? activeSeeds.filter(s => s.region.toLowerCase().includes(body.region.toLowerCase()))
                 : activeSeeds;
 
-            const maxSeeds = Math.min(body.limit || 5, filteredSeeds.length, quota.remaining);
+            let effectiveRemaining = quota.remaining;
+            // For free trial users, also cap by trial remaining
+            if (planId === 'free') {
+                const trialQuota = await dbGetSearchQuota(userId, TRIAL_AUTO_SCANS, `trial_auto:${userId}`);
+                effectiveRemaining = Math.min(effectiveRemaining, trialQuota.remaining);
+            }
+            const maxSeeds = Math.min(body.limit || 5, filteredSeeds.length, effectiveRemaining);
             const seedsToProcess = filteredSeeds.slice(0, maxSeeds);
 
             const results = await discoverFromSeeds(seedsToProcess, userId, activeMode);
@@ -86,9 +99,20 @@ export async function POST(request: NextRequest) {
             const totalCreated = results.reduce((s, r) => s + r.leadsCreated, 0);
             const totalFiltered = results.reduce((s, r) => s + r.leadsFiltered, 0);
 
+            // Increment trial counter for free users
+            if (planId === 'free') {
+                await dbIncrementSearchQuota(userId, seedsToProcess.length, `trial_auto:${userId}`);
+            }
+
+            const updatedQuota = await dbGetSearchQuota(userId, plan.scansPerMonth);
+            const trialInfo = planId === 'free'
+                ? await dbGetSearchQuota(userId, TRIAL_AUTO_SCANS, `trial_auto:${userId}`)
+                : null;
+
             return NextResponse.json({
                 mode: 'auto',
-                quota: await dbGetSearchQuota(userId, plan.scansPerMonth),
+                quota: updatedQuota,
+                ...(trialInfo ? { trial: { used: trialInfo.used, limit: TRIAL_AUTO_SCANS, remaining: trialInfo.remaining } } : {}),
                 seedsProcessed: seedsToProcess.length,
                 totalUrls,
                 highValueLeads: totalCreated,

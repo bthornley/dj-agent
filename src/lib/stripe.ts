@@ -39,7 +39,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
             '10 URL scans per month',
             '25 lead storage',
             '1 region',
-            'Manual scanning only',
+            '5 free trial auto-discoveries',
             'Lead scoring & QC',
         ],
     },

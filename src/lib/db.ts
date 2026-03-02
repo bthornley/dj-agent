@@ -143,23 +143,24 @@ function quotaKey(userId: string): string {
   return `${userId}:${month}`;
 }
 
-export async function dbGetSearchQuota(userId: string, planLimit?: number): Promise<{ month: string; used: number; remaining: number; limit: number }> {
+export async function dbGetSearchQuota(userId: string, planLimit?: number, customKey?: string): Promise<{ month: string; used: number; remaining: number; limit: number }> {
   const db = await ensureSchema();
-  const key = quotaKey(userId);
-  const month = key.split(':')[1];
+  const key = customKey || quotaKey(userId);
+  const month = customKey ? 'lifetime' : key.split(':')[1];
   const limit = planLimit ?? DEFAULT_SEARCH_LIMIT;
   const row = await db.execute({ sql: 'SELECT count FROM search_quota WHERE quota_key = ?', args: [key] });
   const used = row.rows.length > 0 ? Number(row.rows[0].count) : 0;
   return { month, used, remaining: Math.max(0, limit - used), limit };
 }
 
-export async function dbIncrementSearchQuota(userId: string, amount: number = 1, planLimit?: number): Promise<{ allowed: boolean; used: number; remaining: number }> {
+export async function dbIncrementSearchQuota(userId: string, amount: number = 1, customKeyOrLimit?: string | number): Promise<{ allowed: boolean; used: number; remaining: number }> {
   const db = await ensureSchema();
-  const key = quotaKey(userId);
-  const limit = planLimit ?? DEFAULT_SEARCH_LIMIT;
-  const quota = await dbGetSearchQuota(userId, limit);
+  const isCustomKey = typeof customKeyOrLimit === 'string';
+  const key = isCustomKey ? customKeyOrLimit : quotaKey(userId);
+  const limit = isCustomKey ? 9999 : (customKeyOrLimit as number ?? DEFAULT_SEARCH_LIMIT);
+  const quota = await dbGetSearchQuota(userId, limit, isCustomKey ? customKeyOrLimit as string : undefined);
 
-  if (quota.remaining < amount) {
+  if (!isCustomKey && quota.remaining < amount) {
     return { allowed: false, used: quota.used, remaining: quota.remaining };
   }
 
