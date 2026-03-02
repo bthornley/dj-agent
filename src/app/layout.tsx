@@ -50,10 +50,40 @@ export default function RootLayout({
       }}
     >
       <html lang="en">
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        </head>
         <body>
           <div className="app-shell">
             {children}
           </div>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  function initMobileNav() {
+                    document.querySelectorAll('.topbar').forEach(function(topbar) {
+                      if (topbar.querySelector('.mobile-nav-toggle')) return;
+                      var nav = topbar.querySelector('.topbar-nav');
+                      if (!nav) return;
+                      var btn = document.createElement('button');
+                      btn.className = 'mobile-nav-toggle';
+                      btn.setAttribute('aria-label', 'Toggle navigation');
+                      btn.textContent = '\\u2630';
+                      btn.addEventListener('click', function() {
+                        var open = nav.classList.toggle('mobile-open');
+                        btn.textContent = open ? '\\u2715' : '\\u2630';
+                      });
+                      nav.parentNode.insertBefore(btn, nav);
+                    });
+                  }
+                  var observer = new MutationObserver(function() { initMobileNav(); });
+                  observer.observe(document.body, { childList: true, subtree: true });
+                  document.addEventListener('DOMContentLoaded', initMobileNav);
+                })();
+              `,
+            }}
+          />
         </body>
       </html>
     </ClerkProvider>
