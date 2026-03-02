@@ -1,0 +1,12 @@
+{
+    "crons": [
+        {
+            "path": "/api/agents/analytics",
+            "schedule": "0 6 * * *"
+        },
+        {
+            "path": "/api/agents/investor-pipeline",
+            "schedule": "0 9 * * 1-5"
+        }
+    ]
+}
