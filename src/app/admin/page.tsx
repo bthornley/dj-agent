@@ -113,6 +113,7 @@ export default function AdminDashboard() {
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/dashboard" className="btn btn-ghost btn-sm">📊 App</Link>
                     <Link href="/admin" className="btn btn-secondary btn-sm">🛡️ Admin</Link>
+                    <Link href="/admin/agents" className="btn btn-ghost btn-sm">🤖 Agents</Link>
                     <UserButton />
                 </nav>
             </header>
