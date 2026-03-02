@@ -23,6 +23,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
         const posts = await dbGetAllSocialPosts(userId).catch(() => []);
         const brand = await dbGetBrandProfile(userId).catch(() => null);
 
+        // Ambassador application data (from privateMetadata — only visible to admins)
+        const ambassadorApplication = (user.privateMetadata as Record<string, unknown>)?.ambassadorApplication || null;
+
         return NextResponse.json({
             user: {
                 id: user.id,
@@ -40,6 +43,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
             leads: (leads || []).slice(0, 20),
             posts: (posts || []).slice(0, 20),
             brand,
+            ambassadorApplication,
         });
     } catch (err) {
         console.error('Admin user detail error:', err);
@@ -78,22 +82,40 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         // Ambassador toggle — sets ambassador flag + auto-upgrades to pro
         if (body.ambassador !== undefined) {
             const isAmbassador = Boolean(body.ambassador);
-            const metaUpdates: Record<string, unknown> = { ambassador: isAmbassador };
+            const publicUpdates: Record<string, unknown> = {
+                ambassador: isAmbassador,
+                ambassadorPending: false, // Clear pending flag
+            };
             if (isAmbassador) {
-                metaUpdates.planId = 'pro';
-                metaUpdates.ambassadorSince = new Date().toISOString();
+                publicUpdates.planId = 'pro';
+                publicUpdates.ambassadorSince = new Date().toISOString();
             } else {
                 // Revert to free unless they have a paid subscription
                 const user = await client.users.getUser(userId);
                 const currentMeta = user.publicMetadata as Record<string, unknown>;
                 if (!currentMeta.stripeSubscriptionId) {
-                    metaUpdates.planId = 'free';
+                    publicUpdates.planId = 'free';
                 }
-                metaUpdates.ambassadorSince = null;
+                publicUpdates.ambassadorSince = null;
             }
+            // Update public metadata
             await client.users.updateUserMetadata(userId, {
-                publicMetadata: metaUpdates,
+                publicMetadata: publicUpdates,
             });
+            // Update application status in privateMetadata
+            const user = await client.users.getUser(userId);
+            const app = (user.privateMetadata as Record<string, unknown>)?.ambassadorApplication;
+            if (app && typeof app === 'object') {
+                await client.users.updateUserMetadata(userId, {
+                    privateMetadata: {
+                        ambassadorApplication: {
+                            ...app,
+                            status: isAmbassador ? 'approved' : 'rejected',
+                            reviewedAt: new Date().toISOString(),
+                        },
+                    },
+                });
+            }
         }
 
         return NextResponse.json({ success: true });

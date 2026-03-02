@@ -504,7 +504,7 @@ export default async function LandingPage() {
               </p>
             </div>
             <a
-              href="mailto:hello@giglift.app?subject=Ambassador%20Application&body=Hi%20GigLift%20team!%0A%0AI'd%20like%20to%20apply%20for%20the%20Brand%20Ambassador%20Program.%0A%0AMy%20name%3A%0AMy%20artist%2Fband%20name%3A%0AMy%20role%3A%20(DJ%20%2F%20musician%20%2F%20instructor%20%2F%20other)%0ACity%3A%0ASocial%20media%20links%3A%0A%0AWhy%20I'd%20be%20a%20great%20ambassador%3A%0A"
+              href="/ambassador"
               className="btn btn-xl"
               style={{
                 background: 'linear-gradient(135deg, #f0c755, #fbbf24)',

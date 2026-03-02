@@ -62,6 +62,8 @@ export async function GET(request: NextRequest) {
                     lastSignInAt: user.lastSignInAt,
                     role: (user.publicMetadata as Record<string, unknown>)?.role || 'user',
                     planId: (user.publicMetadata as Record<string, unknown>)?.planId || 'free',
+                    ambassador: Boolean((user.publicMetadata as Record<string, unknown>)?.ambassador),
+                    ambassadorPending: Boolean((user.publicMetadata as Record<string, unknown>)?.ambassadorPending),
                     stats,
                 };
             })

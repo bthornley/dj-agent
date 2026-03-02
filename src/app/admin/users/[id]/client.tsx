@@ -4,6 +4,23 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
 
+interface AmbassadorApplication {
+    artistName: string;
+    role: string;
+    city: string;
+    instagram: string;
+    tiktok: string;
+    youtube: string;
+    twitter: string;
+    spotify: string;
+    website: string;
+    whyAmbassador: string;
+    monthlyGigs: string;
+    communityDescription: string;
+    appliedAt: string;
+    status: string;
+}
+
 interface UserDetail {
     user: {
         id: string;
@@ -28,6 +45,7 @@ interface UserDetail {
     leads: Array<{ id: string; title: string; source: string; status: string; priority: string; leadScore: number }>;
     posts: Array<{ id: string; hookText: string; platform: string; status: string; pillar: string; postType: string }>;
     brand: { djName: string; genre: string; vibe: string[] } | null;
+    ambassadorApplication: AmbassadorApplication | null;
 }
 
 export default function AdminUserDetailClient({ userId }: { userId: string }) {
@@ -329,6 +347,127 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
                                 </p>
                             )}
                         </div>
+
+                        {/* Ambassador Application Details */}
+                        {data.ambassadorApplication && (
+                            <div className="card" style={{
+                                marginTop: '16px', padding: '20px',
+                                borderColor: 'rgba(251,191,36,0.2)',
+                                background: 'linear-gradient(135deg, rgba(251,191,36,0.03), rgba(245,158,11,0.01))',
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                    <h3 className="card-title" style={{ margin: 0 }}>📋 Ambassador Application</h3>
+                                    <span className={`badge ${data.ambassadorApplication.status === 'approved' ? 'badge-approved' : data.ambassadorApplication.status === 'rejected' ? 'badge-draft' : ''}`}
+                                        style={data.ambassadorApplication.status === 'pending' ? {
+                                            background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)',
+                                            color: '#fbbf24', fontSize: '11px',
+                                        } : { fontSize: '11px' }}>
+                                        {data.ambassadorApplication.status}
+                                    </span>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '16px' }}>
+                                    <div>
+                                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Artist Name</div>
+                                        <div style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600 }}>{data.ambassadorApplication.artistName}</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Role</div>
+                                        <div style={{ fontSize: '14px', color: 'var(--text-primary)' }}>
+                                            {data.ambassadorApplication.role === 'performer' ? '🎵 Performer' :
+                                                data.ambassadorApplication.role === 'instructor' ? '📚 Instructor' :
+                                                    data.ambassadorApplication.role === 'studio' ? '🎙️ Studio' :
+                                                        data.ambassadorApplication.role === 'touring' ? '🚐 Touring' : '🎸 Other'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>City</div>
+                                        <div style={{ fontSize: '14px', color: 'var(--text-primary)' }}>{data.ambassadorApplication.city}</div>
+                                    </div>
+                                </div>
+
+                                {/* Social Links */}
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                                    {data.ambassadorApplication.instagram && (
+                                        <a href={data.ambassadorApplication.instagram.startsWith('http') ? data.ambassadorApplication.instagram : `https://instagram.com/${data.ambassadorApplication.instagram.replace('@', '')}`}
+                                            target="_blank" rel="noopener noreferrer"
+                                            style={{ padding: '4px 10px', borderRadius: '6px', background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)', color: '#c4b5fd', fontSize: '12px', textDecoration: 'none' }}>
+                                            📸 {data.ambassadorApplication.instagram}
+                                        </a>
+                                    )}
+                                    {data.ambassadorApplication.tiktok && (
+                                        <a href={data.ambassadorApplication.tiktok.startsWith('http') ? data.ambassadorApplication.tiktok : `https://tiktok.com/@${data.ambassadorApplication.tiktok.replace('@', '')}`}
+                                            target="_blank" rel="noopener noreferrer"
+                                            style={{ padding: '4px 10px', borderRadius: '6px', background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)', color: '#c4b5fd', fontSize: '12px', textDecoration: 'none' }}>
+                                            🎵 {data.ambassadorApplication.tiktok}
+                                        </a>
+                                    )}
+                                    {data.ambassadorApplication.youtube && (
+                                        <a href={data.ambassadorApplication.youtube.startsWith('http') ? data.ambassadorApplication.youtube : `https://youtube.com/${data.ambassadorApplication.youtube}`}
+                                            target="_blank" rel="noopener noreferrer"
+                                            style={{ padding: '4px 10px', borderRadius: '6px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#fca5a5', fontSize: '12px', textDecoration: 'none' }}>
+                                            ▶️ {data.ambassadorApplication.youtube}
+                                        </a>
+                                    )}
+                                    {data.ambassadorApplication.twitter && (
+                                        <a href={data.ambassadorApplication.twitter.startsWith('http') ? data.ambassadorApplication.twitter : `https://x.com/${data.ambassadorApplication.twitter.replace('@', '')}`}
+                                            target="_blank" rel="noopener noreferrer"
+                                            style={{ padding: '4px 10px', borderRadius: '6px', background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)', color: '#7dd3fc', fontSize: '12px', textDecoration: 'none' }}>
+                                            𝕏 {data.ambassadorApplication.twitter}
+                                        </a>
+                                    )}
+                                    {data.ambassadorApplication.spotify && (
+                                        <a href={data.ambassadorApplication.spotify.startsWith('http') ? data.ambassadorApplication.spotify : `https://open.spotify.com/artist/${data.ambassadorApplication.spotify}`}
+                                            target="_blank" rel="noopener noreferrer"
+                                            style={{ padding: '4px 10px', borderRadius: '6px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#6ee7b7', fontSize: '12px', textDecoration: 'none' }}>
+                                            🎧 Spotify
+                                        </a>
+                                    )}
+                                    {data.ambassadorApplication.website && (
+                                        <a href={data.ambassadorApplication.website.startsWith('http') ? data.ambassadorApplication.website : `https://${data.ambassadorApplication.website}`}
+                                            target="_blank" rel="noopener noreferrer"
+                                            style={{ padding: '4px 10px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)', fontSize: '12px', textDecoration: 'none' }}>
+                                            🌐 Website
+                                        </a>
+                                    )}
+                                </div>
+
+                                {data.ambassadorApplication.monthlyGigs && (
+                                    <div style={{ marginBottom: '12px' }}>
+                                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Monthly Gigs/Lessons</div>
+                                        <div style={{ fontSize: '14px', color: 'var(--text-primary)' }}>{data.ambassadorApplication.monthlyGigs}</div>
+                                    </div>
+                                )}
+
+                                <div style={{ marginBottom: '12px' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Why they&apos;d be a great ambassador</div>
+                                    <div style={{
+                                        fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6,
+                                        padding: '10px 14px', borderRadius: '8px',
+                                        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                                    }}>
+                                        {data.ambassadorApplication.whyAmbassador}
+                                    </div>
+                                </div>
+
+                                {data.ambassadorApplication.communityDescription && (
+                                    <div style={{ marginBottom: '12px' }}>
+                                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Community</div>
+                                        <div style={{
+                                            fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6,
+                                            padding: '10px 14px', borderRadius: '8px',
+                                            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                                        }}>
+                                            {data.ambassadorApplication.communityDescription}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                                    Applied {formatDate(data.ambassadorApplication.appliedAt)}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Stats Row */}
                         <div className="admin-stats-grid" style={{ marginTop: '24px' }}>

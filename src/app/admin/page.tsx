@@ -14,6 +14,8 @@ interface UserRow {
     lastSignInAt: number | null;
     role: string;
     planId: string;
+    ambassador: boolean;
+    ambassadorPending: boolean;
     stats: {
         events: number;
         leads: number;
@@ -214,9 +216,24 @@ export default function AdminDashboard() {
                                             </span>
                                         </td>
                                         <td>
-                                            <span className={`badge ${user.role === 'admin' ? 'badge-approved' : 'badge-draft'}`}>
-                                                {user.role}
-                                            </span>
+                                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                                <span className={`badge ${user.role === 'admin' ? 'badge-approved' : 'badge-draft'}`}>
+                                                    {user.role}
+                                                </span>
+                                                {user.ambassadorPending && !user.ambassador && (
+                                                    <span className="badge" style={{
+                                                        background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)',
+                                                        color: '#fbbf24', fontSize: '10px', animation: 'pulse 2s infinite',
+                                                    }}>🌟 Pending</span>
+                                                )}
+                                                {user.ambassador && (
+                                                    <span className="badge" style={{
+                                                        background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.1))',
+                                                        border: '1px solid rgba(251,191,36,0.3)',
+                                                        color: '#fbbf24', fontSize: '10px',
+                                                    }}>🌟 Ambassador</span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td>{formatDate(user.createdAt)}</td>
                                         <td>{formatDate(user.lastSignInAt)}</td>
