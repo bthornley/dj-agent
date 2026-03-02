@@ -2,7 +2,7 @@
 // GigLift — Core Data Model
 // ============================================================
 
-export type ArtistType = 'dj' | 'band' | 'solo_artist' | 'music_instructor';
+export type ArtistType = 'dj' | 'band' | 'solo_artist' | 'music_instructor' | 'studio_musician' | 'touring_musician';
 
 export interface ScheduleMoment {
   time: string;       // e.g. "6:30 PM"

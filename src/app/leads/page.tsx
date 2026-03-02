@@ -7,7 +7,7 @@ import { Lead, LeadStatus, Priority } from '@/lib/types';
 import { fetchLeads, fetchLeadStats, updateLead, deleteLead, deleteAllLeads, handoffLeads } from '@/lib/api-client';
 import ModeSwitch from '@/components/ModeSwitch';
 
-type AppMode = 'performer' | 'instructor';
+type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
 
 const statusLabels: Record<LeadStatus, { label: string; cls: string }> = {
     new: { label: '● New', cls: 'badge badge-lead-new' },

@@ -32,19 +32,20 @@ export default async function LandingPage() {
             draft booking emails, build your press kit, and plan your social content — all on autopilot.
             For DJs, bands, solo artists &amp; music instructors.
           </p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '12px' }}>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 600,
-              background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(139, 92, 246, 0.1))',
-              border: '1px solid rgba(168, 85, 247, 0.3)', color: '#a855f7',
-            }}>🎵 Performer Mode</span>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: 600,
-              background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(34, 211, 238, 0.1))',
-              border: '1px solid rgba(56, 189, 248, 0.3)', color: '#38bdf8',
-            }}>📚 Instructor Mode</span>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '12px', flexWrap: 'wrap' }}>
+            {[
+              { icon: '🎵', label: 'Performer', bg: 'rgba(168,85,247,0.15)', border: 'rgba(168,85,247,0.3)', color: '#a855f7' },
+              { icon: '📚', label: 'Instructor', bg: 'rgba(56,189,248,0.15)', border: 'rgba(56,189,248,0.3)', color: '#38bdf8' },
+              { icon: '🎙️', label: 'Studio', bg: 'rgba(249,115,22,0.15)', border: 'rgba(249,115,22,0.3)', color: '#f97316' },
+              { icon: '🚐', label: 'Touring', bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.3)', color: '#10b981' },
+            ].map(m => (
+              <span key={m.label} style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600,
+                background: `linear-gradient(135deg, ${m.bg}, ${m.bg})`,
+                border: `1px solid ${m.border}`, color: m.color,
+              }}>{m.icon} {m.label}</span>
+            ))}
           </div>
 
           <div className="hero-actions">
@@ -68,7 +69,7 @@ export default async function LandingPage() {
           </div>
         </div>
 
-        {/* ═══════ Two Modes Section ═══════ */}
+        {/* ═══════ Four Modes Section ═══════ */}
         <div style={{ textAlign: 'center', marginTop: '40px', marginBottom: '16px' }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '8px',
@@ -78,10 +79,10 @@ export default async function LandingPage() {
             color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase',
             marginBottom: '12px',
           }}>
-            ✨ Two Modes · One Platform
+            ✨ Four Modes · One Platform
           </div>
           <h2 className="landing-modes-title" style={{ marginBottom: '6px' }}>
-            Whether You <span style={{ color: '#a855f7' }}>Perform</span> or <span style={{ color: '#38bdf8' }}>Teach</span> — We&apos;ve Got You
+            <span style={{ color: '#a855f7' }}>Perform</span>, <span style={{ color: '#38bdf8' }}>Teach</span>, <span style={{ color: '#f97316' }}>Record</span>, or <span style={{ color: '#10b981' }}>Tour</span> — We&apos;ve Got You
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
             Switch between modes with one click. Each mode comes with its own seeds, lead pipeline, and tailored discovery.
@@ -89,102 +90,165 @@ export default async function LandingPage() {
         </div>
 
         <div className="landing-modes-grid" style={{
-          maxWidth: '900px', margin: '0 auto 56px auto', padding: '0 16px',
+          maxWidth: '960px', margin: '0 auto 40px auto', padding: '0 16px',
+          gridTemplateColumns: 'repeat(2, 1fr)',
         }}>
           {/* Performer Card */}
           <div className="landing-mode-card" style={{
-            padding: '28px', borderRadius: '16px',
+            padding: '24px', borderRadius: '16px',
             background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(139,92,246,0.03), rgba(15,15,35,0.95))',
             border: '1px solid rgba(168,85,247,0.25)',
             boxShadow: '0 0 30px rgba(168,85,247,0.06)',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
               <div style={{
-                fontSize: '32px', width: 56, height: 56,
+                fontSize: '28px', width: 48, height: 48,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                borderRadius: '14px',
+                borderRadius: '12px',
                 background: 'linear-gradient(135deg, rgba(168,85,247,0.2), rgba(139,92,246,0.1))',
                 border: '1px solid rgba(168,85,247,0.3)',
               }}>🎵</div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#a855f7' }}>Performer Mode</h3>
-                <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#a855f7' }}>Performer Mode</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
                   For DJs, bands &amp; solo artists
                 </p>
               </div>
             </div>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.6 }}>
-              Your AI agents scan for nightclubs, lounges, event spaces, bars, and festivals — then score each venue on
-              music fit, capacity, and booking potential.
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px', lineHeight: 1.6 }}>
+              Scan for nightclubs, lounges, event spaces, bars, and festivals — scored on music fit \u0026 booking potential.
             </p>
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#a855f7', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
-                What the agents find
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {['Nightclubs', 'Lounges', 'Event Spaces', 'Rooftop Bars', 'Live Music Venues', 'Corporate Events', 'Weddings', 'Festivals'].map(tag => (
-                  <span key={tag} style={{
-                    padding: '3px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 500,
-                    background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)',
-                    color: '#c084fc',
-                  }}>{tag}</span>
-                ))}
-              </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '10px' }}>
+              {['Nightclubs', 'Lounges', 'Event Spaces', 'Bars', 'Festivals', 'Weddings'].map(tag => (
+                <span key={tag} style={{
+                  padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 500,
+                  background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)', color: '#c084fc',
+                }}>{tag}</span>
+              ))}
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              <strong style={{ color: '#a855f7' }}>Example seeds:</strong> &quot;DJ night Orange County&quot; · &quot;site:gigsalad.com DJ&quot; · &quot;corporate event venue Long Beach&quot;
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              <strong style={{ color: '#a855f7' }}>Seeds:</strong> &quot;DJ night OC&quot; · &quot;site:gigsalad.com&quot; · &quot;corporate event venue&quot;
             </div>
           </div>
 
           {/* Instructor Card */}
           <div className="landing-mode-card" style={{
-            padding: '28px', borderRadius: '16px',
+            padding: '24px', borderRadius: '16px',
             background: 'linear-gradient(135deg, rgba(56,189,248,0.08), rgba(34,211,238,0.03), rgba(15,15,35,0.95))',
             border: '1px solid rgba(56,189,248,0.25)',
             boxShadow: '0 0 30px rgba(56,189,248,0.06)',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
               <div style={{
-                fontSize: '32px', width: 56, height: 56,
+                fontSize: '28px', width: 48, height: 48,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                borderRadius: '14px',
+                borderRadius: '12px',
                 background: 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(34,211,238,0.1))',
                 border: '1px solid rgba(56,189,248,0.3)',
               }}>📚</div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#38bdf8' }}>Instructor Mode</h3>
-                <p style={{ margin: '2px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#38bdf8' }}>Instructor Mode</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
                   For music instructors &amp; educators
                 </p>
               </div>
             </div>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.6 }}>
-              Your AI agents discover music schools, after-school programs, community centers, churches, and studios
-              that need music instructors — and rank them by opportunity quality.
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px', lineHeight: 1.6 }}>
+              Discover music schools, after-school programs, community centers, and studios that need instructors.
             </p>
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
-                What the agents find
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {['Music Schools', 'Academies', 'School Districts', 'After-School Programs', 'Community Centers', 'Preschools', 'Churches', 'Studios'].map(tag => (
-                  <span key={tag} style={{
-                    padding: '3px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 500,
-                    background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)',
-                    color: '#7dd3fc',
-                  }}>{tag}</span>
-                ))}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '10px' }}>
+              {['Music Schools', 'Academies', 'After-School', 'Community Centers', 'Churches', 'Studios'].map(tag => (
+                <span key={tag} style={{
+                  padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 500,
+                  background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)', color: '#7dd3fc',
+                }}>{tag}</span>
+              ))}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              <strong style={{ color: '#38bdf8' }}>Seeds:</strong> &quot;music school OC&quot; · &quot;after school music program&quot; · &quot;community center&quot;
+            </div>
+          </div>
+
+          {/* Studio Musician Card */}
+          <div className="landing-mode-card" style={{
+            padding: '24px', borderRadius: '16px',
+            background: 'linear-gradient(135deg, rgba(249,115,22,0.08), rgba(234,88,12,0.03), rgba(15,15,35,0.95))',
+            border: '1px solid rgba(249,115,22,0.25)',
+            boxShadow: '0 0 30px rgba(249,115,22,0.06)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <div style={{
+                fontSize: '28px', width: 48, height: 48,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, rgba(249,115,22,0.2), rgba(234,88,12,0.1))',
+                border: '1px solid rgba(249,115,22,0.3)',
+              }}>🎙️</div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#f97316' }}>Studio Mode</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  For session musicians &amp; producers
+                </p>
               </div>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-              <strong style={{ color: '#38bdf8' }}>Example seeds:</strong> &quot;music school Orange County&quot; · &quot;after school music program&quot; · &quot;community center music class&quot;
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px', lineHeight: 1.6 }}>
+              Find recording studios, session work, sync licensing, film scoring, and producer collaboration opportunities.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '10px' }}>
+              {['Recording Studios', 'Session Work', 'Sync Licensing', 'Film Scoring', 'Producers', 'Jingles'].map(tag => (
+                <span key={tag} style={{
+                  padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 500,
+                  background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.2)', color: '#fb923c',
+                }}>{tag}</span>
+              ))}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              <strong style={{ color: '#f97316' }}>Seeds:</strong> &quot;session musician wanted&quot; · &quot;site:soundbetter.com&quot; · &quot;sync licensing&quot;
+            </div>
+          </div>
+
+          {/* Touring Musician Card */}
+          <div className="landing-mode-card" style={{
+            padding: '24px', borderRadius: '16px',
+            background: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(5,150,105,0.03), rgba(15,15,35,0.95))',
+            border: '1px solid rgba(16,185,129,0.25)',
+            boxShadow: '0 0 30px rgba(16,185,129,0.06)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <div style={{
+                fontSize: '28px', width: 48, height: 48,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(5,150,105,0.1))',
+                border: '1px solid rgba(16,185,129,0.3)',
+              }}>🚐</div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#10b981' }}>Touring Mode</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  For touring musicians &amp; road warriors
+                </p>
+              </div>
+            </div>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px', lineHeight: 1.6 }}>
+              Find touring band openings, booking agencies, concert promoters, festival submissions, and tour circuits.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '10px' }}>
+              {['Touring Bands', 'Booking Agents', 'Promoters', 'Festivals', 'Amphitheaters', 'Tour Circuits'].map(tag => (
+                <span key={tag} style={{
+                  padding: '2px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: 500,
+                  background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#34d399',
+                }}>{tag}</span>
+              ))}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              <strong style={{ color: '#10b981' }}>Seeds:</strong> &quot;touring musician needed&quot; · &quot;site:sonicbids.com&quot; · &quot;festival submissions&quot;
             </div>
           </div>
         </div>
 
         <div style={{ textAlign: 'center', marginBottom: '48px' }}>
           <Link href="/sign-up" className="btn btn-primary btn-xl" style={{ marginRight: '12px' }}>
-            Get Started Free — Both Modes Included
+            Get Started Free — All Modes Included
           </Link>
         </div>
 

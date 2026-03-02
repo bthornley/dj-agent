@@ -7,7 +7,7 @@ import { fetchSeeds, createSeed, deleteSeed, deleteAllSeeds } from '@/lib/api-cl
 import { UserButton } from '@clerk/nextjs';
 import ModeSwitch from '@/components/ModeSwitch';
 
-type AppMode = 'performer' | 'instructor';
+type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
 
 function generateId() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -55,6 +55,48 @@ const INSTRUCTOR_PRESETS: Record<string, { keywords: string[]; label: string }[]
         { keywords: ['church music program', 'Long Beach'], label: 'Church Programs' },
         { keywords: ['site:thumbtack.com', 'music instructor', 'Long Beach'], label: 'Thumbtack' },
         { keywords: ['site:craigslist.org', 'music instructor wanted', 'Long Beach'], label: 'Craigslist — Music Instructor' },
+    ],
+};
+
+const STUDIO_PRESETS: Record<string, { keywords: string[]; label: string }[]> = {
+    'Orange County': [
+        { keywords: ['recording studio session musician', 'Orange County'], label: 'Recording Studios' },
+        { keywords: ['session musician wanted', 'Orange County'], label: 'Session Work' },
+        { keywords: ['music producer looking for musicians', 'Orange County'], label: 'Producer Collabs' },
+        { keywords: ['sync licensing music', 'Orange County'], label: 'Sync Licensing' },
+        { keywords: ['film scoring musicians', 'Orange County'], label: 'Film Scoring' },
+        { keywords: ['site:soundbetter.com', 'session musician'], label: 'SoundBetter' },
+        { keywords: ['site:craigslist.org', 'studio musician wanted', 'Orange County'], label: 'Craigslist — Studio' },
+    ],
+    'Long Beach': [
+        { keywords: ['recording studio session musician', 'Long Beach'], label: 'Recording Studios' },
+        { keywords: ['session musician wanted', 'Long Beach'], label: 'Session Work' },
+        { keywords: ['music producer looking for musicians', 'Long Beach'], label: 'Producer Collabs' },
+        { keywords: ['sync licensing music', 'Long Beach'], label: 'Sync Licensing' },
+        { keywords: ['film scoring musicians', 'Long Beach'], label: 'Film Scoring' },
+        { keywords: ['site:soundbetter.com', 'session musician'], label: 'SoundBetter' },
+        { keywords: ['site:craigslist.org', 'studio musician wanted', 'Long Beach'], label: 'Craigslist — Studio' },
+    ],
+};
+
+const TOURING_PRESETS: Record<string, { keywords: string[]; label: string }[]> = {
+    'Orange County': [
+        { keywords: ['touring musician needed', 'Orange County'], label: 'Touring Gigs' },
+        { keywords: ['booking agent musicians', 'Orange County'], label: 'Booking Agents' },
+        { keywords: ['concert promoter', 'Orange County'], label: 'Concert Promoters' },
+        { keywords: ['festival lineup submissions', 'Orange County'], label: 'Festival Submissions' },
+        { keywords: ['touring band hiring', 'Orange County'], label: 'Bands Hiring' },
+        { keywords: ['site:sonicbids.com', 'touring'], label: 'Sonicbids' },
+        { keywords: ['site:craigslist.org', 'touring musician', 'Orange County'], label: 'Craigslist — Touring' },
+    ],
+    'Long Beach': [
+        { keywords: ['touring musician needed', 'Long Beach'], label: 'Touring Gigs' },
+        { keywords: ['booking agent musicians', 'Long Beach'], label: 'Booking Agents' },
+        { keywords: ['concert promoter', 'Long Beach'], label: 'Concert Promoters' },
+        { keywords: ['festival lineup submissions', 'Long Beach'], label: 'Festival Submissions' },
+        { keywords: ['touring band hiring', 'Long Beach'], label: 'Bands Hiring' },
+        { keywords: ['site:sonicbids.com', 'touring'], label: 'Sonicbids' },
+        { keywords: ['site:craigslist.org', 'touring musician', 'Long Beach'], label: 'Craigslist — Touring' },
     ],
 };
 
@@ -118,7 +160,11 @@ export default function SeedsPage() {
     const handleAddPresets = async () => {
         setAddingPresets(true);
         try {
-            const presets = isInstructor ? INSTRUCTOR_PRESETS : PERFORMER_PRESETS;
+            const PRESETS_MAP: Record<string, typeof PERFORMER_PRESETS> = {
+                performer: PERFORMER_PRESETS, instructor: INSTRUCTOR_PRESETS,
+                studio: STUDIO_PRESETS, touring: TOURING_PRESETS,
+            };
+            const presets = PRESETS_MAP[activeMode || 'performer'] || PERFORMER_PRESETS;
             const existingKeywords = new Set(seeds.map(s => s.keywords.join('|')));
             let added = 0;
             for (const [reg, regionPresets] of Object.entries(presets)) {
@@ -139,7 +185,7 @@ export default function SeedsPage() {
                 }
             }
             await loadSeeds();
-            setMessage(added > 0 ? `✅ Added ${added} ${isInstructor ? 'teaching' : 'marketplace'} seeds` : `All ${isInstructor ? 'teaching' : 'marketplace'} seeds already added`);
+            setMessage(added > 0 ? `✅ Added ${added} ${activeMode || 'performer'} seeds` : `All ${activeMode || 'performer'} seeds already added`);
             setTimeout(() => setMessage(''), 4000);
         } catch {
             setMessage('Failed to add preset seeds');
@@ -157,7 +203,7 @@ export default function SeedsPage() {
     };
 
     const handleDeleteAll = async () => {
-        const modeLabel = isInstructor ? 'teaching' : 'performer';
+        const modeLabel = activeMode || 'performer';
         if (!confirm(`Delete all ${seeds.length} ${modeLabel} seeds? This cannot be undone.`)) return;
         setDeleting(true);
         try {

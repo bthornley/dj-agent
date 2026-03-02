@@ -7,8 +7,9 @@ import AdminLink from '@/components/AdminLink';
 import ModeSwitch from '@/components/ModeSwitch';
 import { Event } from '@/lib/types';
 import { fetchLeadStats } from '@/lib/api-client';
+import { MODE_CONFIGS } from '@/hooks/useAppMode';
 
-type AppMode = 'performer' | 'instructor';
+type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
 
 export default function DashboardPage() {
     const [events, setEvents] = useState<Event[]>([]);
@@ -18,6 +19,18 @@ export default function DashboardPage() {
     const { user } = useUser();
 
     const isInstructor = activeMode === 'instructor';
+
+    const cfg = MODE_CONFIGS[activeMode || 'performer'];
+    const accentColor = cfg.color;
+    const accentGlow = cfg.glow;
+
+    const MODE_INFO: Record<string, { title: string; subtitle: string; leadsLabel: string; viewLabel: string; scanLabel: string; seedsLabel: string }> = {
+        performer: { title: 'Performer Mode', subtitle: 'Finding venues, events, and booking opportunities', leadsLabel: 'Gig Leads', viewLabel: '🎵 View Gig Leads', scanLabel: '🔍 Scan for Venues', seedsLabel: '⚙ Query Seeds' },
+        instructor: { title: 'Instructor Mode', subtitle: 'Finding music schools, studios, and instruction opportunities', leadsLabel: 'Instruction Leads', viewLabel: '📚 View Instruction Leads', scanLabel: '🔍 Scan for Schools', seedsLabel: '🏫 Instruction Seeds' },
+        studio: { title: 'Studio Mode', subtitle: 'Finding recording studios, session work, and sync opportunities', leadsLabel: 'Studio Leads', viewLabel: '🎙️ View Studio Leads', scanLabel: '🔍 Scan for Studios', seedsLabel: '🎙️ Studio Seeds' },
+        touring: { title: 'Touring Mode', subtitle: 'Finding tour opportunities, booking agents, and festivals', leadsLabel: 'Tour Leads', viewLabel: '🚐 View Tour Leads', scanLabel: '🔍 Scan for Tours', seedsLabel: '🚐 Touring Seeds' },
+    };
+    const mi = MODE_INFO[activeMode || 'performer'];
 
     useEffect(() => {
         fetch('/api/events')
@@ -44,21 +57,18 @@ export default function DashboardPage() {
         completed: { emoji: '🏁', label: 'Completed' },
     };
 
-    const accentColor = isInstructor ? '#38bdf8' : '#a855f7';
-    const accentGlow = isInstructor ? 'rgba(56,189,248,0.4)' : 'rgba(168,85,247,0.4)';
-
     return (
         <>
-            <header className="topbar" style={isInstructor ? {
-                borderBottom: '1px solid rgba(56, 189, 248, 0.2)',
-                background: 'linear-gradient(135deg, rgba(15,15,35,0.98), rgba(10,30,50,0.98))',
+            <header className="topbar" style={cfg.headerBg ? {
+                borderBottom: cfg.headerBorder,
+                background: cfg.headerBg,
             } : undefined}>
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
                     <img src="/logo.png" alt="GigLift" style={{
                         width: 48, height: 48, borderRadius: 10,
                         filter: `drop-shadow(0 0 6px ${accentGlow})`,
                     }} />
-                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>GigLift</span>
+                    <span style={activeMode !== 'performer' ? { color: accentColor } : undefined}>GigLift</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/leads" className="btn btn-ghost btn-sm">🔍 Leads</Link>
@@ -93,24 +103,20 @@ export default function DashboardPage() {
                             width: 72, height: 72,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             borderRadius: '16px',
-                            background: isInstructor
-                                ? 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(34,211,238,0.1))'
-                                : 'linear-gradient(135deg, rgba(168,85,247,0.2), rgba(139,92,246,0.1))',
-                            border: `1px solid ${isInstructor ? 'rgba(56,189,248,0.3)' : 'rgba(168,85,247,0.3)'}`,
+                            background: `linear-gradient(135deg, ${accentColor}33, ${accentColor}1a)`,
+                            border: `1px solid ${cfg.borderColor}`,
                         }}>
-                            {isInstructor ? '📚' : '🎵'}
+                            {cfg.icon}
                         </div>
                         <div>
                             <h1 style={{
                                 fontSize: '28px', fontWeight: 700, margin: 0,
                                 color: accentColor,
                             }}>
-                                {isInstructor ? 'Instructor Mode' : 'Performer Mode'}
+                                {mi.title}
                             </h1>
                             <p style={{ color: 'var(--text-muted)', fontSize: '15px', margin: '4px 0 0 0' }}>
-                                {isInstructor
-                                    ? 'Finding music schools, studios, and instruction opportunities'
-                                    : 'Finding venues, events, and booking opportunities'}
+                                {mi.subtitle}
                             </p>
                         </div>
                     </div>
@@ -126,7 +132,7 @@ export default function DashboardPage() {
                                 {leadStats?.total ?? '—'}
                             </div>
                             <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                {isInstructor ? 'Instruction Leads' : 'Gig Leads'}
+                                {mi.leadsLabel}
                             </div>
                         </div>
                         <div style={{
@@ -169,84 +175,62 @@ export default function DashboardPage() {
 
                     {/* Quick Actions */}
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                        <Link href="/leads" className="btn btn-primary btn-sm" style={isInstructor ? {
-                            background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
-                            boxShadow: '0 0 16px rgba(56,189,248,0.2)',
-                        } : undefined}>
-                            {isInstructor ? '📚 View Instruction Leads' : '🎵 View Gig Leads'}
+                        <Link href="/leads" className="btn btn-primary btn-sm" style={{
+                            background: `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
+                            boxShadow: `0 0 16px ${cfg.glow}`,
+                        }}>
+                            {mi.viewLabel}
                         </Link>
-                        <Link href="/leads/scan" className="btn btn-secondary btn-sm" style={isInstructor ? {
-                            background: 'linear-gradient(135deg, rgba(56,189,248,0.15), rgba(34,211,238,0.08))',
-                            borderColor: 'rgba(56,189,248,0.3)',
-                            color: '#38bdf8',
-                        } : undefined}>
-                            {isInstructor ? '🔍 Scan for Schools' : '🔍 Scan for Venues'}
+                        <Link href="/leads/scan" className="btn btn-secondary btn-sm" style={{
+                            background: `${accentColor}1a`,
+                            borderColor: cfg.borderColor,
+                            color: accentColor,
+                        }}>
+                            {mi.scanLabel}
                         </Link>
                         <Link href="/leads/seeds" className="btn btn-ghost btn-sm">
-                            {isInstructor ? '🏫 Instruction Seeds' : '⚙ Query Seeds'}
+                            {mi.seedsLabel}
                         </Link>
                     </div>
                 </div>
 
                 {/* Mode comparison cards */}
                 <div style={{
-                    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px',
+                    display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px',
                     marginBottom: '28px',
                 }}>
-                    {/* Performer Card */}
-                    <div style={{
-                        padding: '20px', borderRadius: '14px',
-                        background: !isInstructor
-                            ? 'linear-gradient(135deg, rgba(168,85,247,0.1), rgba(139,92,246,0.05))'
-                            : 'rgba(255,255,255,0.02)',
-                        border: `1px solid ${!isInstructor ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.06)'}`,
-                        opacity: isInstructor ? 0.5 : 1,
-                        transition: 'all 0.3s ease',
-                        cursor: isInstructor ? 'default' : 'default',
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                            <span style={{ fontSize: '24px' }}>🎵</span>
-                            <div>
-                                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: !isInstructor ? '#a855f7' : 'var(--text-muted)' }}>
-                                    Performer Mode
-                                </h3>
-                                {!isInstructor && <span className="badge badge-confirmed" style={{ fontSize: '10px' }}>ACTIVE</span>}
+                    {(['performer', 'instructor', 'studio', 'touring'] as const).map(m => {
+                        const mc = MODE_CONFIGS[m];
+                        const active = activeMode === m;
+                        const bullets: Record<string, string[]> = {
+                            performer: ['Find venues, clubs, and lounges', 'Discover DJ/band/artist gigs', 'Scan event platforms & marketplaces', 'Score & qualify booking opportunities'],
+                            instructor: ['Find music schools & academies', 'Discover instruction positions', 'Scan for after-school programs', 'Community centers & church programs'],
+                            studio: ['Find recording studios', 'Session musician opportunities', 'Sync licensing & film scoring', 'Producer collaboration leads'],
+                            touring: ['Find touring band openings', 'Booking agents & promoters', 'Festival lineup submissions', 'Regional tour circuit venues'],
+                        };
+                        return (
+                            <div key={m} style={{
+                                padding: '16px', borderRadius: '14px',
+                                background: active ? `linear-gradient(135deg, ${mc.color}1a, ${mc.color}0d)` : 'rgba(255,255,255,0.02)',
+                                border: `1px solid ${active ? mc.borderColor : 'rgba(255,255,255,0.06)'}`,
+                                opacity: active ? 1 : 0.5,
+                                transition: 'all 0.3s ease',
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                                    <span style={{ fontSize: '20px' }}>{mc.icon}</span>
+                                    <div>
+                                        <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: active ? mc.color : 'var(--text-muted)' }}>
+                                            {mc.label} Mode
+                                        </h3>
+                                        {active && <span className="badge badge-confirmed" style={{ fontSize: '9px', background: `${mc.color}22`, color: mc.color, borderColor: mc.borderColor }}>ACTIVE</span>}
+                                    </div>
+                                </div>
+                                <ul style={{ margin: 0, padding: '0 0 0 18px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.8 }}>
+                                    {bullets[m].map(b => <li key={b}>{b}</li>)}
+                                </ul>
                             </div>
-                        </div>
-                        <ul style={{ margin: 0, padding: '0 0 0 20px', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.8 }}>
-                            <li>Find venues, clubs, and lounges</li>
-                            <li>Discover DJ/band/artist gigs</li>
-                            <li>Scan event platforms & marketplaces</li>
-                            <li>Score & qualify booking opportunities</li>
-                        </ul>
-                    </div>
-
-                    {/* Instructor Card */}
-                    <div style={{
-                        padding: '20px', borderRadius: '14px',
-                        background: isInstructor
-                            ? 'linear-gradient(135deg, rgba(56,189,248,0.1), rgba(34,211,238,0.05))'
-                            : 'rgba(255,255,255,0.02)',
-                        border: `1px solid ${isInstructor ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.06)'}`,
-                        opacity: !isInstructor ? 0.5 : 1,
-                        transition: 'all 0.3s ease',
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                            <span style={{ fontSize: '24px' }}>📚</span>
-                            <div>
-                                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: isInstructor ? '#38bdf8' : 'var(--text-muted)' }}>
-                                    Instructor Mode
-                                </h3>
-                                {isInstructor && <span className="badge badge-confirmed" style={{ fontSize: '10px', background: 'rgba(56,189,248,0.15)', color: '#38bdf8', borderColor: 'rgba(56,189,248,0.3)' }}>ACTIVE</span>}
-                            </div>
-                        </div>
-                        <ul style={{ margin: 0, padding: '0 0 0 20px', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.8 }}>
-                            <li>Find music schools & academies</li>
-                            <li>Discover instruction positions</li>
-                            <li>Scan for after-school programs</li>
-                            <li>Community centers & church programs</li>
-                        </ul>
-                    </div>
+                        );
+                    })}
                 </div>
 
                 {/* Events Section */}

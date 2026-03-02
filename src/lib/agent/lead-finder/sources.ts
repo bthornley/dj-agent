@@ -141,6 +141,72 @@ function musicInstructorSeeds(regions: string[]): QuerySeed[] {
         seed(r, ['site:lessonface.com', r]),
     ]);
 }
+/** Generate Studio Musician seeds for given regions */
+function studioMusicianSeeds(regions: string[]): QuerySeed[] {
+    return regions.flatMap(r => [
+        // Recording studios & producers
+        seed(r, ['recording studio hiring musicians', r]),
+        seed(r, ['recording studio session musician', r]),
+        seed(r, ['music producer looking for musicians', r]),
+        seed(r, ['session musician wanted', r]),
+        seed(r, ['session player needed', r]),
+        seed(r, ['studio musician audition', r]),
+        seed(r, ['recording session player', r]),
+        // Sync & licensing
+        seed(r, ['sync licensing music', r]),
+        seed(r, ['music licensing agency', r]),
+        seed(r, ['production music library', r]),
+        seed(r, ['jingle house musicians', r]),
+        seed(r, ['commercial music production', r]),
+        // Film & media
+        seed(r, ['film scoring musicians', r]),
+        seed(r, ['tv music composer', r]),
+        seed(r, ['video game music studio', r]),
+        seed(r, ['podcast music production', r]),
+        seed(r, ['voiceover studio music', r]),
+        // Marketplace
+        seed(r, ['site:soundbetter.com', 'session musician']),
+        seed(r, ['site:airgigs.com', 'musician']),
+        seed(r, ['site:fiverr.com', 'session musician']),
+        seed(r, ['site:craigslist.org', 'session musician', r]),
+        seed(r, ['site:craigslist.org', 'studio musician wanted', r]),
+        seed(r, ['site:facebook.com/marketplace', 'session musician', r]),
+    ]);
+}
+
+/** Generate Touring Musician seeds for given regions */
+function touringMusicianSeeds(regions: string[]): QuerySeed[] {
+    return regions.flatMap(r => [
+        // Touring opportunities
+        seed(r, ['touring musician needed', r]),
+        seed(r, ['touring band hiring', r]),
+        seed(r, ['sub musician touring', r]),
+        seed(r, ['fill-in musician tour', r]),
+        seed(r, ['sideman wanted tour', r]),
+        // Booking & management
+        seed(r, ['booking agent musicians', r]),
+        seed(r, ['tour booking agency', r]),
+        seed(r, ['talent buyer', r]),
+        seed(r, ['concert promoter', r]),
+        seed(r, ['tour manager hiring', r]),
+        // Venues & festivals
+        seed(r, ['concert venue booking', r]),
+        seed(r, ['live music venue booking', r]),
+        seed(r, ['amphitheater booking', r]),
+        seed(r, ['festival lineup submissions', r]),
+        seed(r, ['music festival application', r]),
+        seed(r, ['touring circuit venues', r]),
+        seed(r, ['regional tour dates', r]),
+        // Marketplace
+        seed(r, ['site:sonicbids.com', 'touring']),
+        seed(r, ['site:gigmasters.com', 'touring musician']),
+        seed(r, ['site:craigslist.org', 'touring musician', r]),
+        seed(r, ['site:craigslist.org', 'band seeking musician tour', r]),
+        seed(r, ['site:facebook.com/marketplace', 'touring musician', r]),
+        seed(r, ['site:bandmix.com', 'touring', r]),
+    ]);
+}
+
 /**
  * Get default seeds based on artist type and user's selected regions.
  */
@@ -150,6 +216,8 @@ export function getDefaultSeeds(artistType: ArtistType = 'dj', regions?: string[
         case 'band': return bandSeeds(r);
         case 'solo_artist': return soloArtistSeeds(r);
         case 'music_instructor': return musicInstructorSeeds(r);
+        case 'studio_musician': return studioMusicianSeeds(r);
+        case 'touring_musician': return touringMusicianSeeds(r);
         case 'dj':
         default: return djSeeds(r);
     }

@@ -6,7 +6,7 @@ import { UserButton, useUser } from '@clerk/nextjs';
 import AdminLink from '@/components/AdminLink';
 import ModeSwitch from '@/components/ModeSwitch';
 
-type AppMode = 'performer' | 'instructor';
+type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
 
 const PERFORMER_SPECIALTIES = [
     'EDM', 'House', 'Deep House', 'Tech House', 'Techno', 'Trance',
@@ -26,11 +26,32 @@ const INSTRUCTOR_SPECIALTIES = [
     'Band Directing', 'Choir Directing', 'Orchestra',
 ];
 
+const STUDIO_SPECIALTIES = [
+    'Session Guitar', 'Session Bass', 'Session Drums', 'Session Keys',
+    'Session Vocals', 'String Section', 'Horn Section', 'Woodwinds',
+    'Music Production', 'Mixing', 'Mastering', 'Sound Design',
+    'Jingle Writing', 'Film Scoring', 'TV Scoring', 'Game Audio',
+    'Podcast Music', 'Audiobook Narration', 'Voiceover',
+    'Sync Licensing', 'Beat Making', 'Sampling', 'Arranging',
+    'Orchestration', 'MIDI Programming', 'Foley',
+];
+
+const TOURING_SPECIALTIES = [
+    'Electric Guitar', 'Bass Guitar', 'Drums', 'Keys / Synth',
+    'Backing Vocals', 'Lead Vocals', 'Acoustic Guitar', 'Percussion',
+    'Saxophone', 'Trumpet', 'Trombone', 'Violin / Fiddle',
+    'Sound Tech', 'Tour Manager', 'Merch Manager', 'Stage Manager',
+    'Multi-Instrumentalist', 'Musical Director', 'DJ / Turntablist',
+    'Lighting Tech', 'FOH Engineer', 'Monitor Engineer',
+];
+
 const ARTIST_TYPES = [
     { value: 'dj', label: '🎧 DJ', desc: 'Clubs, lounges, events' },
     { value: 'band', label: '🎸 Band', desc: 'Live music venues, festivals' },
     { value: 'solo_artist', label: '🎤 Solo Artist', desc: 'Restaurants, private events' },
     { value: 'music_instructor', label: '🎹 Music Instructor', desc: 'Schools, community programs' },
+    { value: 'studio_musician', label: '🎙️ Studio Musician', desc: 'Recording, session work, sync' },
+    { value: 'touring_musician', label: '🚐 Touring Musician', desc: 'Tours, festivals, road gigs' },
 ] as const;
 
 const US_REGIONS: Record<string, string[]> = {
@@ -294,7 +315,7 @@ export default function AccountPage() {
                         </div>
                     )}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {(isInstructor ? INSTRUCTOR_SPECIALTIES : PERFORMER_SPECIALTIES).map(s => (
+                        {({ performer: PERFORMER_SPECIALTIES, instructor: INSTRUCTOR_SPECIALTIES, studio: STUDIO_SPECIALTIES, touring: TOURING_SPECIALTIES }[activeMode || 'performer'] || PERFORMER_SPECIALTIES).map(s => (
                             <button
                                 key={s}
                                 onClick={() => handleSpecialtyToggle(s)}
