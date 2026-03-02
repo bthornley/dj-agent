@@ -5,6 +5,7 @@ import { computeDedupeKey } from '@/lib/agent/lead-finder/dedup';
 import { scoreLead } from '@/lib/agent/lead-finder/scoring';
 import { Lead } from '@/lib/types';
 import { v4 as uuid } from 'uuid';
+import { getPlanById, PlanId } from '@/lib/stripe';
 
 // GET /api/leads — List user's leads with filters
 export async function GET(request: NextRequest) {
@@ -41,14 +42,28 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const now = new Date().toISOString();
 
-        // Get user's active mode
+        // Get user's active mode and plan
         let activeMode = 'performer';
+        let planId: PlanId = 'free';
         try {
             const client = await clerkClient();
             const user = await client.users.getUser(userId);
             const meta = user.publicMetadata as Record<string, unknown>;
             activeMode = (meta.activeMode as string) || 'performer';
-        } catch { /* default to performer */ }
+            planId = (meta.planId as PlanId) || 'free';
+        } catch { /* default to performer/free */ }
+
+        // Enforce lead storage limit
+        const plan = getPlanById(planId);
+        if (plan.maxLeads !== -1) {
+            const stats = await dbGetLeadStats(userId);
+            if (stats.total >= plan.maxLeads) {
+                return NextResponse.json({
+                    error: `Lead storage limit reached (${stats.total}/${plan.maxLeads}). Upgrade for unlimited lead storage.`,
+                    upgradeUrl: '/pricing',
+                }, { status: 403 });
+            }
+        }
 
         const lead: Lead = {
             lead_id: uuid(),

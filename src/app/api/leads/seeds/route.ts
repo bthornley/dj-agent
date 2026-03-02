@@ -3,6 +3,7 @@ import { auth, clerkClient } from '@clerk/nextjs/server';
 import { dbGetAllSeeds, dbSaveSeed, dbDeleteSeed, dbDeleteAllSeeds } from '@/lib/db';
 import { getDefaultSeeds } from '@/lib/agent/lead-finder/sources';
 import { ArtistType } from '@/lib/types';
+import { getPlanById, PlanId } from '@/lib/stripe';
 
 // GET /api/leads/seeds — Get user's seeds (auto-populate defaults on first access)
 export async function GET(request: NextRequest) {
@@ -66,6 +67,27 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const seedMode = body.mode || 'performer';
+
+    // Enforce region limits based on plan
+    let planId: PlanId = 'free';
+    try {
+        const client = await clerkClient();
+        const user = await client.users.getUser(userId);
+        const meta = user.publicMetadata as Record<string, unknown>;
+        planId = (meta.planId as PlanId) || 'free';
+    } catch { /* default to free */ }
+
+    const plan = getPlanById(planId);
+    if (plan.maxRegions !== -1 && body.region) {
+        const existingSeeds = await dbGetAllSeeds(userId, seedMode);
+        const existingRegions = new Set(existingSeeds.map(s => s.region));
+        if (!existingRegions.has(body.region) && existingRegions.size >= plan.maxRegions) {
+            return NextResponse.json({
+                error: `Region limit reached (${existingRegions.size}/${plan.maxRegions}). Upgrade for more regions.`,
+                upgradeUrl: '/pricing',
+            }, { status: 403 });
+        }
+    }
 
     await dbSaveSeed(body, userId, seedMode);
     return NextResponse.json({ success: true, seed: body }, { status: 201 });

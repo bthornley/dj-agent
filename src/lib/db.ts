@@ -135,7 +135,7 @@ async function ensureSchema(): Promise<Client> {
 
 // ---- Search Quota (user-scoped) ----
 
-const MONTHLY_SEARCH_LIMIT = 250;
+const DEFAULT_SEARCH_LIMIT = 10; // Free plan default
 
 function quotaKey(userId: string): string {
   const now = new Date();
@@ -143,19 +143,21 @@ function quotaKey(userId: string): string {
   return `${userId}:${month}`;
 }
 
-export async function dbGetSearchQuota(userId: string): Promise<{ month: string; used: number; remaining: number; limit: number }> {
+export async function dbGetSearchQuota(userId: string, planLimit?: number): Promise<{ month: string; used: number; remaining: number; limit: number }> {
   const db = await ensureSchema();
   const key = quotaKey(userId);
   const month = key.split(':')[1];
+  const limit = planLimit ?? DEFAULT_SEARCH_LIMIT;
   const row = await db.execute({ sql: 'SELECT count FROM search_quota WHERE quota_key = ?', args: [key] });
   const used = row.rows.length > 0 ? Number(row.rows[0].count) : 0;
-  return { month, used, remaining: Math.max(0, MONTHLY_SEARCH_LIMIT - used), limit: MONTHLY_SEARCH_LIMIT };
+  return { month, used, remaining: Math.max(0, limit - used), limit };
 }
 
-export async function dbIncrementSearchQuota(userId: string, amount: number = 1): Promise<{ allowed: boolean; used: number; remaining: number }> {
+export async function dbIncrementSearchQuota(userId: string, amount: number = 1, planLimit?: number): Promise<{ allowed: boolean; used: number; remaining: number }> {
   const db = await ensureSchema();
   const key = quotaKey(userId);
-  const quota = await dbGetSearchQuota(userId);
+  const limit = planLimit ?? DEFAULT_SEARCH_LIMIT;
+  const quota = await dbGetSearchQuota(userId, limit);
 
   if (quota.remaining < amount) {
     return { allowed: false, used: quota.used, remaining: quota.remaining };

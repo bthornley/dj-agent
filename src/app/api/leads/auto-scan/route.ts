@@ -3,6 +3,7 @@ import { auth, clerkClient } from '@clerk/nextjs/server';
 import { dbGetAllSeeds, dbGetSearchQuota } from '@/lib/db';
 import { discoverFromSeeds, batchScanUrls, BatchScanResult } from '@/lib/agent/lead-finder/discovery';
 import { rateLimit } from '@/lib/rate-limit';
+import { getPlanById, PlanId } from '@/lib/stripe';
 
 // POST /api/leads/auto-scan — Automated discovery or batch scan
 export async function POST(request: NextRequest) {
@@ -20,16 +21,29 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const quota = await dbGetSearchQuota(userId);
 
-        // Get user's active mode (shared across all branches)
+        // Get user's plan + mode
+        let planId: PlanId = 'free';
         let activeMode = 'performer';
         try {
             const client = await clerkClient();
             const user = await client.users.getUser(userId);
             const meta = user.publicMetadata as Record<string, unknown>;
+            planId = (meta.planId as PlanId) || 'free';
             activeMode = (meta.activeMode as string) || 'performer';
-        } catch { /* default to performer */ }
+        } catch { /* default to free/performer */ }
+
+        const plan = getPlanById(planId);
+
+        // Auto-discovery is a paid feature (Pro+)
+        if (body.auto && planId === 'free') {
+            return NextResponse.json({
+                error: 'Auto-discovery requires a Pro or Unlimited plan.',
+                upgradeUrl: '/pricing',
+            }, { status: 403 });
+        }
+
+        const quota = await dbGetSearchQuota(userId, plan.scansPerMonth);
 
         // Mode 0: Quota check
         if (body.quota_check) {
@@ -46,8 +60,9 @@ export async function POST(request: NextRequest) {
         if (body.auto) {
             if (quota.remaining <= 0) {
                 return NextResponse.json({
-                    error: `Monthly limit reached (${quota.used}/${quota.limit}). Resets next month.`,
+                    error: `Monthly limit reached (${quota.used}/${quota.limit}). ${planId === 'pro' ? 'Upgrade to Unlimited for 250 scans/month.' : 'Resets next month.'}`,
                     quota,
+                    upgradeUrl: '/pricing',
                 }, { status: 429 });
             }
 
@@ -73,7 +88,7 @@ export async function POST(request: NextRequest) {
 
             return NextResponse.json({
                 mode: 'auto',
-                quota: await dbGetSearchQuota(userId),
+                quota: await dbGetSearchQuota(userId, plan.scansPerMonth),
                 seedsProcessed: seedsToProcess.length,
                 totalUrls,
                 highValueLeads: totalCreated,

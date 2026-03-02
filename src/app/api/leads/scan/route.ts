@@ -3,6 +3,8 @@ import { auth, clerkClient } from '@clerk/nextjs/server';
 import { runPipeline } from '@/lib/agent/lead-finder/pipeline';
 import { validateExternalUrl } from '@/lib/security';
 import { rateLimit } from '@/lib/rate-limit';
+import { dbIncrementSearchQuota, dbGetSearchQuota } from '@/lib/db';
+import { getPlanById, PlanId } from '@/lib/stripe';
 
 // POST /api/leads/scan — Run pipeline on a single URL
 export async function POST(request: NextRequest) {
@@ -18,6 +20,28 @@ export async function POST(request: NextRequest) {
         );
     }
 
+    // Get user's plan and enforce monthly scan quota
+    let planId: PlanId = 'free';
+    let activeMode = 'performer';
+    try {
+        const client = await clerkClient();
+        const user = await client.users.getUser(userId);
+        const meta = user.publicMetadata as Record<string, unknown>;
+        planId = (meta.planId as PlanId) || 'free';
+        activeMode = (meta.activeMode as string) || 'performer';
+    } catch { /* default to free/performer */ }
+
+    const plan = getPlanById(planId);
+    const quotaCheck = await dbIncrementSearchQuota(userId, 1, plan.scansPerMonth);
+    if (!quotaCheck.allowed) {
+        const quota = await dbGetSearchQuota(userId, plan.scansPerMonth);
+        return NextResponse.json({
+            error: `Monthly scan limit reached (${quota.used}/${quota.limit}). ${planId === 'free' ? 'Upgrade to Pro for 100 scans/month.' : 'Upgrade your plan for more scans.'}`,
+            quota,
+            upgradeUrl: '/pricing',
+        }, { status: 429 });
+    }
+
     try {
         const body = await request.json();
         if (!body.url || typeof body.url !== 'string') {
@@ -29,15 +53,6 @@ export async function POST(request: NextRequest) {
         if (!urlCheck.valid) {
             return NextResponse.json({ error: urlCheck.error }, { status: 400 });
         }
-
-        // Get user's active mode
-        let activeMode = 'performer';
-        try {
-            const client = await clerkClient();
-            const user = await client.users.getUser(userId);
-            const meta = user.publicMetadata as Record<string, unknown>;
-            activeMode = (meta.activeMode as string) || 'performer';
-        } catch { /* default to performer */ }
 
         const result = await runPipeline({
             url: body.url.trim(),
