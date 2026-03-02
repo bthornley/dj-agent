@@ -34,7 +34,7 @@ GigLift's Brand Ambassador Program turns our most engaged users — working DJs,
 
 ### Technical Implementation
 
-- **Custom referral links**: `giglift.vercel.app/sign-up?ref=AMBASSADOR_CODE`
+- **Custom referral links**: `giglift.app/sign-up?ref=AMBASSADOR_CODE`
 - **Dashboard widget**: Ambassadors see real-time stats — sign-ups, conversions, earnings
 - **Auto-attribution**: 90-day cookie tracks referred users through sign-up → paid conversion
 - **Monthly payout**: Stripe Connect for automated revenue share disbursement
@@ -62,7 +62,7 @@ GigLift's Brand Ambassador Program turns our most engaged users — working DJs,
 
 ### Phase 2: Scale (Month 3-6) — Target: 100 ambassadors
 
-- **Ambassador landing page**: Public application form on giglift.vercel.app/ambassadors
+- **Ambassador landing page**: Public application form on giglift.app/ambassadors
 - **Referral chain**: Existing ambassadors recruit new ambassadors (bonus $25 per recruited ambassador who stays active 30 days)
 - **Convention presence**: Attend DJ Expo, NAMM, local music meetups with ambassador sign-up stations
 - **Influencer outreach**: Identify 10 music YouTubers with 10K-100K subs for paid partnerships → convert to ongoing ambassadors
