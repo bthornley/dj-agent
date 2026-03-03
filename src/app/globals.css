@@ -473,10 +473,7 @@ a:hover {
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 16px;
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-purple);
 }
 
 .doc-viewer h2 {
@@ -2059,20 +2056,15 @@ a:hover {
   overflow-wrap: anywhere;
   word-break: break-word;
   color: #e8e0ff;
-  background: linear-gradient(135deg, #fff, #c4b5fd);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .hero-accent {
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-purple);
   display: inline;
   overflow-wrap: anywhere;
 }
+
+
 
 .hero-subtitle {
   font-size: 20px;
@@ -2104,10 +2096,7 @@ a:hover {
 .hero-stat-value {
   font-size: 32px;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-purple);
 }
 
 .hero-stat-label {
@@ -2187,10 +2176,7 @@ a:hover {
   font-size: 40px;
   font-weight: 800;
   margin-bottom: 12px;
-  background: linear-gradient(135deg, #fff, #c4b5fd);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #e8e0ff;
 }
 
 .pricing-subtitle {
@@ -2367,10 +2353,7 @@ a:hover {
 .plan-theme {
   font-size: 20px;
   font-weight: 800;
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-purple);
   margin-bottom: 8px;
 }
 
@@ -2697,10 +2680,7 @@ a:hover {
 .report-stat-value {
   font-size: 24px;
   font-weight: 800;
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-purple);
 }
 
 .report-stat-label {

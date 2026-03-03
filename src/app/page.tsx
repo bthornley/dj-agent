@@ -426,9 +426,7 @@ export default async function LandingPage() {
             </div>
             <h2 style={{ fontSize: '32px', fontWeight: 800, marginBottom: '8px' }}>
               <span style={{
-                background: 'linear-gradient(135deg, #f0c755, #fbbf24)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
+                color: '#fbbf24',
               }}>Brand Ambassador</span> Program
             </h2>
             <p style={{ fontSize: '16px', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto 32px', lineHeight: 1.6 }}>
