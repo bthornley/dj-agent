@@ -1,5 +1,5 @@
 import { createClient, Client } from '@libsql/client';
-import { Event, Lead, QuerySeed, BrandProfile, SocialPost, ContentPlan, EngagementTask, MediaAsset, EPKConfig } from './types';
+import { Event, Lead, QuerySeed, BrandProfile, SocialPost, ContentPlan, EngagementTask, MediaAsset, EPKConfig, SentEmail } from './types';
 import { escapeLikeQuery } from './security';
 
 // ============================================================
@@ -115,6 +115,18 @@ async function ensureSchema(): Promise<Client> {
         user_id TEXT PRIMARY KEY,
         data TEXT NOT NULL,
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+
+      CREATE TABLE IF NOT EXISTS sent_emails (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        event_id TEXT DEFAULT '',
+        to_email TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        body TEXT NOT NULL,
+        status TEXT DEFAULT 'sent',
+        resend_id TEXT DEFAULT '',
+        sent_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
     `);
 
@@ -653,4 +665,47 @@ export async function dbSaveEPKConfig(config: EPKConfig, userId: string): Promis
           ON CONFLICT(user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`,
     args: [userId, data, now],
   });
+}
+
+// ---- Sent Emails ----
+
+export async function dbSaveSentEmail(email: SentEmail, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  await db.execute({
+    sql: `INSERT INTO sent_emails (id, user_id, event_id, to_email, subject, body, status, resend_id, sent_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [email.id, userId, email.eventId || '', email.toEmail, email.subject, email.body, email.status, email.resendId || '', email.sentAt],
+  });
+}
+
+export async function dbGetSentEmails(userId: string): Promise<SentEmail[]> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: `SELECT * FROM sent_emails WHERE user_id = ? ORDER BY sent_at DESC`, args: [userId] });
+  return result.rows.map(r => ({
+    id: r.id as string,
+    eventId: r.event_id as string,
+    toEmail: r.to_email as string,
+    subject: r.subject as string,
+    body: r.body as string,
+    status: r.status as 'sent' | 'failed',
+    resendId: r.resend_id as string,
+    sentAt: r.sent_at as string,
+  }));
+}
+
+export async function dbGetSentEmail(id: string, userId: string): Promise<SentEmail | null> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: `SELECT * FROM sent_emails WHERE id = ? AND user_id = ?`, args: [id, userId] });
+  if (result.rows.length === 0) return null;
+  const r = result.rows[0];
+  return {
+    id: r.id as string,
+    eventId: r.event_id as string,
+    toEmail: r.to_email as string,
+    subject: r.subject as string,
+    body: r.body as string,
+    status: r.status as 'sent' | 'failed',
+    resendId: r.resend_id as string,
+    sentAt: r.sent_at as string,
+  };
 }

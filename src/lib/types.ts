@@ -268,6 +268,19 @@ export interface LeadHandoff {
   music_fit_tags: string[];
 }
 
+// ---- Sent Emails ----
+
+export interface SentEmail {
+  id: string;
+  eventId: string;           // linked event
+  toEmail: string;
+  subject: string;
+  body: string;              // markdown content that was sent
+  status: 'sent' | 'failed';
+  resendId: string;          // Resend message ID
+  sentAt: string;            // ISO timestamp
+}
+
 // ============================================================
 // Social Hype Agent — Data Model
 // ============================================================

@@ -1,4 +1,4 @@
-import { Event, Lead, QuerySeed, LeadHandoff } from './types';
+import { Event, Lead, QuerySeed, LeadHandoff, SentEmail } from './types';
 
 // ============================================================
 // API Client — Fetch wrapper for event + lead CRUD
@@ -254,4 +254,27 @@ export async function batchScanUrls(urls: { url: string; entity_name?: string; c
     return res.json();
 }
 
+// ============================================================
+// Email API Client
+// ============================================================
 
+export async function sendEmail(params: {
+    eventId?: string;
+    to: string;
+    subject: string;
+    emailBody: string;
+    replyTo?: string;
+}): Promise<{ success: boolean; emailId?: string; resendId?: string; error?: string }> {
+    const res = await fetch('/api/emails/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+    });
+    return res.json();
+}
+
+export async function fetchSentEmails(): Promise<SentEmail[]> {
+    const res = await fetch('/api/emails');
+    if (!res.ok) throw new Error('Failed to fetch sent emails');
+    return res.json();
+}

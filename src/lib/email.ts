@@ -202,3 +202,49 @@ function getUpgradeFeatures(plan: string): string {
     const list = features[plan] || features.pro;
     return list.map(f => `<div style="color: #e2e8f0; font-size: 13px; padding: 4px 0;">✅ ${f}</div>`).join('');
 }
+
+// ---- Outreach Email (User-drafted) ----
+
+export async function sendOutreachEmail(params: {
+    to: string;
+    subject: string;
+    body: string;       // markdown-ish plain text body
+    replyTo: string;    // user's email so replies go to them
+}): Promise<{ success: boolean; resendId?: string; error?: string }> {
+    const resend = getResend();
+    if (!resend) {
+        return { success: false, error: 'Resend not configured (missing RESEND_API_KEY)' };
+    }
+
+    const { to, subject, body, replyTo } = params;
+
+    // Convert markdown-ish body to simple HTML
+    const htmlBody = body
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')  // bold
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')              // italic
+        .replace(/^---$/gm, '<hr/>')                        // horizontal rule
+        .replace(/^> (.+)$/gm, '<blockquote style="border-left: 3px solid #4a4a6a; padding-left: 12px; color: #94a3b8; margin: 8px 0;">$1</blockquote>')
+        .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')          // numbered lists
+        .replace(/\n/g, '<br/>');                           // newlines
+
+    const html = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1a1a2e; line-height: 1.6; font-size: 15px;">
+            ${htmlBody}
+        </div>
+    `;
+
+    try {
+        const result = await resend.emails.send({
+            from: process.env.EMAIL_OUTREACH_FROM || 'GigLift <outreach@giglift.app>',
+            to,
+            subject,
+            html,
+            replyTo,
+        });
+        console.log(`[email] Outreach email sent to ${to}: "${subject}" (resend_id: ${result.data?.id})`);
+        return { success: true, resendId: result.data?.id || '' };
+    } catch (err) {
+        console.error('[email] Failed to send outreach email:', err);
+        return { success: false, error: String(err) };
+    }
+}
