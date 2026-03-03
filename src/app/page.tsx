@@ -35,7 +35,7 @@ export default async function LandingPage() {
             draft booking emails, build your press kit, and plan your social content — all on autopilot.
             For DJs, bands, solo artists &amp; music instructors.
           </p>
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px', marginBottom: '8px', flexWrap: 'wrap' }}>
             {[
               { icon: '🎵', label: 'Performer', bg: 'rgba(168,85,247,0.15)', border: 'rgba(168,85,247,0.3)', color: '#a855f7' },
               { icon: '📚', label: 'Instructor', bg: 'rgba(56,189,248,0.15)', border: 'rgba(56,189,248,0.3)', color: '#38bdf8' },
@@ -51,7 +51,7 @@ export default async function LandingPage() {
             ))}
           </div>
 
-          <div className="hero-actions">
+          <div className="hero-actions" style={{ marginTop: '12px' }}>
             <Link href="/sign-up" className="btn btn-primary btn-xl">Deploy Your Agents Free</Link>
             <Link href="/promo.html" className="btn btn-secondary btn-xl" target="_blank">🎬 Watch the Promo</Link>
           </div>
