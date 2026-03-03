@@ -9,7 +9,7 @@ import { escapeLikeQuery } from './security';
 
 let _db: Client | null = null;
 
-function getDb(): Client {
+export function getDb(): Client {
   if (!_db) {
     _db = createClient({
       url: process.env.TURSO_DATABASE_URL || 'file:data/giglift.db',
