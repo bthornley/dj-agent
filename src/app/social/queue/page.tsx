@@ -52,6 +52,20 @@ export default function ContentQueuePage() {
         }
     }
 
+    async function handleDelete(postId: string) {
+        if (!confirm('Delete this draft? This cannot be undone.')) return;
+        setActionLoading(postId);
+        try {
+            const res = await fetch(`/api/social/posts?id=${postId}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+                setPosts(prev => prev.filter(p => p.id !== postId));
+                if (expandedId === postId) setExpandedId(null);
+            }
+        } catch (e) { console.error(e); }
+        setActionLoading(null);
+    }
+
     async function handlePushDraft(postId: string) {
         setActionLoading(postId);
         setPushResult(prev => ({ ...prev, [postId]: '' }));
@@ -297,6 +311,12 @@ export default function ContentQueuePage() {
                                                         disabled={actionLoading === post.id}
                                                         onClick={() => handleAction(post.id, 'rejected')}>
                                                         ❌ Reject
+                                                    </button>
+                                                    <button className="btn btn-ghost btn-sm"
+                                                        style={{ borderColor: 'var(--text-muted)', color: 'var(--text-muted)' }}
+                                                        disabled={actionLoading === post.id}
+                                                        onClick={() => handleDelete(post.id)}>
+                                                        🗑️ Delete
                                                     </button>
                                                 </>
                                             )}
