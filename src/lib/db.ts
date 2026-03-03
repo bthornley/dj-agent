@@ -128,6 +128,16 @@ async function ensureSchema(): Promise<Client> {
         resend_id TEXT DEFAULT '',
         sent_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
+
+      CREATE TABLE IF NOT EXISTS email_templates (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        body_template TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
     `);
 
     // Migration: add mode column if it doesn't exist
@@ -707,5 +717,123 @@ export async function dbGetSentEmail(id: string, userId: string): Promise<SentEm
     status: r.status as 'sent' | 'failed',
     resendId: r.resend_id as string,
     sentAt: r.sent_at as string,
+  };
+}
+
+// ============================================================
+// Email Templates
+// ============================================================
+
+export interface EmailTemplate {
+  id: string;
+  userId: string;
+  name: string;
+  subject: string;
+  bodyTemplate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const DEFAULT_TEMPLATES: Omit<EmailTemplate, 'id' | 'userId' | 'createdAt' | 'updatedAt'>[] = [
+  {
+    name: 'Cold Intro',
+    subject: 'DJ Services Inquiry — {{venue}}',
+    bodyTemplate: `Hi {{contact}},
+
+I came across {{venue}}{{city}} and love what you're doing. I'm a professional DJ specializing in open-format sets and I'd love to chat about bringing live DJ entertainment to your events.
+
+I can bring my own sound and lighting, and I'm flexible on formats — from background vibes to high-energy sets.
+
+Would you be open to a quick call or meeting? I'd be happy to send over my EPK and some sample mixes.
+
+Looking forward to connecting!
+
+Best,
+[Your Name]`,
+  },
+  {
+    name: 'Follow-Up',
+    subject: 'Following up — DJ for {{venue}}',
+    bodyTemplate: `Hi {{contact}},
+
+I wanted to circle back on my earlier message about DJing at {{venue}}. I know things get busy, so no worries if it slipped through!
+
+I'm still very interested in bringing some great energy to your upcoming events. Happy to work around your schedule for a quick chat.
+
+Let me know if there's a better time or person to connect with!
+
+Best,
+[Your Name]`,
+  },
+  {
+    name: 'Thank You',
+    subject: 'Thanks for the opportunity — {{venue}}',
+    bodyTemplate: `Hi {{contact}},
+
+Just wanted to say thanks for the opportunity to play at {{venue}}! I had a great time and the crowd was amazing.
+
+I'd love to make this a regular thing if you're open to it. Let me know if you have any upcoming dates that need a DJ.
+
+Thanks again!
+
+Best,
+[Your Name]`,
+  },
+];
+
+export async function dbGetEmailTemplates(userId: string): Promise<EmailTemplate[]> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: `SELECT * FROM email_templates WHERE user_id = ? ORDER BY created_at ASC`, args: [userId] });
+
+  // Seed defaults on first access
+  if (result.rows.length === 0) {
+    for (const tpl of DEFAULT_TEMPLATES) {
+      const id = `tpl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      await db.execute({
+        sql: `INSERT INTO email_templates (id, user_id, name, subject, body_template) VALUES (?, ?, ?, ?, ?)`,
+        args: [id, userId, tpl.name, tpl.subject, tpl.bodyTemplate],
+      });
+    }
+    const seeded = await db.execute({ sql: `SELECT * FROM email_templates WHERE user_id = ? ORDER BY created_at ASC`, args: [userId] });
+    return seeded.rows.map(mapTemplateRow);
+  }
+
+  return result.rows.map(mapTemplateRow);
+}
+
+export async function dbSaveEmailTemplate(userId: string, template: { id?: string; name: string; subject: string; bodyTemplate: string }): Promise<EmailTemplate> {
+  const db = await ensureSchema();
+  const id = template.id || `tpl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+  if (template.id) {
+    await db.execute({
+      sql: `UPDATE email_templates SET name = ?, subject = ?, body_template = ?, updated_at = datetime('now') WHERE id = ? AND user_id = ?`,
+      args: [template.name, template.subject, template.bodyTemplate, id, userId],
+    });
+  } else {
+    await db.execute({
+      sql: `INSERT INTO email_templates (id, user_id, name, subject, body_template) VALUES (?, ?, ?, ?, ?)`,
+      args: [id, userId, template.name, template.subject, template.bodyTemplate],
+    });
+  }
+
+  const result = await db.execute({ sql: `SELECT * FROM email_templates WHERE id = ?`, args: [id] });
+  return mapTemplateRow(result.rows[0]);
+}
+
+export async function dbDeleteEmailTemplate(id: string, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  await db.execute({ sql: `DELETE FROM email_templates WHERE id = ? AND user_id = ?`, args: [id, userId] });
+}
+
+function mapTemplateRow(r: Record<string, unknown>): EmailTemplate {
+  return {
+    id: r.id as string,
+    userId: r.user_id as string,
+    name: r.name as string,
+    subject: r.subject as string,
+    bodyTemplate: r.body_template as string,
+    createdAt: r.created_at as string,
+    updatedAt: r.updated_at as string,
   };
 }

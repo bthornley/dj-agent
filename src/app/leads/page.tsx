@@ -8,6 +8,7 @@ import { fetchLeads, fetchLeadStats, updateLead, deleteLead, deleteAllLeads, han
 import { generateLeadOutreach } from '@/lib/agent/tools';
 import { useToast } from '@/components/ToastProvider';
 import ModeSwitch from '@/components/ModeSwitch';
+import { EmailTemplate } from '@/lib/db';
 
 type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
 
@@ -43,6 +44,7 @@ export default function LeadsDashboard() {
     const [emailBody, setEmailBody] = useState('');
     const [emailReplyTo, setEmailReplyTo] = useState('');
     const [emailSending, setEmailSending] = useState(false);
+    const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
     const { toast } = useToast();
     const PAGE_SIZE = 25;
 
@@ -130,6 +132,8 @@ export default function LeadsDashboard() {
         setEmailBody(draft.body);
         setEmailReplyTo('');
         setEmailLead(lead);
+        // Fetch templates
+        fetch('/api/email-templates').then(r => r.json()).then(setEmailTemplates).catch(() => { });
     };
 
     const handleSendLeadEmail = async () => {
@@ -190,6 +194,13 @@ export default function LeadsDashboard() {
                         >
                             {deletingAll ? '⏳ Deleting...' : '🗑 Delete All'}
                         </button>
+                    )}
+                    {leads.length > 0 && (
+                        <a
+                            href={`/api/leads/export?mode=${activeMode || 'performer'}`}
+                            className="btn btn-ghost btn-sm"
+                            download
+                        >📥 Export CSV</a>
                     )}
                     <ModeSwitch onChange={(m) => setActiveMode(m as AppMode)} />
                     <UserButton />
@@ -448,6 +459,32 @@ export default function LeadsDashboard() {
                         <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '16px' }}>
                             Draft email for {emailLead.entity_name}
                         </p>
+
+                        {emailTemplates.length > 0 && (
+                            <div style={{ marginBottom: '12px' }}>
+                                <label className="form-label">📋 Use Template</label>
+                                <select
+                                    className="input"
+                                    defaultValue=""
+                                    onChange={e => {
+                                        const tpl = emailTemplates.find(t => t.id === e.target.value);
+                                        if (tpl && emailLead) {
+                                            const sub = (s: string) => s
+                                                .replace(/\{\{contact\}\}/g, emailLead.contact_name || 'there')
+                                                .replace(/\{\{venue\}\}/g, emailLead.entity_name || 'your venue')
+                                                .replace(/\{\{city\}\}/g, emailLead.city ? ` in ${emailLead.city}` : '');
+                                            setEmailSubject(sub(tpl.subject));
+                                            setEmailBody(sub(tpl.bodyTemplate));
+                                        }
+                                    }}
+                                >
+                                    <option value="" disabled>Select a template...</option>
+                                    {emailTemplates.map(t => (
+                                        <option key={t.id} value={t.id}>{t.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
 
                         <div style={{ marginBottom: '12px' }}>
                             <label className="form-label">To</label>

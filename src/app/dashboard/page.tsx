@@ -18,6 +18,7 @@ export default function DashboardPage() {
     const [leadStats, setLeadStats] = useState<{ total: number; byStatus: Record<string, number> } | null>(null);
     const [isNewUser, setIsNewUser] = useState(false);
     const [scanQuota, setScanQuota] = useState<{ used: number; remaining: number; limit: number } | null>(null);
+    const [emailCount, setEmailCount] = useState<number | null>(null);
     const { user } = useUser();
 
     const isInstructor = activeMode === 'instructor';
@@ -56,6 +57,12 @@ export default function DashboardPage() {
         })
             .then(r => r.json())
             .then(data => { if (data.quota) setScanQuota(data.quota); })
+            .catch(() => { });
+
+        // Fetch sent email count
+        fetch('/api/emails')
+            .then(r => r.json())
+            .then(data => { if (Array.isArray(data)) setEmailCount(data.length); })
             .catch(() => { });
 
         // Attribute referral from ambassador link if cookie exists
@@ -234,6 +241,20 @@ export default function DashboardPage() {
                                 Events
                             </div>
                         </div>
+                        {emailCount !== null && (
+                            <div style={{
+                                padding: '14px 16px', borderRadius: '12px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: `1px solid ${isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'}`,
+                            }}>
+                                <div style={{ fontSize: '24px', fontWeight: 700, color: accentColor }}>
+                                    {emailCount}
+                                </div>
+                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    Emails Sent
+                                </div>
+                            </div>
+                        )}
                         {scanQuota && (
                             <div style={{
                                 padding: '14px 16px', borderRadius: '12px',

@@ -52,6 +52,9 @@ export default function SentEmailsPage() {
                             {emails.length} email{emails.length !== 1 ? 's' : ''} sent
                         </p>
                     </div>
+                    {emails.length > 0 && (
+                        <a href="/api/emails/export" className="btn btn-ghost btn-sm" download>📥 Export CSV</a>
+                    )}
                 </div>
 
                 {loading ? (

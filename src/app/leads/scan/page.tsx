@@ -167,6 +167,29 @@ export default function ScanPage() {
                     </div>
                 </div>
 
+                {/* Quota Meter — visible across all modes */}
+                {quota && (
+                    <div className="quota-meter" style={{ marginBottom: '16px' }}>
+                        <div className="quota-header">
+                            <span>Monthly Searches</span>
+                            <span className={quota.remaining <= 10 ? 'quota-warn' : ''}>
+                                {quota.used} / {quota.limit} used
+                            </span>
+                        </div>
+                        <div className="score-meter" style={{ width: '100%', height: '8px' }}>
+                            <div className="score-fill" style={{
+                                width: `${(quota.used / quota.limit) * 100}%`,
+                                background: quota.remaining <= 10 ? 'var(--accent-red)'
+                                    : quota.remaining <= 30 ? 'var(--accent-amber)'
+                                        : 'var(--accent-green)',
+                            }} />
+                        </div>
+                        <div className="text-muted" style={{ fontSize: '12px', marginTop: '4px' }}>
+                            {quota.remaining} searches remaining this month
+                        </div>
+                    </div>
+                )}
+
                 {/* Mode Tabs */}
                 <div className="scan-tabs">
                     <button className={`scan-tab ${mode === 'auto' ? 'active' : ''}`} onClick={() => { setMode('auto'); clearResults(); }}>
@@ -189,29 +212,6 @@ export default function ScanPage() {
                             Only leads scoring ≥ 40 (P1/P2) are saved.
                             Requires <code>SERPAPI_KEY</code> environment variable.
                         </p>
-
-                        {/* Quota Meter */}
-                        {quota && (
-                            <div className="quota-meter" style={{ marginBottom: '20px' }}>
-                                <div className="quota-header">
-                                    <span>Monthly Searches</span>
-                                    <span className={quota.remaining <= 10 ? 'quota-warn' : ''}>
-                                        {quota.used} / {quota.limit} used
-                                    </span>
-                                </div>
-                                <div className="score-meter" style={{ width: '100%', height: '8px' }}>
-                                    <div className="score-fill" style={{
-                                        width: `${(quota.used / quota.limit) * 100}%`,
-                                        background: quota.remaining <= 10 ? 'var(--accent-red)'
-                                            : quota.remaining <= 30 ? 'var(--accent-amber)'
-                                                : 'var(--accent-green)',
-                                    }} />
-                                </div>
-                                <div className="text-muted" style={{ fontSize: '12px', marginTop: '4px' }}>
-                                    {quota.remaining} searches remaining this month (free tier)
-                                </div>
-                            </div>
-                        )}
                         <div className="form-row">
                             <div className="form-group">
                                 <label className="form-label">Region (optional)</label>
