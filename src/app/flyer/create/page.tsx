@@ -42,6 +42,8 @@ export default function FlyerCreatorPage() {
     const [saving, setSaving] = useState(false);
     const [exporting, setExporting] = useState(false);
     const [editId, setEditId] = useState<string | null>(null);
+    const [generatingBg, setGeneratingBg] = useState(false);
+    const [customPrompt, setCustomPrompt] = useState('');
 
     // Load events + saved flyers + brand profile on mount
     useEffect(() => {
@@ -168,6 +170,32 @@ export default function FlyerCreatorPage() {
         setSavedFlyers(prev => prev.filter(f => f.id !== id));
         if (editId === id) setEditId(null);
         toast('🗑 Flyer deleted', 'info');
+    };
+
+    const handleGenerateBg = async () => {
+        setGeneratingBg(true);
+        try {
+            const ev = flyer.eventId ? events.find(e => e.id === flyer.eventId) : null;
+            const res = await fetch('/api/flyer/generate-bg', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    style: flyer.style,
+                    aspectRatio: flyer.aspectRatio,
+                    eventType: ev?.eventType,
+                    vibeWords: ev?.vibeDescription?.split(/[,;]/).map(s => s.trim()).filter(Boolean),
+                    customPrompt: customPrompt || undefined,
+                }),
+            });
+            const data = await res.json();
+            if (data.url) {
+                setFlyer(f => ({ ...f, backgroundUrl: data.url, backgroundPrompt: data.prompt }));
+                toast('✨ Background generated!', 'success');
+            } else {
+                toast(data.error || 'Generation failed', 'error');
+            }
+        } catch { toast('Failed to generate background', 'error'); }
+        setGeneratingBg(false);
     };
 
     // Derived
@@ -348,6 +376,42 @@ export default function FlyerCreatorPage() {
                                     </button>
                                 ))}
                             </div>
+                        </div>
+
+                        {/* AI Background */}
+                        <div className="card" style={{ padding: '16px' }}>
+                            <label className="form-label">🖼 AI Background</label>
+                            <input
+                                className="input"
+                                value={customPrompt}
+                                onChange={e => setCustomPrompt(e.target.value)}
+                                placeholder="Custom prompt (optional) e.g. 'rooftop party at sunset'"
+                                style={{ marginBottom: '10px', fontSize: '13px' }}
+                            />
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleGenerateBg}
+                                disabled={generatingBg}
+                                style={{ width: '100%' }}
+                            >
+                                {generatingBg ? (
+                                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                        <span className="spinner" style={{ width: 16, height: 16 }} /> Generating...
+                                    </span>
+                                ) : '✨ Generate AI Background'}
+                            </button>
+                            {flyer.backgroundUrl && (
+                                <button
+                                    className="btn btn-ghost btn-sm"
+                                    onClick={() => setFlyer(f => ({ ...f, backgroundUrl: '' }))}
+                                    style={{ marginTop: '8px', width: '100%', fontSize: '12px' }}
+                                >
+                                    ✕ Remove AI Background
+                                </button>
+                            )}
+                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px', margin: 0 }}>
+                                Requires OPENAI_API_KEY. Uses DALL-E 3.
+                            </p>
                         </div>
 
                         {/* Aspect Ratio */}
