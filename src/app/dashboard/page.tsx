@@ -17,6 +17,7 @@ export default function DashboardPage() {
     const [activeMode, setActiveMode] = useState<AppMode | null>(null);
     const [leadStats, setLeadStats] = useState<{ total: number; byStatus: Record<string, number> } | null>(null);
     const [isNewUser, setIsNewUser] = useState(false);
+    const [scanQuota, setScanQuota] = useState<{ used: number; remaining: number; limit: number } | null>(null);
     const { user } = useUser();
 
     const isInstructor = activeMode === 'instructor';
@@ -45,6 +46,16 @@ export default function DashboardPage() {
             .then(data => {
                 if (!data || !data.djName) setIsNewUser(true);
             })
+            .catch(() => { });
+
+        // Fetch scan quota
+        fetch('/api/leads/auto-scan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quota_check: true }),
+        })
+            .then(r => r.json())
+            .then(data => { if (data.quota) setScanQuota(data.quota); })
             .catch(() => { });
 
         // Attribute referral from ambassador link if cookie exists
@@ -96,7 +107,7 @@ export default function DashboardPage() {
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/leads" className="btn btn-ghost btn-sm">🔍 Leads</Link>
                     <Link href="/leads/scan" className="btn btn-ghost btn-sm">📡 Scan</Link>
-                    <Link href="/social" className="btn btn-ghost btn-sm">�� Social Crew</Link>
+                    <Link href="/social" className="btn btn-ghost btn-sm">👥 Social Crew</Link>
                     <Link href="/pricing" className="btn btn-ghost btn-sm">💎 Plans</Link>
                     <Link href="/epk/builder" className="btn btn-ghost btn-sm">📋 EPK Builder</Link>
                     <Link href="/emails" className="btn btn-ghost btn-sm">📧 Emails</Link>
@@ -223,6 +234,28 @@ export default function DashboardPage() {
                                 Events
                             </div>
                         </div>
+                        {scanQuota && (
+                            <div style={{
+                                padding: '14px 16px', borderRadius: '12px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: `1px solid ${isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'}`,
+                            }}>
+                                <div style={{ fontSize: '24px', fontWeight: 700, color: scanQuota.remaining <= 5 ? 'var(--accent-red)' : scanQuota.remaining <= 20 ? 'var(--accent-amber)' : accentColor }}>
+                                    {scanQuota.used} / {scanQuota.limit}
+                                </div>
+                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    Scans Used
+                                </div>
+                                <div style={{ marginTop: '6px', height: '3px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)' }}>
+                                    <div style={{
+                                        height: '100%', borderRadius: '2px',
+                                        width: `${Math.min(100, (scanQuota.used / scanQuota.limit) * 100)}%`,
+                                        background: scanQuota.remaining <= 5 ? 'var(--accent-red)' : scanQuota.remaining <= 20 ? 'var(--accent-amber)' : accentColor,
+                                        transition: 'width 0.5s ease',
+                                    }} />
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Quick Actions */}

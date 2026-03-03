@@ -64,6 +64,20 @@ export async function POST(request: NextRequest) {
                 if (userId) {
                     const isActive = ['active', 'trialing'].includes(subscription.status);
                     const client = await clerkClient();
+
+                    if (!isActive) {
+                        // Before downgrading, check if user is comped
+                        const user = await client.users.getUser(userId);
+                        const meta = user.publicMetadata as Record<string, unknown>;
+                        if (meta.compSource) {
+                            console.log(`⚠ Subscription inactive for comped user ${userId} (source: ${meta.compSource}) — keeping plan`);
+                            await client.users.updateUserMetadata(userId, {
+                                publicMetadata: { stripeSubscriptionId: subscription.id },
+                            });
+                            break;
+                        }
+                    }
+
                     await client.users.updateUserMetadata(userId, {
                         publicMetadata: {
                             planId: isActive ? (subscription.metadata?.planId || 'pro') : 'free',
@@ -81,7 +95,17 @@ export async function POST(request: NextRequest) {
                 if (userId) {
                     const client = await clerkClient();
                     const user = await client.users.getUser(userId);
-                    const oldPlan = (user.publicMetadata as Record<string, unknown>)?.planId as string || 'pro';
+                    const meta = user.publicMetadata as Record<string, unknown>;
+                    const oldPlan = (meta.planId as string) || 'pro';
+
+                    // If user is comped (admin or ambassador), don't downgrade
+                    if (meta.compSource) {
+                        console.log(`⚠ Subscription deleted for comped user ${userId} (source: ${meta.compSource}) — keeping ${oldPlan}`);
+                        await client.users.updateUserMetadata(userId, {
+                            publicMetadata: { stripeSubscriptionId: null },
+                        });
+                        break;
+                    }
 
                     await client.users.updateUserMetadata(userId, {
                         publicMetadata: {
