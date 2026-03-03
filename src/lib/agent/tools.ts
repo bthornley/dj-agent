@@ -1,4 +1,4 @@
-import { Event, Deliverable, DeliverableType } from '../types';
+import { Event, Deliverable, DeliverableType, Lead } from '../types';
 import { generateProposal } from '../templates/proposal';
 import { generateRunOfShow } from '../templates/runOfShow';
 import { generateShowSheet } from '../templates/showSheet';
@@ -116,4 +116,45 @@ export function saveToCRM(event: Event): { success: boolean; id: string } {
         }
     }
     return { success: true, id: event.id };
+}
+
+/**
+ * Generate a cold-outreach email draft from a Lead.
+ */
+export function generateLeadOutreach(lead: Lead, djName?: string): { to: string; subject: string; body: string } {
+    const contact = lead.contact_name || 'there';
+    const venue = lead.entity_name || 'your venue';
+    const city = lead.city || '';
+
+    const entityLabel = (lead.entity_type || 'venue').replace(/_/g, ' ');
+    const musicTags = lead.music_fit_tags?.length ? lead.music_fit_tags.join(', ') : 'live entertainment';
+
+    const subject = `DJ Services Inquiry — ${venue}${city ? `, ${city}` : ''}`;
+
+    let body = `Hi ${contact},\n\n`;
+    body += `I came across ${venue}`;
+    if (city) body += ` in ${city}`;
+    body += ` and love what you're doing as a ${entityLabel}. `;
+
+    if (lead.notes) {
+        body += `${lead.notes} `;
+    }
+
+    body += `\n\nI'm ${djName || '[Your Name]'}, a professional DJ specializing in ${musicTags}. `;
+    body += `I'd love to chat about bringing live DJ entertainment to your events — whether that's `;
+
+    if (lead.event_types_seen?.length) {
+        body += lead.event_types_seen.slice(0, 3).join(', ');
+    } else {
+        body += 'weekly nights, private events, or special occasions';
+    }
+    body += `.\n\n`;
+
+    body += `I can bring my own sound and lighting, and I'm flexible on formats — from background vibes to high-energy sets.\n\n`;
+    body += `Would you be open to a quick call or meeting to discuss? I'd be happy to send over my EPK and some sample mixes.\n\n`;
+    body += `Looking forward to connecting!\n\n`;
+    body += `Best,\n`;
+    body += `${djName || '[Your Name]'}\n`;
+
+    return { to: lead.email || '', subject, body };
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import ToastProvider from "@/components/ToastProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -55,9 +56,11 @@ export default function RootLayout({
           <meta name="color-scheme" content="dark" />
         </head>
         <body>
-          <div className="app-shell">
-            {children}
-          </div>
+          <ToastProvider>
+            <div className="app-shell">
+              {children}
+            </div>
+          </ToastProvider>
           <script
             dangerouslySetInnerHTML={{
               __html: `

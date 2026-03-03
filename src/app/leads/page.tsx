@@ -4,7 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
 import { Lead, LeadStatus, Priority } from '@/lib/types';
-import { fetchLeads, fetchLeadStats, updateLead, deleteLead, deleteAllLeads, handoffLeads } from '@/lib/api-client';
+import { fetchLeads, fetchLeadStats, updateLead, deleteLead, deleteAllLeads, handoffLeads, sendEmail } from '@/lib/api-client';
+import { generateLeadOutreach } from '@/lib/agent/tools';
+import { useToast } from '@/components/ToastProvider';
 import ModeSwitch from '@/components/ModeSwitch';
 
 type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
@@ -35,6 +37,13 @@ export default function LeadsDashboard() {
     const [page, setPage] = useState(1);
     const [activeMode, setActiveMode] = useState<AppMode | null>(null);
     const [deletingAll, setDeletingAll] = useState(false);
+    const [emailLead, setEmailLead] = useState<Lead | null>(null);
+    const [emailTo, setEmailTo] = useState('');
+    const [emailSubject, setEmailSubject] = useState('');
+    const [emailBody, setEmailBody] = useState('');
+    const [emailReplyTo, setEmailReplyTo] = useState('');
+    const [emailSending, setEmailSending] = useState(false);
+    const { toast } = useToast();
     const PAGE_SIZE = 25;
 
     const isInstructor = activeMode === 'instructor';
@@ -112,6 +121,40 @@ export default function LeadsDashboard() {
             console.error('Failed to delete all leads');
         }
         setDeletingAll(false);
+    };
+
+    const handleEmailLead = (lead: Lead) => {
+        const draft = generateLeadOutreach(lead);
+        setEmailTo(draft.to);
+        setEmailSubject(draft.subject);
+        setEmailBody(draft.body);
+        setEmailReplyTo('');
+        setEmailLead(lead);
+    };
+
+    const handleSendLeadEmail = async () => {
+        if (!emailLead || !emailTo || !emailSubject || !emailBody) return;
+        setEmailSending(true);
+        try {
+            const result = await sendEmail({
+                to: emailTo,
+                subject: emailSubject,
+                emailBody: emailBody,
+                replyTo: emailReplyTo || undefined,
+            });
+            if (result.success) {
+                toast('✉️ Email sent successfully!', 'success');
+                await updateLead(emailLead.lead_id, { status: 'contacted' });
+                setEmailLead(null);
+                loadData();
+            } else {
+                toast(result.error || 'Failed to send email', 'error');
+            }
+        } catch {
+            toast('Network error — try again', 'error');
+        } finally {
+            setEmailSending(false);
+        }
     };
 
     return (
@@ -350,6 +393,14 @@ export default function LeadsDashboard() {
                                                 >✕</button>
                                             </>
                                         )}
+                                        {lead.email && lead.status !== 'contacted' && lead.status !== 'booked' && (
+                                            <button
+                                                className="btn btn-secondary"
+                                                onClick={() => handleEmailLead(lead)}
+                                                title="Draft outreach email"
+                                                style={{ width: 30, height: 30, padding: 0, fontSize: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
+                                            >✉️</button>
+                                        )}
                                         <button
                                             className="btn btn-ghost"
                                             onClick={() => handleDelete(lead.lead_id)}
@@ -385,6 +436,54 @@ export default function LeadsDashboard() {
                     </div>
                 )}
             </main>
+
+            {/* Lead email send dialog */}
+            {emailLead && (
+                <div style={{
+                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+                }} onClick={() => !emailSending && setEmailLead(null)}>
+                    <div className="card" style={{ maxWidth: '560px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+                        <h3 style={{ marginBottom: '4px', fontSize: '18px' }}>✉️ Outreach Email</h3>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '16px' }}>
+                            Draft email for {emailLead.entity_name}
+                        </p>
+
+                        <div style={{ marginBottom: '12px' }}>
+                            <label className="form-label">To</label>
+                            <input className="input" value={emailTo} onChange={e => setEmailTo(e.target.value)} placeholder="recipient@example.com" />
+                        </div>
+                        <div style={{ marginBottom: '12px' }}>
+                            <label className="form-label">Subject</label>
+                            <input className="input" value={emailSubject} onChange={e => setEmailSubject(e.target.value)} />
+                        </div>
+                        <div style={{ marginBottom: '12px' }}>
+                            <label className="form-label">Body</label>
+                            <textarea
+                                className="input"
+                                value={emailBody}
+                                onChange={e => setEmailBody(e.target.value)}
+                                style={{ minHeight: '200px', fontFamily: 'inherit', fontSize: '14px', lineHeight: 1.6, resize: 'vertical' }}
+                            />
+                        </div>
+                        <div style={{ marginBottom: '16px' }}>
+                            <label className="form-label">Reply-To (optional — your email)</label>
+                            <input className="input" value={emailReplyTo} onChange={e => setEmailReplyTo(e.target.value)} placeholder="your@email.com" />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                            <button className="btn btn-ghost btn-sm" onClick={() => setEmailLead(null)} disabled={emailSending}>Cancel</button>
+                            <button
+                                className="btn btn-primary btn-sm"
+                                onClick={handleSendLeadEmail}
+                                disabled={emailSending || !emailTo || !emailSubject}
+                            >
+                                {emailSending ? '⏳ Sending...' : '✉️ Send Now'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
