@@ -10,6 +10,7 @@ import { FLYER_STYLES, ASPECT_RATIOS, FONT_OPTIONS, getStylePreset } from '@/lib
 import { Event } from '@/lib/types';
 import { FlyerConfig } from '@/lib/db';
 import html2canvas from 'html2canvas';
+import QRCode from 'qrcode';
 
 const DEFAULT_FLYER: Omit<FlyerConfig, 'id' | 'userId' | 'createdAt' | 'updatedAt'> = {
     style: 'neon-club',
@@ -44,6 +45,11 @@ export default function FlyerCreatorPage() {
     const [editId, setEditId] = useState<string | null>(null);
     const [generatingBg, setGeneratingBg] = useState(false);
     const [customPrompt, setCustomPrompt] = useState('');
+    const [qrUrl, setQrUrl] = useState('');
+    const [qrDataUrl, setQrDataUrl] = useState('');
+    const [logoUrl, setLogoUrl] = useState('');
+    const uploadRef = useRef<HTMLInputElement>(null);
+    const logoRef = useRef<HTMLInputElement>(null);
 
     // Load events + saved flyers + brand profile on mount
     useEffect(() => {
@@ -198,6 +204,39 @@ export default function FlyerCreatorPage() {
         setGeneratingBg(false);
     };
 
+    const handleUploadBg = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            setFlyer(f => ({ ...f, backgroundUrl: reader.result as string }));
+            toast('🖼 Background uploaded!', 'success');
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleUploadLogo = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            setLogoUrl(reader.result as string);
+            toast('🎯 Logo added!', 'success');
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const generateQR = async (url: string) => {
+        if (!url) { setQrDataUrl(''); return; }
+        try {
+            const dataUrl = await QRCode.toDataURL(url, {
+                width: 200, margin: 1,
+                color: { dark: '#ffffffdd', light: '#00000000' },
+            });
+            setQrDataUrl(dataUrl);
+        } catch { setQrDataUrl(''); }
+    };
+
     // Derived
     const stylePreset = getStylePreset(flyer.style);
     const bg = flyer.backgroundUrl || stylePreset?.background || FLYER_STYLES[0].background;
@@ -314,6 +353,38 @@ export default function FlyerCreatorPage() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* QR code overlay */}
+                            {qrDataUrl && (
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '4%', right: '4%',
+                                    width: 'clamp(48px, 12%, 96px)',
+                                    height: 'clamp(48px, 12%, 96px)',
+                                    borderRadius: '8px',
+                                    overflow: 'hidden',
+                                    background: 'rgba(0,0,0,0.3)',
+                                    backdropFilter: 'blur(4px)',
+                                    padding: '4px',
+                                }}>
+                                    <img src={qrDataUrl} alt="QR" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                </div>
+                            )}
+
+                            {/* Logo overlay */}
+                            {logoUrl && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '4%', right: '4%',
+                                    width: 'clamp(40px, 10%, 80px)',
+                                    height: 'clamp(40px, 10%, 80px)',
+                                }}>
+                                    <img src={logoUrl} alt="Logo" style={{
+                                        width: '100%', height: '100%', objectFit: 'contain',
+                                        filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))',
+                                    }} />
+                                </div>
+                            )}
                         </div>
 
                         {/* Export buttons */}
@@ -411,6 +482,69 @@ export default function FlyerCreatorPage() {
                             )}
                             <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px', margin: 0 }}>
                                 Requires OPENAI_API_KEY. Uses DALL-E 3.
+                            </p>
+                            <div style={{ marginTop: '10px', borderTop: '1px solid var(--glass-border)', paddingTop: '10px' }}>
+                                <label className="form-label" style={{ fontSize: '11px' }}>📎 Or upload your own</label>
+                                <input
+                                    ref={uploadRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleUploadBg}
+                                    style={{ display: 'none' }}
+                                />
+                                <button
+                                    className="btn btn-ghost btn-sm"
+                                    onClick={() => uploadRef.current?.click()}
+                                    style={{ width: '100%' }}
+                                >🖼 Upload Background Image</button>
+                            </div>
+                        </div>
+
+                        {/* QR Code */}
+                        <div className="card" style={{ padding: '16px' }}>
+                            <label className="form-label">📱 QR Code</label>
+                            <input
+                                className="input"
+                                value={qrUrl}
+                                onChange={e => { setQrUrl(e.target.value); generateQR(e.target.value); }}
+                                placeholder="Ticket link (e.g. eventbrite.com/...)"
+                                style={{ fontSize: '13px' }}
+                            />
+                            {qrDataUrl && (
+                                <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>✓ QR code visible on flyer</span>
+                                    <button className="btn btn-ghost btn-sm" onClick={() => { setQrUrl(''); setQrDataUrl(''); }} style={{ fontSize: '12px' }}>✕</button>
+                                </div>
+                            )}
+                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px', margin: 0 }}>
+                                Appears bottom-right of the flyer.
+                            </p>
+                        </div>
+
+                        {/* Logo Upload */}
+                        <div className="card" style={{ padding: '16px' }}>
+                            <label className="form-label">🎯 Logo / Watermark</label>
+                            <input
+                                ref={logoRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleUploadLogo}
+                                style={{ display: 'none' }}
+                            />
+                            <button
+                                className="btn btn-ghost btn-sm"
+                                onClick={() => logoRef.current?.click()}
+                                style={{ width: '100%' }}
+                            >{logoUrl ? '★ Change Logo' : '★ Upload Logo'}</button>
+                            {logoUrl && (
+                                <button
+                                    className="btn btn-ghost btn-sm"
+                                    onClick={() => setLogoUrl('')}
+                                    style={{ width: '100%', marginTop: '6px', fontSize: '12px' }}
+                                >✕ Remove Logo</button>
+                            )}
+                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px', margin: 0 }}>
+                                Appears top-right of the flyer. Use a transparent PNG.
                             </p>
                         </div>
 
