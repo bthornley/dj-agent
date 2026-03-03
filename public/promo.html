@@ -1128,10 +1128,8 @@
       tryStartAudio();
     }
 
-    // Auto-start on page load
-    window.addEventListener('DOMContentLoaded', () => {
-      startPromo();
-    });
+    // Auto-start immediately (script is at end of body, DOM is ready)
+    startPromo();
 
     // Also try to start audio on any first interaction
     document.addEventListener('click', tryStartAudio, { once: true });
