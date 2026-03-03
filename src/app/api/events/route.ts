@@ -3,7 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { dbGetAllEvents, dbSaveEvent } from '@/lib/db';
 
 // Allowed event statuses
-const VALID_STATUSES = ['inquiry', 'confirmed', 'completed', 'cancelled', ''];
+const VALID_STATUSES = ['inquiry', 'quoting', 'confirmed', 'completed', 'cancelled', ''];
 
 // GET /api/events — List user's events
 export async function GET() {
