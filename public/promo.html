@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1280, height=720">
-  <title>GigLift — AI Agents for Musicians & Instructors</title>
+  <title>GigLift — AI Agents for Musicians &amp; Instructors</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
     * {
@@ -132,7 +132,9 @@
       pointer-events: auto;
     }
 
-    /* Scene 1: Logo */
+    /* ═══════════════════════════════════
+       Scene 1: Logo Reveal
+    ═══════════════════════════════════ */
     .scene-1 .logo-img {
       width: 100px;
       height: 100px;
@@ -171,15 +173,15 @@
 
     .scene-1 .mode-badges {
       display: flex;
-      gap: 16px;
+      gap: 12px;
       margin-top: 20px;
       animation: slideUp 0.5s ease-out 0.7s both;
     }
 
     .scene-1 .mode-badge {
-      padding: 8px 20px;
+      padding: 8px 18px;
       border-radius: 24px;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
       letter-spacing: 0.5px;
     }
@@ -196,7 +198,21 @@
       color: #38bdf8;
     }
 
-    /* Scene 2: Problem */
+    .scene-1 .mode-badge.studio {
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(234, 88, 12, 0.1));
+      border: 1px solid rgba(249, 115, 22, 0.4);
+      color: #f97316;
+    }
+
+    .scene-1 .mode-badge.touring {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1));
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #10b981;
+    }
+
+    /* ═══════════════════════════════════
+       Scene 2: Problem
+    ═══════════════════════════════════ */
     .scene-2 .problem-badge {
       background: rgba(255, 85, 85, 0.15);
       border: 1px solid rgba(255, 85, 85, 0.4);
@@ -247,7 +263,9 @@
       margin-top: 4px;
     }
 
-    /* Scene 3: Features */
+    /* ═══════════════════════════════════
+       Scene 3: AI Agent Team
+    ═══════════════════════════════════ */
     .scene-3 .features-title {
       font-size: 16px;
       color: #a855f7;
@@ -314,39 +332,34 @@
       line-height: 1.4;
     }
 
-    /* Scene 4: Mode Switcher */
+    /* ═══════════════════════════════════
+       Scene 4: Four Modes
+    ═══════════════════════════════════ */
     .scene-4 h2 {
-      font-size: 44px;
+      font-size: 42px;
       font-weight: 900;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       animation: slideUp 0.4s ease-out;
     }
 
-    .scene-4 h2 .purple {
-      color: #a855f7;
-    }
-
-    .scene-4 h2 .cyan {
-      color: #38bdf8;
-    }
-
     .scene-4 .mode-subtitle {
-      font-size: 18px;
+      font-size: 16px;
       color: #888;
-      margin-bottom: 36px;
+      margin-bottom: 28px;
       animation: slideUp 0.4s ease-out 0.1s both;
     }
 
-    .scene-4 .mode-compare {
-      display: flex;
-      gap: 32px;
+    .scene-4 .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      max-width: 1080px;
       animation: slideUp 0.5s ease-out 0.2s both;
     }
 
     .scene-4 .mode-col {
-      width: 380px;
-      border-radius: 16px;
-      padding: 28px;
+      border-radius: 14px;
+      padding: 22px 18px;
       text-align: left;
     }
 
@@ -360,10 +373,20 @@
       border: 1px solid rgba(56, 189, 248, 0.25);
     }
 
+    .scene-4 .mode-col.studio {
+      background: rgba(249, 115, 22, 0.06);
+      border: 1px solid rgba(249, 115, 22, 0.25);
+    }
+
+    .scene-4 .mode-col.touring {
+      background: rgba(16, 185, 129, 0.06);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
     .scene-4 .mode-col h3 {
-      font-size: 22px;
+      font-size: 18px;
       font-weight: 800;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .scene-4 .mode-col.performer h3 {
@@ -374,21 +397,29 @@
       color: #38bdf8;
     }
 
+    .scene-4 .mode-col.studio h3 {
+      color: #f97316;
+    }
+
+    .scene-4 .mode-col.touring h3 {
+      color: #10b981;
+    }
+
     .scene-4 .mode-col ul {
       list-style: none;
       padding: 0;
     }
 
     .scene-4 .mode-col li {
-      font-size: 14px;
+      font-size: 12px;
       color: #ccc;
-      padding: 5px 0;
+      padding: 3px 0;
       line-height: 1.4;
     }
 
     .scene-4 .mode-col li::before {
-      margin-right: 8px;
-      font-size: 13px;
+      margin-right: 6px;
+      font-size: 11px;
     }
 
     .scene-4 .mode-col.performer li::before {
@@ -399,7 +430,17 @@
       content: '📚';
     }
 
-    /* Scene 5: How it works */
+    .scene-4 .mode-col.studio li::before {
+      content: '🎙️';
+    }
+
+    .scene-4 .mode-col.touring li::before {
+      content: '🚐';
+    }
+
+    /* ═══════════════════════════════════
+       Scene 5: How It Works
+    ═══════════════════════════════════ */
     .scene-5 h2 {
       font-size: 42px;
       font-weight: 900;
@@ -466,8 +507,72 @@
       animation: fadeIn 0.3s ease-out both;
     }
 
-    /* Scene 6: Pricing */
-    .scene-6 .pricing-badge {
+    /* ═══════════════════════════════════
+       Scene 6: Social Crew
+    ═══════════════════════════════════ */
+    .scene-6 .social-badge {
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      color: #a855f7;
+      padding: 6px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    .scene-6 h2 {
+      font-size: 44px;
+      font-weight: 900;
+      margin-bottom: 12px;
+      animation: slideUp 0.4s ease-out 0.1s both;
+    }
+
+    .scene-6 .social-subtitle {
+      font-size: 16px;
+      color: #888;
+      margin-bottom: 32px;
+      animation: slideUp 0.4s ease-out 0.15s both;
+    }
+
+    .scene-6 .social-features {
+      display: flex;
+      gap: 20px;
+      animation: slideUp 0.5s ease-out 0.2s both;
+    }
+
+    .scene-6 .social-feature {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 24px 20px;
+      width: 200px;
+      text-align: center;
+    }
+
+    .scene-6 .social-feature .sf-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .scene-6 .social-feature .sf-name {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .scene-6 .social-feature .sf-desc {
+      font-size: 11px;
+      color: #888;
+      line-height: 1.4;
+    }
+
+    /* ═══════════════════════════════════
+       Scene 7: Pricing
+    ═══════════════════════════════════ */
+    .scene-7 .pricing-badge {
       background: rgba(0, 212, 230, 0.12);
       border: 1px solid rgba(0, 212, 230, 0.3);
       color: #00d4e6;
@@ -480,53 +585,139 @@
       animation: slideUp 0.3s ease-out;
     }
 
-    .scene-6 h2 {
-      font-size: 48px;
+    .scene-7 h2 {
+      font-size: 44px;
       font-weight: 900;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
       animation: slideUp 0.4s ease-out 0.1s both;
     }
 
-    .scene-6 .tier-row {
+    .scene-7 .tier-row {
       display: flex;
-      gap: 20px;
+      gap: 16px;
       animation: slideUp 0.4s ease-out 0.2s both;
     }
 
-    .scene-6 .tier {
+    .scene-7 .tier {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 16px;
-      padding: 24px 32px;
-      width: 200px;
+      padding: 22px 24px;
+      width: 220px;
       text-align: center;
     }
 
-    .scene-6 .tier.featured {
+    .scene-7 .tier.featured {
       border-color: #a855f7;
       background: rgba(168, 85, 247, 0.08);
-      transform: scale(1.05);
+      transform: scale(1.04);
     }
 
-    .scene-6 .tier-name {
-      font-size: 18px;
+    .scene-7 .tier-name {
+      font-size: 17px;
       font-weight: 700;
     }
 
-    .scene-6 .tier-price {
-      font-size: 36px;
+    .scene-7 .tier-price {
+      font-size: 34px;
       font-weight: 900;
-      margin: 8px 0;
+      margin: 6px 0;
     }
 
-    .scene-6 .tier-price span {
+    .scene-7 .tier-price span {
       font-size: 14px;
       font-weight: 400;
       color: #888;
     }
 
-    /* Scene 7: CTA */
-    .scene-7 .logo-img {
+    .scene-7 .tier-features {
+      list-style: none;
+      padding: 0;
+      margin-top: 8px;
+    }
+
+    .scene-7 .tier-features li {
+      font-size: 11px;
+      color: #999;
+      padding: 2px 0;
+    }
+
+    .scene-7 .tier-features li::before {
+      content: '✓ ';
+      color: #10b981;
+    }
+
+    /* ═══════════════════════════════════
+       Scene 8: Ambassador Program
+    ═══════════════════════════════════ */
+    .scene-8 .ambassador-badge {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1));
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      color: #ffd700;
+      padding: 8px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      animation: slideUp 0.4s ease-out;
+    }
+
+    .scene-8 h2 {
+      font-size: 44px;
+      font-weight: 900;
+      margin-bottom: 10px;
+      animation: slideUp 0.4s ease-out 0.1s both;
+    }
+
+    .scene-8 h2 .gold {
+      color: #ffd700;
+    }
+
+    .scene-8 .ambassador-subtitle {
+      font-size: 18px;
+      color: #888;
+      margin-bottom: 32px;
+      animation: slideUp 0.4s ease-out 0.15s both;
+    }
+
+    .scene-8 .ambassador-perks {
+      display: flex;
+      gap: 20px;
+      animation: slideUp 0.5s ease-out 0.2s both;
+    }
+
+    .scene-8 .perk {
+      background: rgba(255, 215, 0, 0.04);
+      border: 1px solid rgba(255, 215, 0, 0.15);
+      border-radius: 14px;
+      padding: 24px 20px;
+      width: 220px;
+      text-align: center;
+    }
+
+    .scene-8 .perk .perk-icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .scene-8 .perk .perk-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffd700;
+      margin-bottom: 4px;
+    }
+
+    .scene-8 .perk .perk-desc {
+      font-size: 12px;
+      color: #999;
+      line-height: 1.4;
+    }
+
+    /* ═══════════════════════════════════
+       Scene 9: CTA
+    ═══════════════════════════════════ */
+    .scene-9 .logo-img {
       width: 80px;
       height: 80px;
       border-radius: 18px;
@@ -535,7 +726,7 @@
       animation: pulse 0.8s ease-in-out;
     }
 
-    .scene-7 h1 {
+    .scene-9 h1 {
       font-size: 72px;
       font-weight: 900;
       background: linear-gradient(135deg, #fff 0%, #a855f7 50%, #00d4e6 100%);
@@ -545,14 +736,14 @@
       animation: slideUp 0.5s ease-out;
     }
 
-    .scene-7 .cta-tagline {
-      font-size: 24px;
+    .scene-9 .cta-tagline {
+      font-size: 22px;
       color: #ccc;
-      margin: 12px 0 32px;
+      margin: 12px 0 28px;
       animation: slideUp 0.5s ease-out 0.15s both;
     }
 
-    .scene-7 .cta-btn {
+    .scene-9 .cta-btn {
       background: linear-gradient(135deg, #a855f7, #7c3aed);
       color: #fff;
       font-size: 20px;
@@ -565,14 +756,16 @@
       cursor: pointer;
     }
 
-    .scene-7 .url {
+    .scene-9 .url {
       color: #a855f7;
       font-size: 16px;
       margin-top: 20px;
       animation: fadeIn 0.5s ease-out 0.5s both;
     }
 
-    /* Animations */
+    /* ═══════════════════════════════════
+       Animations
+    ═══════════════════════════════════ */
     @keyframes slideUp {
       from {
         opacity: 0;
@@ -651,10 +844,12 @@
     <img class="logo-img" src="/logo.png" alt="GigLift" />
     <h1>GIGLIFT</h1>
     <div class="sub-tagline">Your AI Agent Team for the Music Hustle</div>
-    <div class="tagline">For DJs · Bands · Solo Artists · Music Instructors</div>
+    <div class="tagline">For DJs · Bands · Solo Artists · Music Instructors · Producers</div>
     <div class="mode-badges">
-      <div class="mode-badge performer">🎵 Performer Mode</div>
-      <div class="mode-badge instructor">📚 Instructor Mode</div>
+      <div class="mode-badge performer">🎵 Performer</div>
+      <div class="mode-badge instructor">📚 Instructor</div>
+      <div class="mode-badge studio">🎙️ Studio</div>
+      <div class="mode-badge touring">🚐 Touring</div>
     </div>
   </div>
 
@@ -678,66 +873,86 @@
     </div>
   </div>
 
-  <!-- Scene 3: Features -->
+  <!-- Scene 3: AI Agent Team -->
   <div class="scene scene-3" id="scene-3">
     <div class="features-title">Your AI Agent Team</div>
     <div class="feature-grid">
       <div class="feature-card">
         <div class="feature-icon">🔍</div>
         <div class="feature-name">Lead Scout Agent</div>
-        <div class="feature-desc">Discovers venues, schools, and studios across 10+ sources</div>
+        <div class="feature-desc">Discovers venues, schools, studios, and festivals across 10+ sources</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">✉️</div>
         <div class="feature-name">Outreach Writer</div>
-        <div class="feature-desc">Mode-aware emails — bookings or lesson proposals</div>
+        <div class="feature-desc">Mode-aware emails — bookings, lesson proposals, or session pitches</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📋</div>
         <div class="feature-name">EPK Architect</div>
-        <div class="feature-desc">AI bios, themes, and a shareable press kit page</div>
+        <div class="feature-desc">AI bios, themes, and a shareable electronic press kit page</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📱</div>
         <div class="feature-name">Social Strategist</div>
-        <div class="feature-desc">7-day content plans with Reels, carousels, and stories</div>
+        <div class="feature-desc">Weekly content plans with Reels, carousels, stories, and posts</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">✍️</div>
         <div class="feature-name">Content Copywriter</div>
-        <div class="feature-desc">A/B post drafts with captions, hashtags, and CTAs</div>
+        <div class="feature-desc">A/B post drafts with captions, hashtags, CTAs, and media selection</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📊</div>
         <div class="feature-name">Smart Lead Scoring</div>
-        <div class="feature-desc">0–100 scoring with quality filtering and deduplication</div>
+        <div class="feature-desc">0–100 AI scoring with quality filtering and deduplication</div>
       </div>
     </div>
   </div>
 
-  <!-- Scene 4: Mode Switcher -->
+  <!-- Scene 4: Four Modes -->
   <div class="scene scene-4" id="scene-4">
-    <h2>One App. <span class="purple">Two</span> <span class="cyan">Modes.</span></h2>
-    <div class="mode-subtitle">Switch instantly between Performer and Instructor</div>
-    <div class="mode-compare">
+    <h2>One App. <span style="color:#a855f7">Four</span> <span style="color:#00d4e6">Modes.</span></h2>
+    <div class="mode-subtitle">Switch instantly. Every agent adapts to your current hustle.</div>
+    <div class="mode-grid">
       <div class="mode-col performer">
-        <h3>🎵 Performer Mode</h3>
+        <h3>🎵 Performer</h3>
         <ul>
-          <li>Find venues, bars, event spaces</li>
+          <li>Venues, bars, event spaces</li>
           <li>Booking inquiry emails</li>
           <li>Demo mixes & press kits</li>
-          <li>Performance-focused social content</li>
+          <li>Performance social content</li>
           <li>Gig pipeline management</li>
         </ul>
       </div>
       <div class="mode-col instructor">
-        <h3>📚 Instructor Mode</h3>
+        <h3>📚 Instructor</h3>
         <ul>
-          <li>Find schools, rec centers, studios</li>
+          <li>Schools, rec centers, studios</li>
           <li>Lesson proposal emails</li>
-          <li>Teaching credentials & curriculum</li>
-          <li>Education-focused social content</li>
-          <li>Student pipeline management</li>
+          <li>Teaching credentials & CV</li>
+          <li>Education social content</li>
+          <li>Student pipeline tracking</li>
+        </ul>
+      </div>
+      <div class="mode-col studio">
+        <h3>🎙️ Studio</h3>
+        <ul>
+          <li>Recording studios, producers</li>
+          <li>Session pitch outreach</li>
+          <li>Production portfolio</li>
+          <li>Studio-focused content</li>
+          <li>Client & project tracking</li>
+        </ul>
+      </div>
+      <div class="mode-col touring">
+        <h3>🚐 Touring</h3>
+        <ul>
+          <li>Festivals, booking agents</li>
+          <li>Tour routing & logistics</li>
+          <li>Press kit for promoters</li>
+          <li>Tour announcement content</li>
+          <li>Multi-city lead pipeline</li>
         </ul>
       </div>
     </div>
@@ -779,32 +994,109 @@
     </div>
   </div>
 
-  <!-- Scene 6: Pricing -->
+  <!-- Scene 6: Social Crew -->
   <div class="scene scene-6" id="scene-6">
+    <div class="social-badge">Social Media Suite</div>
+    <h2>Your Social Crew</h2>
+    <div class="social-subtitle">AI-powered content creation, scheduling, and management</div>
+    <div class="social-features">
+      <div class="social-feature">
+        <div class="sf-icon">📅</div>
+        <div class="sf-name">Weekly Plans</div>
+        <div class="sf-desc">AI generates a 7-day content calendar with pillar rotation</div>
+      </div>
+      <div class="social-feature">
+        <div class="sf-icon">✍️</div>
+        <div class="sf-name">A/B Drafts</div>
+        <div class="sf-desc">Two variants per post with hooks, captions, and hashtags</div>
+      </div>
+      <div class="social-feature">
+        <div class="sf-icon">📸</div>
+        <div class="sf-name">Media Library</div>
+        <div class="sf-desc">Upload photos & videos, auto-attach unique media per post</div>
+      </div>
+      <div class="social-feature">
+        <div class="sf-icon">🚀</div>
+        <div class="sf-name">Draft Editing</div>
+        <div class="sf-desc">Edit captions, swap media, approve, and push to platforms</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene 7: Pricing -->
+  <div class="scene scene-7" id="scene-7">
     <div class="pricing-badge">Simple Pricing</div>
     <h2>Plans That Scale With You</h2>
     <div class="tier-row">
       <div class="tier">
         <div class="tier-name">Free</div>
         <div class="tier-price">$0<span>/mo</span></div>
+        <ul class="tier-features">
+          <li>10 URL scans</li>
+          <li>25 lead storage</li>
+          <li>1 region</li>
+          <li>EPK builder</li>
+        </ul>
       </div>
       <div class="tier featured">
         <div class="tier-name">Pro ⭐</div>
         <div class="tier-price">$19<span>/mo</span></div>
+        <ul class="tier-features">
+          <li>100 auto-scans</li>
+          <li>Unlimited leads</li>
+          <li>2 regions</li>
+          <li>Email templates</li>
+        </ul>
       </div>
       <div class="tier">
         <div class="tier-name">Unlimited</div>
         <div class="tier-price">$39<span>/mo</span></div>
+        <ul class="tier-features">
+          <li>250 auto-scans</li>
+          <li>Unlimited regions</li>
+          <li>Priority support</li>
+          <li>CRM features</li>
+        </ul>
       </div>
       <div class="tier">
         <div class="tier-name">Agency 🏢</div>
         <div class="tier-price">$149<span>/mo</span></div>
+        <ul class="tier-features">
+          <li>10 DJ sub-accounts</li>
+          <li>White-label EPK</li>
+          <li>Agency analytics</li>
+          <li>Account manager</li>
+        </ul>
       </div>
     </div>
   </div>
 
-  <!-- Scene 7: CTA -->
-  <div class="scene scene-7" id="scene-7">
+  <!-- Scene 8: Ambassador Program -->
+  <div class="scene scene-8" id="scene-8">
+    <div class="ambassador-badge">🤝 Brand Ambassador Program</div>
+    <h2>Grow With <span class="gold">GigLift</span></h2>
+    <div class="ambassador-subtitle">Share your referral link. Earn rewards. Build your network.</div>
+    <div class="ambassador-perks">
+      <div class="perk">
+        <div class="perk-icon">🔗</div>
+        <div class="perk-title">Unique Link</div>
+        <div class="perk-desc">Personal referral URL with one-click copy and built-in tracking</div>
+      </div>
+      <div class="perk">
+        <div class="perk-icon">📊</div>
+        <div class="perk-title">Live Dashboard</div>
+        <div class="perk-desc">Track signups, plan levels, and conversion rates in real time</div>
+      </div>
+      <div class="perk">
+        <div class="perk-icon">🎁</div>
+        <div class="perk-title">Earn Rewards</div>
+        <div class="perk-desc">Exclusive perks and rewards for every referral who subscribes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene 9: CTA -->
+  <div class="scene scene-9" id="scene-9">
     <img class="logo-img" src="/logo.png" alt="GigLift" />
     <h1>GIGLIFT</h1>
     <div class="cta-tagline">Discover. Outreach. Build. Book.</div>
@@ -844,14 +1136,16 @@
     // ═══════════════════════════════════════════════════
     function startScenes() {
       const scenes = [
-        { id: 'scene-1', duration: 5500 },
-        { id: 'scene-2', duration: 6000 },
-        { id: 'scene-3', duration: 6500 },
-        { id: 'scene-4', duration: 7000 },
-        { id: 'scene-5', duration: 5000 },
-        { id: 'scene-6', duration: 4500 },
-        { id: 'scene-7', duration: 5500 },
-      ]; // Total: ~40s
+        { id: 'scene-1', duration: 6000 },  //  0s – Logo reveal
+        { id: 'scene-2', duration: 6500 },  //  6s – Problem
+        { id: 'scene-3', duration: 7000 },  // 12.5s – AI Agent Team
+        { id: 'scene-4', duration: 8000 },  // 19.5s – Four Modes
+        { id: 'scene-5', duration: 5500 },  // 27.5s – How it works
+        { id: 'scene-6', duration: 6500 },  // 33s – Social Crew
+        { id: 'scene-7', duration: 5500 },  // 39.5s – Pricing
+        { id: 'scene-8', duration: 6500 },  // 45s – Ambassador
+        { id: 'scene-9', duration: 6000 },  // 51.5s – CTA
+      ]; // Total: ~57.5s
 
       const totalDuration = scenes.reduce((s, sc) => s + sc.duration, 0);
       const bar = document.getElementById('progress');
@@ -886,20 +1180,40 @@
       synth.cancel();
 
       const voicelines = [
-        { time: 400, text: "Introducing GigLift.", rate: 0.9 },
-        { time: 2200, text: "Your AI agent team for the music hustle. Built for DJs, bands, solo artists, and music instructors.", rate: 1.0 },
-        { time: 5800, text: "Seventy-eight percent of musicians earn under fifteen thousand dollars a year. Most spend twenty hours a week just searching for opportunities.", rate: 1.05 },
-        { time: 11800, text: "GigLift changes that. Five AI agents work autonomously to discover leads, score opportunities, draft personalized outreach, build your press kit, and plan your social content.", rate: 1.05 },
-        { time: 18500, text: "And with two distinct modes, GigLift adapts to how you work. Toggle between Performer Mode, for booking gigs at venues and events. And Instructor Mode, for finding lesson opportunities at schools, recreation centers, and studios.", rate: 1.05 },
-        { time: 25700, text: "Five steps. Discover. Score. Outreach. Build. Book. From search to stage, fully automated.", rate: 1.0 },
-        { time: 30500, text: "Plans start free. Upgrade to Pro for nineteen a month, or go Unlimited for thirty-nine.", rate: 1.0 },
-        { time: 35200, text: "GigLift. Deploy your AI agents free today at giglift dot vercel dot app.", rate: 0.95 },
+        // Scene 1: Logo (0-6s)
+        { time: 400, text: "Introducing GigLift.", rate: 0.88 },
+        { time: 2000, text: "Your AI agent team for the music industry. Built for performers, instructors, studio professionals, and touring artists.", rate: 1.0 },
+
+        // Scene 2: Problem (6-12.5s)
+        { time: 6200, text: "Seventy-eight percent of musicians earn under fifteen thousand dollars a year.", rate: 1.0 },
+        { time: 9200, text: "Most spend twenty hours a week just searching for opportunities. GigLift changes that.", rate: 1.05 },
+
+        // Scene 3: AI Agents (12.5-19.5s)
+        { time: 12700, text: "Five AI agents work together autonomously. The Lead Scout discovers opportunities across ten-plus sources. The Outreach Writer crafts personalized emails. The EPK Architect builds your press kit. The Social Strategist plans your content. And Smart Scoring ranks every lead by fit.", rate: 1.1 },
+
+        // Scene 4: Four Modes (19.5-27.5s)
+        { time: 19700, text: "Four distinct modes make GigLift adapt to how you work.", rate: 0.95 },
+        { time: 22000, text: "Performer mode finds venues and books gigs. Instructor mode connects you with schools and students. Studio mode targets recording sessions and production clients. And Touring mode manages festivals, agents, and multi-city pipelines.", rate: 1.1 },
+
+        // Scene 5: How It Works (27.5-33s)
+        { time: 27700, text: "Five steps. Discover. Score. Outreach. Build. Book. From search to stage, fully automated.", rate: 1.0 },
+
+        // Scene 6: Social Crew (33-39.5s)
+        { time: 33200, text: "Your Social Crew handles content creation end to end. AI generates weekly plans with Reels, carousels, and stories. Edit drafts inline, swap media from your library, and push directly to platforms.", rate: 1.08 },
+
+        // Scene 7: Pricing (39.5-45s)
+        { time: 39700, text: "Start free with ten scans and twenty-five leads. Upgrade to Pro for nineteen a month, Unlimited for thirty-nine, or Agency for one forty-nine with ten sub-accounts.", rate: 1.08 },
+
+        // Scene 8: Ambassador (45-51.5s)
+        { time: 45200, text: "Our Brand Ambassador program lets you earn rewards by sharing GigLift. Get a personal referral link, track signups on your live dashboard, and unlock exclusive perks.", rate: 1.05 },
+
+        // Scene 9: CTA (51.5-57.5s)
+        { time: 51700, text: "GigLift. Deploy your AI agents free today at giglift dot app.", rate: 0.92 },
       ];
 
       // Find a professional voice
       let chosenVoice = null;
       const voices = synth.getVoices();
-      // Prefer voices that sound more professional
       const preferred = ['Google US English', 'Samantha', 'Alex', 'Daniel', 'Aaron', 'Evan'];
       for (const pref of preferred) {
         const found = voices.find(v => v.name.includes(pref) && v.lang.startsWith('en'));
@@ -913,7 +1227,7 @@
         setTimeout(() => {
           const utter = new SpeechSynthesisUtterance(text);
           utter.rate = rate || 1.0;
-          utter.pitch = 0.95; // slightly deeper for professional feel
+          utter.pitch = 0.92;
           utter.volume = 1.0;
           if (chosenVoice) utter.voice = chosenVoice;
           synth.speak(utter);
@@ -935,7 +1249,7 @@
       actx.resume();
 
       const masterGain = actx.createGain();
-      masterGain.gain.value = 0.18; // Low so voice is clearly heard
+      masterGain.gain.value = 0.15;
       masterGain.connect(actx.destination);
 
       const comp = actx.createDynamicsCompressor();
@@ -987,7 +1301,7 @@
       function pad(time, freq, dur) {
         const osc1 = actx.createOscillator();
         const osc2 = actx.createOscillator();
-        const g = actx.createGain();
+        const = aateGain();
         osc1.type = 'sine'; osc1.frequency.value = freq;
         osc2.type = 'triangle'; osc2.frequency.value = freq * 1.003;
         const lp = actx.createBiquadFilter();
@@ -1000,10 +1314,10 @@
         osc2.start(time); osc2.stop(time + dur);
       }
 
-      const bpm = 120; // Slightly slower, more cinematic
+      const bpm = 115;
       const beatLen = 60 / bpm;
       const now = actx.currentTime + 0.05;
-      const totalBeats = Math.floor(42 / beatLen);
+      const totalBeats = Math.floor(60 / beatLen);
 
       const bassNotes = [82.41, 98, 110, 82.41]; // E2 G2 A2 E2
       const padChords = [
@@ -1031,8 +1345,8 @@
       }
 
       // Fade out
-      masterGain.gain.setValueAtTime(0.18, now + 38);
-      masterGain.gain.linearRampToValueAtTime(0, now + 41);
+      masterGain.gain.setValueAtTime(0.15, now + 54);
+      masterGain.gain.linearRampToValueAtTime(0, now + 58);
     }
   </script>
 </body>
