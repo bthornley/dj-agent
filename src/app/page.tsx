@@ -535,7 +535,7 @@ export default async function LandingPage() {
           <span style={{ color: 'var(--text-muted)' }}>·</span>
           <Link href="/pricing" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Pricing</Link>
         </div>
-        <p>© 2026 GigLift. Your AI agent team for the music hustle.</p>
+        <p>© 2026 Digital Duende Entertainment, LLC. Your AI agent team for the music hustle.</p>
       </footer>
     </>
   );

@@ -133,7 +133,7 @@ export default function PrivacyPage() {
             </main>
 
             <footer className="landing-footer">
-                <p>© 2026 GigLift. All rights reserved.</p>
+                <p>© 2026 Digital Duende Entertainment, LLC. All rights reserved.</p>
             </footer>
         </>
     );

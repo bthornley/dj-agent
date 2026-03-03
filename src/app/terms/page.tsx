@@ -24,7 +24,7 @@ export default function TermsPage() {
                 <section style={{ marginBottom: '32px' }}>
                     <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '12px' }}>1. Acceptance of Terms</h2>
                     <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-                        By accessing or using GigLift (&quot;the Service&quot;), operated by GigLift LLC (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;),
+                        By accessing or using GigLift (&quot;the Service&quot;), operated by Digital Duende Entertainment, LLC (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;),
                         you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.
                     </p>
                 </section>
@@ -125,7 +125,7 @@ export default function TermsPage() {
             </main>
 
             <footer className="landing-footer">
-                <p>© 2026 GigLift. All rights reserved.</p>
+                <p>© 2026 Digital Duende Entertainment, LLC. All rights reserved.</p>
             </footer>
         </>
     );
