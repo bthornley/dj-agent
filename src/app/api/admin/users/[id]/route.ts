@@ -70,7 +70,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             });
         }
 
-        // Manual plan change by admin
+        // Manual plan change by admin (comped — no Stripe charge)
         if (body.planId !== undefined) {
             const validPlans = ['free', 'pro', 'unlimited', 'agency'];
             if (!validPlans.includes(body.planId)) {
@@ -79,9 +79,19 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             const user = await client.users.getUser(userId);
             const oldPlan = (user.publicMetadata as Record<string, unknown>)?.planId as string || 'free';
 
+            const metaUpdate: Record<string, unknown> = { planId: body.planId };
+            if (body.planId !== 'free') {
+                metaUpdate.compSource = 'admin';
+                metaUpdate.compedAt = new Date().toISOString();
+            } else {
+                metaUpdate.compSource = null;
+                metaUpdate.compedAt = null;
+            }
+
             await client.users.updateUserMetadata(userId, {
-                publicMetadata: { planId: body.planId },
+                publicMetadata: metaUpdate,
             });
+            console.log(`[admin] Comped user ${userId} → ${body.planId} (source: admin)`);
 
             // Send plan change email
             const email = user.emailAddresses[0]?.emailAddress;
@@ -104,13 +114,17 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             };
             if (isAmbassador) {
                 publicUpdates.planId = 'pro';
+                publicUpdates.compSource = 'ambassador';
+                publicUpdates.compedAt = new Date().toISOString();
                 publicUpdates.ambassadorSince = new Date().toISOString();
             } else {
-                // Revert to free unless they have a paid subscription
+                // Revert to free unless they have a paid Stripe subscription
                 const user = await client.users.getUser(userId);
                 const currentMeta = user.publicMetadata as Record<string, unknown>;
                 if (!currentMeta.stripeSubscriptionId) {
                     publicUpdates.planId = 'free';
+                    publicUpdates.compSource = null;
+                    publicUpdates.compedAt = null;
                 }
                 publicUpdates.ambassadorSince = null;
             }

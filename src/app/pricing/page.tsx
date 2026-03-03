@@ -102,6 +102,7 @@ const plans = [
 export default function PricingPage() {
     const { user } = useUser();
     const currentPlan = (user?.publicMetadata?.planId as string) || 'free';
+    const compSource = (user?.publicMetadata as Record<string, unknown>)?.compSource as string | undefined;
     const [loading, setLoading] = useState('');
 
     const handleUpgrade = async (planId: string) => {
@@ -137,6 +138,9 @@ export default function PricingPage() {
         }
     };
 
+    const currentBadgeLabel = compSource === 'ambassador' ? '🌟 Ambassador Plan' : compSource === 'admin' ? '🎁 Comped' : 'Current Plan';
+    const currentBtnLabel = compSource ? `✓ ${currentBadgeLabel}` : '✓ Current';
+
     return (
         <>
             <header className="topbar">
@@ -166,7 +170,7 @@ export default function PricingPage() {
                     {plans.map(plan => (
                         <div key={plan.id} className={`pricing-card ${plan.highlighted ? 'pricing-highlighted' : ''} ${currentPlan === plan.id ? 'pricing-current' : ''}`}>
                             {currentPlan === plan.id
-                                ? <div className="pricing-badge pricing-badge-current">Current Plan</div>
+                                ? <div className="pricing-badge pricing-badge-current">{currentBadgeLabel}</div>
                                 : plan.highlighted && <div className="pricing-badge">Most Popular</div>
                             }
 
@@ -198,7 +202,7 @@ export default function PricingPage() {
                                 onClick={() => handleUpgrade(plan.id)}
                                 disabled={plan.id === currentPlan || loading === plan.id || (plan.id === 'free' && !user)}
                             >
-                                {loading === plan.id ? 'Redirecting...' : currentPlan === plan.id ? '✓ Current' : plan.cta}
+                                {loading === plan.id ? 'Redirecting...' : currentPlan === plan.id ? currentBtnLabel : plan.cta}
                             </button>
                         </div>
                     ))}
