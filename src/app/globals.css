@@ -9,6 +9,7 @@ html,
 body {
   overflow-x: hidden;
   max-width: 100vw;
+  color-scheme: dark;
 }
 
 :root {
@@ -2057,6 +2058,7 @@ a:hover {
   max-width: 100%;
   overflow-wrap: anywhere;
   word-break: break-word;
+  color: #e8e0ff;
   background: linear-gradient(135deg, #fff, #c4b5fd);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
