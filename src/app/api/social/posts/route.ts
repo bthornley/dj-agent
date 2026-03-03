@@ -44,7 +44,7 @@ export async function PATCH(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { id, status, caption, hookText, hashtags } = await request.json();
+    const { id, status, caption, hookText, hashtags, mediaRefs, cta } = await request.json();
     if (!id) return NextResponse.json({ error: 'Post id is required' }, { status: 400 });
 
     const post = await dbGetSocialPost(id, userId);
@@ -55,6 +55,8 @@ export async function PATCH(request: NextRequest) {
     if (caption !== undefined) post.caption = caption;
     if (hookText !== undefined) post.hookText = hookText;
     if (hashtags !== undefined) post.hashtags = hashtags;
+    if (mediaRefs !== undefined) post.mediaRefs = mediaRefs;
+    if (cta !== undefined) post.cta = cta;
     post.updatedAt = new Date().toISOString();
 
     // Run guardrails on approval
