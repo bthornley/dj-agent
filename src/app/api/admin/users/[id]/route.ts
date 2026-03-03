@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-guard';
 import { dbGetUserStats, dbGetAllEvents, dbGetAllLeads, dbGetAllSocialPosts, dbGetBrandProfile } from '@/lib/db';
 import { clerkClient } from '@clerk/nextjs/server';
+import { sendPlanChangeEmail, sendAmbassadorAcceptedEmail } from '@/lib/email';
 
 // GET /api/admin/users/[id] — Get user detail with all data
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -69,14 +70,29 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             });
         }
 
+        // Manual plan change by admin
         if (body.planId !== undefined) {
             const validPlans = ['free', 'pro', 'unlimited', 'agency'];
             if (!validPlans.includes(body.planId)) {
                 return NextResponse.json({ error: 'Invalid plan ID' }, { status: 400 });
             }
+            const user = await client.users.getUser(userId);
+            const oldPlan = (user.publicMetadata as Record<string, unknown>)?.planId as string || 'free';
+
             await client.users.updateUserMetadata(userId, {
                 publicMetadata: { planId: body.planId },
             });
+
+            // Send plan change email
+            const email = user.emailAddresses[0]?.emailAddress;
+            if (email && oldPlan !== body.planId) {
+                sendPlanChangeEmail({
+                    to: email,
+                    firstName: user.firstName || '',
+                    oldPlan,
+                    newPlan: body.planId,
+                }).catch(err => console.error('[admin] Email send error:', err));
+            }
         }
 
         // Ambassador toggle — sets ambassador flag + auto-upgrades to pro
@@ -115,6 +131,19 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
                         },
                     },
                 });
+            }
+
+            // Send ambassador acceptance email
+            if (isAmbassador) {
+                const email = user.emailAddresses[0]?.emailAddress;
+                const appData = app as Record<string, unknown>;
+                if (email) {
+                    sendAmbassadorAcceptedEmail({
+                        to: email,
+                        firstName: user.firstName || '',
+                        artistName: (appData?.artistName as string) || user.firstName || '',
+                    }).catch(err => console.error('[admin] Ambassador email error:', err));
+                }
             }
         }
 

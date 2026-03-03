@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import { clerkClient } from '@clerk/nextjs/server';
+import { sendPlanChangeEmail } from '@/lib/email';
 
 // POST /api/webhooks/stripe — Handle Stripe webhook events
 export async function POST(request: NextRequest) {
@@ -30,6 +31,9 @@ export async function POST(request: NextRequest) {
 
                 if (userId && planId) {
                     const client = await clerkClient();
+                    const user = await client.users.getUser(userId);
+                    const oldPlan = (user.publicMetadata as Record<string, unknown>)?.planId as string || 'free';
+
                     await client.users.updateUserMetadata(userId, {
                         publicMetadata: {
                             planId,
@@ -38,6 +42,17 @@ export async function POST(request: NextRequest) {
                         },
                     });
                     console.log(`✅ User ${userId} upgraded to ${planId}`);
+
+                    // Send upgrade email
+                    const email = user.emailAddresses[0]?.emailAddress;
+                    if (email && oldPlan !== planId) {
+                        sendPlanChangeEmail({
+                            to: email,
+                            firstName: user.firstName || '',
+                            oldPlan,
+                            newPlan: planId,
+                        }).catch(err => console.error('[webhook] Email send error:', err));
+                    }
                 }
                 break;
             }
@@ -65,6 +80,9 @@ export async function POST(request: NextRequest) {
 
                 if (userId) {
                     const client = await clerkClient();
+                    const user = await client.users.getUser(userId);
+                    const oldPlan = (user.publicMetadata as Record<string, unknown>)?.planId as string || 'pro';
+
                     await client.users.updateUserMetadata(userId, {
                         publicMetadata: {
                             planId: 'free',
@@ -72,6 +90,17 @@ export async function POST(request: NextRequest) {
                         },
                     });
                     console.log(`⬇ User ${userId} downgraded to free`);
+
+                    // Send downgrade email
+                    const email = user.emailAddresses[0]?.emailAddress;
+                    if (email) {
+                        sendPlanChangeEmail({
+                            to: email,
+                            firstName: user.firstName || '',
+                            oldPlan,
+                            newPlan: 'free',
+                        }).catch(err => console.error('[webhook] Email send error:', err));
+                    }
                 }
                 break;
             }
