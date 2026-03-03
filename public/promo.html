@@ -1090,180 +1090,170 @@
 
   <script>
     // Create particles
-    const pEl = document.getElementById('particles');
-    for (let i = 0; i < 20; i++) {
-      const d = document.createElement('div');
-      d.className = 'particle';
-      const size = 4 + Math.random() * 8;
-      d.style.width = size + 'px';
-      d.style.height = size + 'px';
-      d.style.left = Math.random() * 100 + '%';
-      d.style.top = Math.random() * 100 + '%';
-      d.style.animationDelay = Math.random() * 5 + 's';
-      d.style.animationDuration = (5 + Math.random() * 5) + 's';
-      if (Math.random() > 0.5) d.style.background = 'rgba(0,212,230,0.2)';
-      pEl.appendChild(d);
-    }
-
-    let audioStarted = false;
-
-    function startPromo() {
-      startScenes();
-      tryStartAudio();
-    }
-
-    function tryStartAudio() {
-      if (audioStarted) return;
-      try {
-        startMusic();
-        startVoiceover();
-        audioStarted = true;
-        document.getElementById('audioEnable').classList.add('hidden');
-      } catch (e) {
-        // Browser blocked autoplay — button remains visible
+    try {
+      var pEl = document.getElementById('particles');
+      for (var pi = 0; pi < 20; pi++) {
+        var d = document.createElement('div');
+        d.className = 'particle';
+        var size = 4 + Math.random() * 8;
+        d.style.width = size + 'px';
+        d.style.height = size + 'px';
+        d.style.left = Math.random() * 100 + '%';
+        d.style.top = Math.random() * 100 + '%';
+        d.style.animationDelay = Math.random() * 5 + 's';
+        d.style.animationDuration = (5 + Math.random() * 5) + 's';
+        if (Math.random() > 0.5) d.style.background = 'rgba(0,212,230,0.2)';
+        pEl.appendChild(d);
       }
-    }
+    } catch (e) { console.error('particles', e); }
 
-    function enableAudio() {
-      tryStartAudio();
-    }
-
-    // Auto-start immediately (script is at end of body, DOM is ready)
-    startPromo();
-
-    // Also try to start audio on any first interaction
-    document.addEventListener('click', tryStartAudio, { once: true });
-    document.addEventListener('keydown', tryStartAudio, { once: true });
-
-    // ═══════════════════════════════════════════════════
+    // ═════════════════════════════════════════
     // SCENES
-    // ═══════════════════════════════════════════════════
+    // ═════════════════════════════════════════
     function startScenes() {
-      const scenes = [
-        { id: 'scene-1', duration: 6000 },  //  0s – Logo reveal
-        { id: 'scene-2', duration: 6500 },  //  6s – Problem
-        { id: 'scene-3', duration: 7000 },  // 12.5s – AI Agent Team
-        { id: 'scene-4', duration: 8000 },  // 19.5s – Four Modes
-        { id: 'scene-5', duration: 5500 },  // 27.5s – How it works
-        { id: 'scene-6', duration: 6500 },  // 33s – Social Crew
-        { id: 'scene-7', duration: 5500 },  // 39.5s – Pricing
-        { id: 'scene-8', duration: 6500 },  // 45s – Ambassador
-        { id: 'scene-9', duration: 6000 },  // 51.5s – CTA
-      ]; // Total: ~57.5s
+      var scenes = [
+        { id: 'scene-1', duration: 6000 },
+        { id: 'scene-2', duration: 6500 },
+        { id: 'scene-3', duration: 7000 },
+        { id: 'scene-4', duration: 8000 },
+        { id: 'scene-5', duration: 5500 },
+        { id: 'scene-6', duration: 6500 },
+        { id: 'scene-7', duration: 5500 },
+        { id: 'scene-8', duration: 6500 },
+        { id: 'scene-9', duration: 6000 },
+      ];
 
-      const totalDuration = scenes.reduce((s, sc) => s + sc.duration, 0);
-      const bar = document.getElementById('progress');
-      const startTime = Date.now();
+      var totalDuration = 0;
+      for (var si = 0; si < scenes.length; si++) totalDuration += scenes[si].duration;
+
+      var bar = document.getElementById('progress');
+      var startTime = Date.now();
 
       function updateProgress() {
-        const elapsed = Date.now() - startTime;
-        const pct = Math.min(100, (elapsed / totalDuration) * 100);
-        bar.style.width = pct + '%';
+        var elapsed = Date.now() - startTime;
+        var pct = Math.min(100, (elapsed / totalDuration) * 100);
+        if (bar) bar.style.width = pct + '%';
         if (pct < 100) requestAnimationFrame(updateProgress);
       }
 
-      document.getElementById('scene-1').classList.add('active');
+      // Show scene-1 now
+      var s1 = document.getElementById('scene-1');
+      if (s1) s1.classList.add('active');
 
-      let cumulative = 0;
-      scenes.forEach((sc) => {
-        setTimeout(() => {
-          document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
-          document.getElementById(sc.id).classList.add('active');
-        }, cumulative);
-        cumulative += sc.duration;
-      });
+      // Schedule transitions (skip first since it's already showing)
+      var cumulative = scenes[0].duration;
+      for (var si = 1; si < scenes.length; si++) {
+        (function (sceneId) {
+          setTimeout(function () {
+            var all = document.querySelectorAll('.scene');
+            for (var j = 0; j < all.length; j++) all[j].classList.remove('active');
+            var el = document.getElementById(sceneId);
+            if (el) el.classList.add('active');
+          }, cumulative);
+        })(scenes[si].id);
+        cumulative += scenes[si].duration;
+      }
 
       requestAnimationFrame(updateProgress);
     }
 
-    // ═══════════════════════════════════════════════════
-    // VOICEOVER (Web Speech API)
-    // ═══════════════════════════════════════════════════
-    function startVoiceover() {
-      const synth = window.speechSynthesis;
-      synth.cancel();
+    // ═════════════════════════════════════════
+    // VOICEOVER
+    // ═════════════════════════════════════════
+    var voiceStartTime = 0;
 
-      const voicelines = [
-        // Scene 1: Logo (0-6s)
+    function startVoiceover() {
+      var synth = window.speechSynthesis;
+      if (!synth) return;
+      synth.cancel();
+      voiceStartTime = Date.now();
+
+      var lines = [
         { time: 400, text: "Introducing GigLift.", rate: 0.88 },
         { time: 2000, text: "Your AI agent team for the music industry. Built for performers, instructors, studio professionals, and touring artists.", rate: 1.0 },
-
-        // Scene 2: Problem (6-12.5s)
         { time: 6200, text: "Seventy-eight percent of musicians earn under fifteen thousand dollars a year.", rate: 1.0 },
         { time: 9200, text: "Most spend twenty hours a week just searching for opportunities. GigLift changes that.", rate: 1.05 },
-
-        // Scene 3: AI Agents (12.5-19.5s)
         { time: 12700, text: "Five AI agents work together autonomously. The Lead Scout discovers opportunities across ten-plus sources. The Outreach Writer crafts personalized emails. The EPK Architect builds your press kit. The Social Strategist plans your content. And Smart Scoring ranks every lead by fit.", rate: 1.1 },
-
-        // Scene 4: Four Modes (19.5-27.5s)
         { time: 19700, text: "Four distinct modes make GigLift adapt to how you work.", rate: 0.95 },
         { time: 22000, text: "Performer mode finds venues and books gigs. Instructor mode connects you with schools and students. Studio mode targets recording sessions and production clients. And Touring mode manages festivals, agents, and multi-city pipelines.", rate: 1.1 },
-
-        // Scene 5: How It Works (27.5-33s)
         { time: 27700, text: "Five steps. Discover. Score. Outreach. Build. Book. From search to stage, fully automated.", rate: 1.0 },
-
-        // Scene 6: Social Crew (33-39.5s)
         { time: 33200, text: "Your Social Crew handles content creation end to end. AI generates weekly plans with Reels, carousels, and stories. Edit drafts inline, swap media from your library, and push directly to platforms.", rate: 1.08 },
-
-        // Scene 7: Pricing (39.5-45s)
         { time: 39700, text: "Start free with ten scans and twenty-five leads. Upgrade to Pro for nineteen a month, Unlimited for thirty-nine, or Agency for one forty-nine with ten sub-accounts.", rate: 1.08 },
-
-        // Scene 8: Ambassador (45-51.5s)
         { time: 45200, text: "Our Brand Ambassador program lets you earn rewards by sharing GigLift. Get a personal referral link, track signups on your live dashboard, and unlock exclusive perks.", rate: 1.05 },
-
-        // Scene 9: CTA (51.5-57.5s)
         { time: 51700, text: "GigLift. Deploy your AI agents free today at giglift dot app.", rate: 0.92 },
       ];
 
-      // Find a professional voice
-      let chosenVoice = null;
-      const voices = synth.getVoices();
-      const preferred = ['Google US English', 'Samantha', 'Alex', 'Daniel', 'Aaron', 'Evan'];
-      for (const pref of preferred) {
-        const found = voices.find(v => v.name.includes(pref) && v.lang.startsWith('en'));
-        if (found) { chosenVoice = found; break; }
+      var chosenVoice = null;
+      var voices = synth.getVoices();
+      var preferred = ['Google US English', 'Samantha', 'Alex', 'Daniel', 'Aaron', 'Evan'];
+      for (var p = 0; p < preferred.length; p++) {
+        for (var v = 0; v < voices.length; v++) {
+          if (voices[v].name.indexOf(preferred[p]) >= 0 && voices[v].lang.indexOf('en') === 0) {
+            chosenVoice = voices[v]; break;
+          }
+        }
+        if (chosenVoice) break;
       }
       if (!chosenVoice) {
-        chosenVoice = voices.find(v => v.lang.startsWith('en-US')) || voices.find(v => v.lang.startsWith('en')) || null;
+        for (var v = 0; v < voices.length; v++) {
+          if (voices[v].lang.indexOf('en-US') === 0) { chosenVoice = voices[v]; break; }
+        }
+      }
+      if (!chosenVoice) {
+        for (var v = 0; v < voices.length; v++) {
+          if (voices[v].lang.indexOf('en') === 0) { chosenVoice = voices[v]; break; }
+        }
       }
 
-      voicelines.forEach(({ time, text, rate }) => {
-        setTimeout(() => {
-          const utter = new SpeechSynthesisUtterance(text);
-          utter.rate = rate || 1.0;
-          utter.pitch = 0.92;
-          utter.volume = 1.0;
-          if (chosenVoice) utter.voice = chosenVoice;
-          synth.speak(utter);
-        }, time);
-      });
+      // Adjust timing based on elapsed time since scenes started
+      var elapsed = Date.now() - sceneStartTime;
+
+      for (var li = 0; li < lines.length; li++) {
+        (function (vl) {
+          var delay = Math.max(0, vl.time - elapsed);
+          setTimeout(function () {
+            try {
+              var utter = new SpeechSynthesisUtterance(vl.text);
+              utter.rate = vl.rate || 1.0;
+              utter.pitch = 0.92;
+              utter.volume = 1.0;
+              if (chosenVoice) utter.voice = chosenVoice;
+              synth.speak(utter);
+            } catch (e) { }
+          }, delay);
+        })(lines[li]);
+      }
     }
 
     // Load voices
     if (window.speechSynthesis) {
       window.speechSynthesis.getVoices();
-      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = function () { window.speechSynthesis.getVoices(); };
+      }
     }
 
-    // ═══════════════════════════════════════════════════
-    // MUSIC (Web Audio API)
-    // ═══════════════════════════════════════════════════
+    // ═════════════════════════════════════════
+    // MUSIC
+    // ═════════════════════════════════════════
     function startMusic() {
-      const actx = new (window.AudioContext || window.webkitAudioContext)();
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      var actx = new AudioCtx();
       actx.resume();
 
-      const masterGain = actx.createGain();
+      var masterGain = actx.createGain();
       masterGain.gain.value = 0.15;
       masterGain.connect(actx.destination);
 
-      const comp = actx.createDynamicsCompressor();
+      var comp = actx.createDynamicsCompressor();
       comp.threshold.value = -20;
       comp.ratio.value = 6;
       comp.connect(masterGain);
 
       function kick(time) {
-        const osc = actx.createOscillator();
-        const g = actx.createGain();
+        var osc = actx.createOscillator();
+        var g = actx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(150, time);
         osc.frequency.exponentialRampToValueAtTime(30, time + 0.12);
@@ -1274,15 +1264,15 @@
       }
 
       function hihat(time) {
-        const bufSize = actx.sampleRate * 0.04;
-        const buf = actx.createBuffer(1, bufSize, actx.sampleRate);
-        const data = buf.getChannelData(0);
-        for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-        const src = actx.createBufferSource();
+        var bufSize = actx.sampleRate * 0.04;
+        var buf = actx.createBuffer(1, bufSize, actx.sampleRate);
+        var data = buf.getChannelData(0);
+        for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+        var src = actx.createBufferSource();
         src.buffer = buf;
-        const hp = actx.createBiquadFilter();
+        var hp = actx.createBiquadFilter();
         hp.type = 'highpass'; hp.frequency.value = 8000;
-        const g = actx.createGain();
+        var g = actx.createGain();
         g.gain.setValueAtTime(0.08, time);
         g.gain.exponentialRampToValueAtTime(0.01, time + 0.04);
         src.connect(hp); hp.connect(g); g.connect(comp);
@@ -1290,11 +1280,11 @@
       }
 
       function bass(time, freq, dur) {
-        const osc = actx.createOscillator();
-        const g = actx.createGain();
+        var osc = actx.createOscillator();
+        var g = actx.createGain();
         osc.type = 'sawtooth';
         osc.frequency.value = freq;
-        const lp = actx.createBiquadFilter();
+        var lp = actx.createBiquadFilter();
         lp.type = 'lowpass'; lp.frequency.value = 350;
         g.gain.setValueAtTime(0.18, time);
         g.gain.exponentialRampToValueAtTime(0.01, time + dur);
@@ -1303,12 +1293,12 @@
       }
 
       function pad(time, freq, dur) {
-        const osc1 = actx.createOscillator();
-        const osc2 = actx.createOscillator();
-        const = aateGain();
+        var osc1 = actx.createOscillator();
+        var osc2 = actx.createOscillator();
+        var g = actx.createGain();
         osc1.type = 'sine'; osc1.frequency.value = freq;
         osc2.type = 'triangle'; osc2.frequency.value = freq * 1.003;
-        const lp = actx.createBiquadFilter();
+        var lp = actx.createBiquadFilter();
         lp.type = 'lowpass'; lp.frequency.value = 1200;
         g.gain.setValueAtTime(0.035, time);
         g.gain.setValueAtTime(0.035, time + dur - 0.1);
@@ -1318,40 +1308,69 @@
         osc2.start(time); osc2.stop(time + dur);
       }
 
-      const bpm = 115;
-      const beatLen = 60 / bpm;
-      const now = actx.currentTime + 0.05;
-      const totalBeats = Math.floor(60 / beatLen);
+      var bpm = 115;
+      var beatLen = 60 / bpm;
+      var now = actx.currentTime + 0.05;
+      var totalBeats = Math.floor(60 / beatLen);
 
-      const bassNotes = [82.41, 98, 110, 82.41]; // E2 G2 A2 E2
-      const padChords = [
-        [164.81, 196, 246.94], // Em
-        [196, 246.94, 329.63], // G
-        [220, 277.18, 329.63], // Am
-        [164.81, 196, 246.94], // Em
+      var bassNotes = [82.41, 98, 110, 82.41];
+      var padChords = [
+        [164.81, 196, 246.94],
+        [196, 246.94, 329.63],
+        [220, 277.18, 329.63],
+        [164.81, 196, 246.94],
       ];
 
-      for (let i = 0; i < totalBeats; i++) {
-        const t = now + i * beatLen;
+      for (var i = 0; i < totalBeats; i++) {
+        var t = now + i * beatLen;
         kick(t);
         hihat(t);
         hihat(t + beatLen * 0.5);
-
         if (i % 2 === 0) {
-          const bn = bassNotes[(Math.floor(i / 2)) % bassNotes.length];
+          var bn = bassNotes[(Math.floor(i / 2)) % bassNotes.length];
           bass(t, bn, beatLen * 1.8);
         }
-
         if (i % 4 === 0) {
-          const chord = padChords[Math.floor(i / 4) % padChords.length];
-          chord.forEach(f => pad(t, f, beatLen * 3.8));
+          var chord = padChords[Math.floor(i / 4) % padChords.length];
+          for (var c = 0; c < chord.length; c++) pad(t, chord[c], beatLen * 3.8);
         }
       }
 
-      // Fade out
       masterGain.gain.setValueAtTime(0.15, now + 54);
       masterGain.gain.linearRampToValueAtTime(0, now + 58);
     }
+
+    // ═════════════════════════════════════════
+    // STARTUP
+    // ═════════════════════════════════════════
+    var audioStarted = false;
+    var sceneStartTime = Date.now();
+
+    function enableAudio() {
+      if (audioStarted) return;
+      try {
+        startMusic();
+        startVoiceover();
+        audioStarted = true;
+        var btn = document.getElementById('audioEnable');
+        if (btn) btn.classList.add('hidden');
+      } catch (e) {
+        console.error('audio', e);
+      }
+    }
+
+    // Start scenes NOW
+    try {
+      sceneStartTime = Date.now();
+      startScenes();
+    } catch (e) {
+      console.error('scenes', e);
+    }
+
+    // Audio requires user interaction — listen for any
+    document.addEventListener('click', enableAudio, { once: true });
+    document.addEventListener('keydown', enableAudio, { once: true });
+    document.addEventListener('touchstart', enableAudio, { once: true });
   </script>
 </body>
 
