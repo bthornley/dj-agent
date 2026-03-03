@@ -8,9 +8,11 @@ const isPublicRoute = createRouteMatcher([
     '/pricing',
     '/terms',
     '/privacy',
+    '/ambassador',
     '/epk(.*)',
     '/api/epk(.*)',
     '/api/webhooks(.*)',
+    '/api/ambassador/track',
 ]);
 
 // Admin routes — require admin role

@@ -37,6 +37,20 @@ export default function DashboardPage() {
             .then(r => r.json())
             .then(data => { setEvents(Array.isArray(data) ? data : []); setLoading(false); })
             .catch(() => setLoading(false));
+
+        // Attribute referral from ambassador link if cookie exists
+        const refMatch = document.cookie.match(/giglift_ref=([^;]+)/);
+        if (refMatch) {
+            const ref = decodeURIComponent(refMatch[1]);
+            fetch('/api/ambassador/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ref }),
+            }).catch(() => { }).finally(() => {
+                // Clear the cookie regardless of outcome
+                document.cookie = 'giglift_ref=;path=/;max-age=0';
+            });
+        }
     }, []);
 
     const loadStats = useCallback(async () => {

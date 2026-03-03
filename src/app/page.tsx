@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
+import RefCapture from '@/components/RefCapture';
 
 export default async function LandingPage() {
   const { userId } = await auth();
@@ -8,6 +10,7 @@ export default async function LandingPage() {
 
   return (
     <>
+      <Suspense><RefCapture /></Suspense>
       <header className="topbar landing-topbar">
         <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
           <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
