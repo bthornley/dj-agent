@@ -23,48 +23,32 @@
       position: relative;
     }
 
-    /* Click overlay */
-    .start-overlay {
+    /* Audio fallback button */
+    .audio-enable {
       position: absolute;
-      inset: 0;
-      z-index: 999;
-      background: rgba(10, 10, 26, 0.95);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      bottom: 16px;
+      right: 16px;
+      z-index: 200;
+      background: rgba(168, 85, 247, 0.2);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      color: #a855f7;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
       cursor: pointer;
-      transition: opacity 0.5s ease;
+      transition: all 0.3s;
+      animation: fadeIn 1s ease-out 1s both;
     }
 
-    .start-overlay.hidden {
+    .audio-enable:hover {
+      background: rgba(168, 85, 247, 0.35);
+      transform: scale(1.05);
+    }
+
+    .audio-enable.hidden {
       opacity: 0;
       pointer-events: none;
-    }
-
-    .start-overlay .play-btn {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #a855f7, #7c3aed);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 48px;
-      box-shadow: 0 0 60px rgba(168, 85, 247, 0.4);
-      transition: transform 0.2s;
-    }
-
-    .start-overlay .play-btn:hover {
-      transform: scale(1.1);
-    }
-
-    .start-overlay .play-label {
-      margin-top: 20px;
-      font-size: 20px;
-      color: #a855f7;
-      letter-spacing: 2px;
-      text-transform: uppercase;
     }
 
     /* Gradient bg */
@@ -830,11 +814,8 @@
 
 <body>
 
-  <!-- Click to start overlay -->
-  <div class="start-overlay" id="startOverlay" onclick="startPromo()">
-    <div class="play-btn">▶</div>
-    <div class="play-label">Click to Play</div>
-  </div>
+  <!-- Audio fallback button (shown if autoplay audio is blocked) -->
+  <button class="audio-enable" id="audioEnable" onclick="enableAudio()">🔊 Enable Audio</button>
 
   <div class="bg"></div>
   <div class="particles" id="particles"></div>
@@ -1124,12 +1105,37 @@
       pEl.appendChild(d);
     }
 
+    let audioStarted = false;
+
     function startPromo() {
-      document.getElementById('startOverlay').classList.add('hidden');
-      startMusic();
       startScenes();
-      startVoiceover();
+      tryStartAudio();
     }
+
+    function tryStartAudio() {
+      if (audioStarted) return;
+      try {
+        startMusic();
+        startVoiceover();
+        audioStarted = true;
+        document.getElementById('audioEnable').classList.add('hidden');
+      } catch (e) {
+        // Browser blocked autoplay — button remains visible
+      }
+    }
+
+    function enableAudio() {
+      tryStartAudio();
+    }
+
+    // Auto-start on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      startPromo();
+    });
+
+    // Also try to start audio on any first interaction
+    document.addEventListener('click', tryStartAudio, { once: true });
+    document.addEventListener('keydown', tryStartAudio, { once: true });
 
     // ═══════════════════════════════════════════════════
     // SCENES
