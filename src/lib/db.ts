@@ -265,23 +265,26 @@ export async function dbGetLead(id: string, userId: string): Promise<Lead | null
   return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
-export async function dbSaveLead(lead: Lead, userId: string, mode: string = 'performer'): Promise<void> {
+export async function dbSaveLead(lead: Lead, userId: string, mode?: string): Promise<void> {
   const db = await ensureSchema();
   const now = new Date().toISOString();
   const data = JSON.stringify(lead);
 
+  // When mode is not provided (update case), pass NULL so the COALESCE preserves the existing value
+  const modeValue = mode ?? null;
+
   await db.execute({
     sql: `INSERT INTO leads (lead_id, user_id, data, dedupe_key, lead_score, status, priority, mode, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, COALESCE(?, 'performer'), ?, ?)
           ON CONFLICT(lead_id) DO UPDATE SET
             data = excluded.data,
             dedupe_key = excluded.dedupe_key,
             lead_score = excluded.lead_score,
             status = excluded.status,
             priority = excluded.priority,
-            mode = excluded.mode,
+            mode = COALESCE(?, mode),
             updated_at = excluded.updated_at`,
-    args: [lead.lead_id, userId, data, lead.dedupe_key, lead.lead_score, lead.status, lead.priority, mode, lead.found_at || now, now],
+    args: [lead.lead_id, userId, data, lead.dedupe_key, lead.lead_score, lead.status, lead.priority, modeValue, lead.found_at || now, now, modeValue],
   });
 }
 
