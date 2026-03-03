@@ -101,12 +101,13 @@ const plans = [
 
 export default function PricingPage() {
     const { user } = useUser();
-    const currentPlan = (user?.publicMetadata?.planId as string) || 'free';
+    const currentPlan = user ? ((user.publicMetadata?.planId as string) || 'free') : null;
     const compSource = (user?.publicMetadata as Record<string, unknown>)?.compSource as string | undefined;
     const [loading, setLoading] = useState('');
 
     const handleUpgrade = async (planId: string) => {
-        if (planId === 'free' || planId === currentPlan) return;
+        if (planId === currentPlan) return;
+        if (planId === 'free' && user) return;
         if (planId === 'agency') {
             window.location.href = 'mailto:hello@giglift.app?subject=Agency%20Tier%20Inquiry&body=Hi%2C%20I%27m%20interested%20in%20the%20Agency%20tier.';
             return;
@@ -168,8 +169,8 @@ export default function PricingPage() {
 
                 <div className="pricing-grid">
                     {plans.map(plan => (
-                        <div key={plan.id} className={`pricing-card ${plan.highlighted ? 'pricing-highlighted' : ''} ${currentPlan === plan.id ? 'pricing-current' : ''}`}>
-                            {currentPlan === plan.id
+                        <div key={plan.id} className={`pricing-card ${plan.highlighted ? 'pricing-highlighted' : ''} ${currentPlan && currentPlan === plan.id ? 'pricing-current' : ''}`}>
+                            {currentPlan && currentPlan === plan.id
                                 ? <div className="pricing-badge pricing-badge-current">{currentBadgeLabel}</div>
                                 : plan.highlighted && <div className="pricing-badge">Most Popular</div>
                             }
@@ -198,11 +199,11 @@ export default function PricingPage() {
                             </ul>
 
                             <button
-                                className={`btn ${currentPlan === plan.id ? 'btn-secondary' : 'btn-primary'} btn-lg pricing-cta`}
-                                onClick={() => handleUpgrade(plan.id)}
-                                disabled={plan.id === currentPlan || loading === plan.id || (plan.id === 'free' && !user)}
+                                className={`btn ${currentPlan && currentPlan === plan.id ? 'btn-secondary' : 'btn-primary'} btn-lg pricing-cta`}
+                                onClick={() => plan.id === 'free' && !user ? (window.location.href = '/sign-up') : handleUpgrade(plan.id)}
+                                disabled={plan.id === currentPlan || loading === plan.id}
                             >
-                                {loading === plan.id ? 'Redirecting...' : currentPlan === plan.id ? currentBtnLabel : plan.cta}
+                                {loading === plan.id ? 'Redirecting...' : currentPlan && currentPlan === plan.id ? currentBtnLabel : plan.id === 'free' && !user ? 'Get Started Free' : plan.cta}
                             </button>
                         </div>
                     ))}
