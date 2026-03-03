@@ -138,6 +138,15 @@ async function ensureSchema(): Promise<Client> {
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       );
+
+      CREATE TABLE IF NOT EXISTS flyer_configs (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        event_id TEXT DEFAULT '',
+        data TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
     `);
 
     // Migration: add mode column if it doesn't exist
@@ -836,4 +845,76 @@ function mapTemplateRow(r: Record<string, unknown>): EmailTemplate {
     createdAt: r.created_at as string,
     updatedAt: r.updated_at as string,
   };
+}
+
+// ============================================================
+// Flyer Configs
+// ============================================================
+
+export interface FlyerConfig {
+  id: string;
+  userId: string;
+  eventId?: string;
+  style: string;
+  aspectRatio: '9:16' | '1:1' | '16:9';
+  backgroundUrl: string;
+  backgroundPrompt?: string;
+  overlayOpacity: number;
+  headline: string;
+  subheadline: string;
+  dateText: string;
+  venueText: string;
+  extraText: string;
+  djName: string;
+  headlineFont: string;
+  bodyFont: string;
+  headlineColor: string;
+  bodyColor: string;
+  textPosition: 'top' | 'center' | 'bottom';
+  textAlign: 'left' | 'center' | 'right';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function dbGetFlyers(userId: string): Promise<FlyerConfig[]> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: `SELECT * FROM flyer_configs WHERE user_id = ? ORDER BY updated_at DESC`, args: [userId] });
+  return result.rows.map(r => {
+    const data = JSON.parse(r.data as string);
+    return { ...data, id: r.id as string, userId: r.user_id as string, eventId: r.event_id as string || '', createdAt: r.created_at as string, updatedAt: r.updated_at as string };
+  });
+}
+
+export async function dbGetFlyer(id: string, userId: string): Promise<FlyerConfig | null> {
+  const db = await ensureSchema();
+  const result = await db.execute({ sql: `SELECT * FROM flyer_configs WHERE id = ? AND user_id = ?`, args: [id, userId] });
+  if (result.rows.length === 0) return null;
+  const r = result.rows[0];
+  const data = JSON.parse(r.data as string);
+  return { ...data, id: r.id as string, userId: r.user_id as string, eventId: r.event_id as string || '', createdAt: r.created_at as string, updatedAt: r.updated_at as string };
+}
+
+export async function dbSaveFlyer(userId: string, flyer: Partial<FlyerConfig> & { id?: string }): Promise<FlyerConfig> {
+  const db = await ensureSchema();
+  const id = flyer.id || `flyer_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const data = JSON.stringify(flyer);
+
+  if (flyer.id) {
+    await db.execute({
+      sql: `UPDATE flyer_configs SET data = ?, event_id = ?, updated_at = datetime('now') WHERE id = ? AND user_id = ?`,
+      args: [data, flyer.eventId || '', id, userId],
+    });
+  } else {
+    await db.execute({
+      sql: `INSERT INTO flyer_configs (id, user_id, event_id, data) VALUES (?, ?, ?, ?)`,
+      args: [id, userId, flyer.eventId || '', data],
+    });
+  }
+
+  return (await dbGetFlyer(id, userId))!;
+}
+
+export async function dbDeleteFlyer(id: string, userId: string): Promise<void> {
+  const db = await ensureSchema();
+  await db.execute({ sql: `DELETE FROM flyer_configs WHERE id = ? AND user_id = ?`, args: [id, userId] });
 }
