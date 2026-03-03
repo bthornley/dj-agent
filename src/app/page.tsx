@@ -30,6 +30,9 @@ export default async function LandingPage() {
           <h1 className="hero-title">
             Your AI Agent Team That <span className="hero-accent">Finds, Books &amp; Promotes</span> Your Gigs
           </h1>
+          <div style={{ fontSize: '18px', color: '#b0b0cc', fontWeight: 600, letterSpacing: '0.5px', marginTop: '8px' }}>
+            Lift your gigs to the next level
+          </div>
           <p className="hero-subtitle">
             GigLift deploys a crew of autonomous AI agents that discover venues, score leads,
             draft booking emails, build your press kit, and plan your social content — all on autopilot.
