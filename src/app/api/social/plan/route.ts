@@ -81,12 +81,22 @@ export async function POST(request: NextRequest) {
         }
     }
 
-    // Step 3: Attach exactly 1 media per post (recency-weighted random)
+    // Step 3: Attach exactly 1 media per post — NO reuse within the batch
+    //         Also avoid media already used in existing (non-draft) posts
+    const existingMedia = new Set(
+        existingPosts
+            .filter(p => p.status !== 'draft' && p.status !== 'rejected')
+            .flatMap(p => p.mediaRefs || [])
+    );
+    const usedMedia = new Set<string>(existingMedia);
+
     for (const post of allPosts) {
-        if (allMedia.length > 0) {
+        // Filter to only unused media
+        const available = allMedia.filter(a => !usedMedia.has(a.url));
+
+        if (available.length > 0) {
             // Recency-weighted random: newer assets get higher weight
-            // Weight decays linearly — index 0 (newest) gets highest weight
-            const weights = allMedia.map((_, i) => Math.max(1, allMedia.length - i));
+            const weights = available.map((_, i) => Math.max(1, available.length - i));
             const totalWeight = weights.reduce((s, w) => s + w, 0);
             let rand = Math.random() * totalWeight;
             let picked = 0;
@@ -94,7 +104,8 @@ export async function POST(request: NextRequest) {
                 rand -= weights[i];
                 if (rand <= 0) { picked = i; break; }
             }
-            post.mediaRefs = [allMedia[picked].url];
+            post.mediaRefs = [available[picked].url];
+            usedMedia.add(available[picked].url);
         } else if (googlePhotosThumbnail) {
             post.mediaRefs = [googlePhotosThumbnail];
         } else {
