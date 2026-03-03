@@ -165,8 +165,10 @@ export default function PricingPage() {
                 <div className="pricing-grid">
                     {plans.map(plan => (
                         <div key={plan.id} className={`pricing-card ${plan.highlighted ? 'pricing-highlighted' : ''} ${currentPlan === plan.id ? 'pricing-current' : ''}`}>
-                            {plan.highlighted && <div className="pricing-badge">Most Popular</div>}
-                            {currentPlan === plan.id && <div className="pricing-badge pricing-badge-current">Current Plan</div>}
+                            {currentPlan === plan.id
+                                ? <div className="pricing-badge pricing-badge-current">Current Plan</div>
+                                : plan.highlighted && <div className="pricing-badge">Most Popular</div>
+                            }
 
                             <h3 className="pricing-plan-name">{plan.name}</h3>
                             <p className="pricing-plan-desc">{plan.description}</p>

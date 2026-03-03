@@ -2233,11 +2233,15 @@ a:hover {
 
 .pricing-current {
   border-color: var(--accent-green);
+  border-width: 2px;
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.15), 0 0 0 1px rgba(52, 211, 153, 0.2);
+  transform: translateY(-4px);
 }
 
 .pricing-current:hover {
   border-color: var(--accent-green);
-  box-shadow: 0 0 20px rgba(52, 211, 153, 0.15), 0 8px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 30px rgba(52, 211, 153, 0.25), 0 8px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-6px);
 }
 
 .pricing-badge {
@@ -2255,7 +2259,9 @@ a:hover {
 }
 
 .pricing-badge-current {
-  background: var(--accent-green);
+  background: linear-gradient(135deg, #10b981, #34d399);
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.4);
+  top: -14px;
 }
 
 .pricing-plan-name {
