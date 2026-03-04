@@ -21,6 +21,7 @@ export default async function LandingPage() {
         </Link>
         <nav className="topbar-nav" style={{ gap: '8px' }}>
           <Link href="/promo.html" className="btn btn-ghost btn-sm" target="_blank">🎬 Watch Promo</Link>
+          <Link href="/guide" className="btn btn-ghost btn-sm">📖 Guide</Link>
           <Link href="/pricing" className="btn btn-ghost btn-sm">Pricing</Link>
           <Link href="/sign-in" className="btn btn-ghost btn-sm">Sign In</Link>
           <Link href="/sign-up" className="btn btn-primary btn-sm">Get Started Free</Link>

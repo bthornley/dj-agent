@@ -162,6 +162,7 @@ export default function DashboardPage() {
                     <Link href="/epk/builder" className="btn btn-ghost btn-sm">📋 EPK Builder</Link>
                     <Link href="/flyer/create" className="btn btn-ghost btn-sm">🎨 Flyer Creator</Link>
                     <Link href="/emails" className="btn btn-ghost btn-sm">📧 Emails</Link>
+                    <Link href="/guide" className="btn btn-ghost btn-sm">📖 Guide</Link>
                     <Link href="/account" className="btn btn-ghost btn-sm">⚙️ Account</Link>
                     <ModeSwitch onChange={(m) => setActiveMode(m as AppMode)} />
                     <AdminLink />
