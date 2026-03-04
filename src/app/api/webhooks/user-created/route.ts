@@ -58,7 +58,7 @@ export async function POST(request: Request) {
                         </div>
 
                         <div style="text-align: center; margin: 32px 0;">
-                            <a href="https://giglift-app.vercel.app/dashboard" style="
+                            <a href="https://giglift.app/dashboard" style="
                                 display: inline-block; padding: 14px 32px; border-radius: 10px;
                                 background: linear-gradient(135deg, #a855f7, #9333ea);
                                 color: white; text-decoration: none; font-weight: 700; font-size: 16px;
@@ -74,8 +74,8 @@ export async function POST(request: Request) {
 
                         <p style="font-size: 12px; color: #64748b; text-align: center;">
                             © 2026 Digital Duende Entertainment, LLC · 
-                            <a href="https://giglift-app.vercel.app/terms" style="color: #64748b;">Terms</a> · 
-                            <a href="https://giglift-app.vercel.app/privacy" style="color: #64748b;">Privacy</a>
+                            <a href="https://giglift.app/terms" style="color: #64748b;">Terms</a> · 
+                            <a href="https://giglift.app/privacy" style="color: #64748b;">Privacy</a>
                         </p>
                     </div>
                 `,
