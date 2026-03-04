@@ -19,7 +19,7 @@ export default function PrivacyPage() {
 
             <main className="main-content fade-in" style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 24px' }}>
                 <h1 style={{ fontSize: '28px', fontWeight: 700, marginBottom: '8px' }}>Privacy Policy</h1>
-                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '32px' }}>Last updated: February 28, 2026</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '32px' }}>Last updated: March 3, 2026</p>
 
                 <section style={{ marginBottom: '32px' }}>
                     <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '12px' }}>1. Information We Collect</h2>
@@ -29,10 +29,12 @@ export default function PrivacyPage() {
                     <ul style={{ color: 'var(--text-secondary)', lineHeight: 1.9, paddingLeft: '24px' }}>
                         <li><strong>Account Information:</strong> Name, email address, and profile details you provide during registration via Clerk</li>
                         <li><strong>Brand Profile:</strong> Artist name, genre, bio, social media links, and brand voice settings you configure</li>
-                        <li><strong>Media:</strong> Photos and videos you upload to the media library</li>
+                        <li><strong>Media:</strong> Photos and videos you upload to the media library, flyer images, and AI-generated backgrounds</li>
                         <li><strong>Usage Data:</strong> How you interact with the Service, including pages visited, features used, and content generated</li>
                         <li><strong>Payment Information:</strong> Billing details are processed and stored securely by Stripe — we do not store your credit card number</li>
                         <li><strong>Lead Data:</strong> Information about venues and contacts discovered by our AI agents from publicly available sources</li>
+                        <li><strong>Booking Data:</strong> Event details, calendar entries, and booking statuses you create within the Service</li>
+                        <li><strong>Email Data:</strong> Outreach emails sent through the Service, including templates and delivery tracking</li>
                     </ul>
                 </section>
 

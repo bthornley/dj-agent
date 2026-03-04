@@ -26,7 +26,7 @@ export default async function LandingPage() {
 
       <main className="landing-hero">
         <div className="hero-content">
-          <div className="hero-badge">🤖 5 AI Agents Working While You Sleep</div>
+          <div className="hero-badge">🤖 7 AI Agents Working While You Sleep</div>
           <h1 className="hero-title">
             Your AI Agent Team That <span className="hero-accent">Finds, Books &amp; Promotes</span> Your Gigs
           </h1>
@@ -35,7 +35,8 @@ export default async function LandingPage() {
           </div>
           <p className="hero-subtitle">
             GigLift deploys a crew of autonomous AI agents that discover venues, score leads,
-            draft booking emails, build your press kit, and plan your social content — all on autopilot.
+            draft booking emails, build your press kit, plan your social content, and create
+            stunning promo flyers — all on autopilot.
             For DJs, bands, solo artists &amp; music instructors.
           </p>
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '16px', marginBottom: '8px', flexWrap: 'wrap' }}>
@@ -61,7 +62,7 @@ export default async function LandingPage() {
 
           <div className="hero-stats">
             <div className="hero-stat">
-              <div className="hero-stat-value">5 Agents</div>
+              <div className="hero-stat-value">7 Agents</div>
               <div className="hero-stat-label">Working For You 24/7</div>
             </div>
             <div className="hero-stat">
@@ -395,6 +396,58 @@ export default async function LandingPage() {
           </div>
         </div>
 
+        {/* ═══════ New: Power Tools Section ═══════ */}
+        <div style={{ textAlign: 'center', marginTop: '64px', marginBottom: '16px' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '8px',
+            padding: '6px 16px', borderRadius: '20px', fontSize: '12px', fontWeight: 700,
+            background: 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(168,85,247,0.12))',
+            border: '1px solid rgba(251,191,36,0.2)',
+            color: '#fbbf24', letterSpacing: '1px', textTransform: 'uppercase',
+            marginBottom: '12px',
+          }}>
+            ⚡ Power Tools
+          </div>
+          <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+            Create, Book &amp; Export — All In One Place
+          </h2>
+          <p style={{ fontSize: '15px', color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto' }}>
+            Beyond lead discovery — tools that help you run your entire music business.
+          </p>
+        </div>
+        <div className="feature-grid" style={{ marginBottom: '24px' }}>
+          <div className="feature-card" style={{ borderColor: 'rgba(168,85,247,0.2)' }}>
+            <div className="feature-icon">🎨</div>
+            <h3>AI Flyer Creator</h3>
+            <p>Choose from 5 style presets, generate AI backgrounds with DALL-E 3, add QR codes to your ticket links, and overlay your logo. Export as PNG.</p>
+          </div>
+          <div className="feature-card" style={{ borderColor: 'rgba(56,189,248,0.2)' }}>
+            <div className="feature-icon">📅</div>
+            <h3>Calendar View</h3>
+            <p>See all your bookings in a monthly calendar with color-coded statuses. Click any day to quick-add a new booking with client, venue, date, and time.</p>
+          </div>
+          <div className="feature-card" style={{ borderColor: 'rgba(52,211,153,0.2)' }}>
+            <div className="feature-icon">📧</div>
+            <h3>Email System</h3>
+            <p>Send personalized outreach with 3 built-in templates. Track opens, manage sent history, and export your leads and emails as CSV.</p>
+          </div>
+          <div className="feature-card" style={{ borderColor: 'rgba(249,115,22,0.2)' }}>
+            <div className="feature-icon">📋</div>
+            <h3>Email Templates</h3>
+            <p>Cold Intro, Follow-Up, and Thank You templates with smart placeholders that auto-fill from your brand profile and lead data.</p>
+          </div>
+          <div className="feature-card" style={{ borderColor: 'rgba(251,191,36,0.2)' }}>
+            <div className="feature-icon">📥</div>
+            <h3>CSV Export</h3>
+            <p>Export your entire lead database or sent email history as a spreadsheet. Perfect for CRM imports or offline analysis.</p>
+          </div>
+          <div className="feature-card" style={{ borderColor: 'rgba(96,165,250,0.2)' }}>
+            <div className="feature-icon">🤝</div>
+            <h3>Ambassador Program</h3>
+            <p>Earn 20% recurring commission by referring other musicians. Get your own referral link, tracking dashboard, and free Pro access.</p>
+          </div>
+        </div>
+
         {/* ═══════ Brand Ambassador Program ═══════ */}
         <div className="landing-ambassador" style={{
           marginTop: '72px', padding: '48px 24px', borderRadius: '20px',
@@ -448,7 +501,7 @@ export default async function LandingPage() {
                 Free Pro Access
               </h3>
               <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                Full Pro tier ($19/mo) free for the duration of your ambassadorship
+                Full Pro tier ($33/mo) free for the duration of your ambassadorship
               </p>
             </div>
 

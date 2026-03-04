@@ -9,6 +9,7 @@ const isPublicRoute = createRouteMatcher([
     '/terms',
     '/privacy',
     '/ambassador',
+    '/gigs(.*)',
     '/epk(.*)',
     '/api/epk(.*)',
     '/api/webhooks(.*)',

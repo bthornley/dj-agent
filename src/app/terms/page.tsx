@@ -19,7 +19,7 @@ export default function TermsPage() {
 
             <main className="main-content fade-in" style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 24px' }}>
                 <h1 style={{ fontSize: '28px', fontWeight: 700, marginBottom: '8px' }}>Terms of Service</h1>
-                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '32px' }}>Last updated: February 28, 2026</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '32px' }}>Last updated: March 3, 2026</p>
 
                 <section style={{ marginBottom: '32px' }}>
                     <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '12px' }}>1. Acceptance of Terms</h2>
@@ -33,9 +33,10 @@ export default function TermsPage() {
                     <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '12px' }}>2. Description of Service</h2>
                     <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
                         GigLift provides AI-powered tools for musicians, DJs, bands, solo artists, and music instructors to discover
-                        performance opportunities and teaching positions, manage leads, plan social media content, build electronic press kits, and
+                        performance opportunities and teaching positions, manage leads, plan social media content, build electronic press kits,
+                        create promotional flyers with AI-generated backgrounds, manage bookings via calendar, send outreach emails, and
                         streamline the booking process. The Service includes both free and paid subscription tiers, and supports
-                        switching between Performer Mode and Instructor Mode to tailor the experience to your needs.
+                        four professional modes: Performer, Instructor, Studio, and Touring.
                     </p>
                 </section>
 
@@ -65,9 +66,10 @@ export default function TermsPage() {
                     <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '12px' }}>5. AI-Generated Content</h2>
                     <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>
                         The Service uses artificial intelligence to generate content including but not limited to social media posts,
-                        outreach emails, bios, and lead scoring. AI-generated content is provided as suggestions and may contain errors
-                        or inaccuracies. You are solely responsible for reviewing, editing, and approving all content before use.
-                        We do not guarantee the accuracy, completeness, or suitability of AI-generated content.
+                        outreach emails, bios, lead scoring, and promotional flyer backgrounds (via OpenAI DALL-E 3). AI-generated content
+                        is provided as suggestions and may contain errors or inaccuracies. You are solely responsible for reviewing,
+                        editing, and approving all content before use. We do not guarantee the accuracy, completeness, or suitability
+                        of AI-generated content. AI-generated images are subject to OpenAI&apos;s usage policies.
                     </p>
                 </section>
 
