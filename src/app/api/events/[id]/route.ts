@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { dbGetEvent, dbSaveEvent, dbDeleteEvent } from '@/lib/db';
 import { pickFields } from '@/lib/security';
+import { rateLimit } from '@/lib/rate-limit';
 
 // Allowlisted fields for event updates (mass-assignment protection)
 const EVENT_UPDATABLE_FIELDS = [
@@ -28,6 +29,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    const rl = rateLimit(`events:${userId}`, 20, 60_000);
+    if (!rl.allowed) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+
     const { id } = await params;
     const existing = await dbGetEvent(id, userId);
     if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -43,6 +47,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const rl = rateLimit(`events-del:${userId}`, 10, 60_000);
+    if (!rl.allowed) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
 
     const { id } = await params;
     await dbDeleteEvent(id, userId);

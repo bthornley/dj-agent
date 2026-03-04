@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { dbGetAllEvents, dbSaveEvent } from '@/lib/db';
+import { rateLimit, safeError } from '@/lib/rate-limit';
 
 // Allowed event statuses
 const VALID_STATUSES = ['inquiry', 'quoting', 'confirmed', 'completed', 'cancelled', ''];
@@ -18,6 +19,9 @@ export async function GET() {
 export async function POST(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const rl = rateLimit(`events:${userId}`, 20, 60_000);
+    if (!rl.allowed) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
 
     const event = await request.json();
 
@@ -39,6 +43,10 @@ export async function POST(request: NextRequest) {
         }
     }
 
-    await dbSaveEvent(event, userId);
-    return NextResponse.json({ success: true, event }, { status: 201 });
+    try {
+        await dbSaveEvent(event, userId);
+        return NextResponse.json({ success: true, event }, { status: 201 });
+    } catch (err) {
+        return NextResponse.json({ error: safeError(err) }, { status: 500 });
+    }
 }

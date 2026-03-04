@@ -57,3 +57,12 @@ export function rateLimit(
     return { allowed: true, remaining: Math.floor(entry.tokens), retryAfterMs: 0 };
 }
 
+/**
+ * Return a safe error message — hides internal details in production.
+ */
+export function safeError(err: unknown): string {
+    if (process.env.NODE_ENV === 'development') {
+        return err instanceof Error ? err.message : String(err);
+    }
+    return 'An unexpected error occurred';
+}

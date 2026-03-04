@@ -6,6 +6,7 @@ import { scoreLead } from '@/lib/agent/lead-finder/scoring';
 import { Lead } from '@/lib/types';
 import { v4 as uuid } from 'uuid';
 import { getPlanById, PlanId } from '@/lib/stripe';
+import { rateLimit, safeError } from '@/lib/rate-limit';
 
 // GET /api/leads — List user's leads with filters
 export async function GET(request: NextRequest) {
@@ -37,6 +38,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const rl = rateLimit(`leads:${userId}`, 15, 60_000);
+    if (!rl.allowed) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
 
     try {
         const body = await request.json();
@@ -113,7 +117,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, lead }, { status: 201 });
     } catch (error) {
         console.error('Failed to create lead:', error);
-        return NextResponse.json({ error: 'Failed to create lead' }, { status: 500 });
+        return NextResponse.json({ error: safeError(error) }, { status: 500 });
     }
 }
 
@@ -121,6 +125,9 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const rl = rateLimit(`leads-del:${userId}`, 3, 60_000);
+    if (!rl.allowed) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
 
     const { searchParams } = new URL(request.url);
     if (searchParams.get('all') !== 'true') {
