@@ -583,12 +583,14 @@ export default async function LandingPage() {
       </main>
 
       <footer className="landing-footer" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-        <div style={{ display: 'flex', gap: '16px', fontSize: '13px' }}>
+        <div style={{ display: 'flex', gap: '16px', fontSize: '13px', flexWrap: 'wrap', justifyContent: 'center' }}>
           <Link href="/terms" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Terms of Service</Link>
           <span style={{ color: 'var(--text-muted)' }}>·</span>
           <Link href="/privacy" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Privacy Policy</Link>
           <span style={{ color: 'var(--text-muted)' }}>·</span>
           <Link href="/pricing" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Pricing</Link>
+          <span style={{ color: 'var(--text-muted)' }}>·</span>
+          <a href="https://instagram.com/gigliftapp" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>📸 Instagram</a>
         </div>
         <p>© 2026 Digital Duende Entertainment, LLC. Your AI agent team for the music hustle.</p>
       </footer>
