@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export const metadata = { title: 'Privacy Policy — GigLift' };
+export const metadata = { title: 'Privacy Policy — GigLift', description: 'GigLift privacy policy. How we handle your data, AI processing, and third-party integrations. CCPA and GDPR compliant.' };
 
 export default function PrivacyPage() {
     return (

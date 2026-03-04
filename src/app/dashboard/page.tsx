@@ -414,7 +414,19 @@ export default function DashboardPage() {
                 </div>
 
                 {loading ? (
-                    <div className="empty-state"><div className="spinner" /></div>
+                    <div className="event-list">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="card" style={{ padding: '20px', opacity: 0.5 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div>
+                                        <div style={{ width: 180, height: 16, background: 'rgba(255,255,255,0.08)', borderRadius: 8, marginBottom: 8, animation: 'pulse 1.5s infinite' }} />
+                                        <div style={{ width: 120, height: 12, background: 'rgba(255,255,255,0.05)', borderRadius: 6, animation: 'pulse 1.5s infinite', animationDelay: '0.2s' }} />
+                                    </div>
+                                    <div style={{ width: 80, height: 28, background: 'rgba(255,255,255,0.06)', borderRadius: 14, animation: 'pulse 1.5s infinite', animationDelay: '0.4s' }} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 ) : events.length === 0 ? (
                     <div className="empty-state">
                         <div className="empty-icon">{isInstructor ? '📚' : '🎧'}</div>

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export const metadata = { title: 'Terms of Service — GigLift' };
+export const metadata = { title: 'Terms of Service — GigLift', description: 'GigLift terms of service. Read our terms for using AI-powered lead discovery, outreach, EPK builder, and social media tools for musicians.' };
 
 export default function TermsPage() {
     return (

@@ -1320,6 +1320,18 @@ a:hover {
   animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
 @keyframes pulse-glow {
 
   0%,

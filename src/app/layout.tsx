@@ -8,8 +8,24 @@ export const metadata: Metadata = {
   title: "GigLift — Lift Your Gigs to the Next Level",
   description: "Find your next gig automatically. AI-powered venue discovery, lead scoring, and booking pipeline for DJs, bands, solo artists, and music instructors.",
   icons: {
-    icon: '/logo.png',
-    apple: '/logo.png',
+    icon: [
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'GigLift',
+    title: 'GigLift — Lift Your Gigs to the Next Level',
+    description: '7 AI agents that find venues, draft outreach, build your EPK, plan social content, create promo flyers, and manage your bookings — on autopilot.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'GigLift — AI Agent Team for Musicians' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'GigLift — Lift Your Gigs to the Next Level',
+    description: '7 AI agents that find venues, draft outreach, build your EPK, plan social content, create promo flyers, and manage your bookings.',
+    images: ['/og-image.png'],
   },
 };
 
