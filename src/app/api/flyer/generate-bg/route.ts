@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { rateLimit } from '@/lib/rate-limit';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -39,6 +40,12 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    // Rate limit: 3 AI generations per minute per user
+    const rl = rateLimit(`flyer-bg:${userId}`, 3, 60_000);
+    if (!rl.allowed) {
+        return NextResponse.json({ error: 'Too many AI generation requests. Please wait.' }, { status: 429 });
+    }
+
     if (!OPENAI_API_KEY) {
         return NextResponse.json({
             error: 'AI background generation requires an OPENAI_API_KEY environment variable. Add it to your .env.local to enable this feature.',
@@ -46,6 +53,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+
+    // Cap custom prompt length to prevent prompt injection abuse
+    if (body.customPrompt && typeof body.customPrompt === 'string') {
+        body.customPrompt = body.customPrompt.substring(0, 500);
+    }
+
     const prompt = buildPrompt(body);
     const size = body.aspectRatio === '16:9' ? '1792x1024'
         : body.aspectRatio === '9:16' ? '1024x1792'
