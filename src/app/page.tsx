@@ -14,7 +14,10 @@ export default async function LandingPage() {
       <header className="topbar landing-topbar">
         <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
           <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: "drop-shadow(0 0 8px rgba(168,85,247,0.4))" }} />
-          <span>GigLift</span>
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+            <span>GigLift</span>
+            <span style={{ fontSize: '12px', fontWeight: 400, color: '#888', letterSpacing: '0.3px' }}>Lift your gigs to the next level</span>
+          </div>
         </Link>
         <nav className="topbar-nav" style={{ gap: '8px' }}>
           <Link href="/promo.html" className="btn btn-ghost btn-sm" target="_blank">🎬 Watch Promo</Link>
