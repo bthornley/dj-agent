@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1280, height=720">
-  <title>GigLift — AI Agents for Musicians &amp; Instructors</title>
+  <title>GigLift — AI Agents for Musicians</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
     * {
@@ -20,53 +20,16 @@
       background: #0a0a1a;
       color: #fff;
       font-family: 'Inter', sans-serif;
-      position: relative;
     }
 
-    /* Audio fallback button */
-    .audio-enable {
-      position: absolute;
-      bottom: 16px;
-      right: 16px;
-      z-index: 200;
-      background: rgba(168, 85, 247, 0.2);
-      border: 1px solid rgba(168, 85, 247, 0.4);
-      color: #a855f7;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-family: 'Inter', sans-serif;
-      cursor: pointer;
-      transition: all 0.3s;
-      animation: fadeIn 1s ease-out 1s both;
-    }
-
-    .audio-enable:hover {
-      background: rgba(168, 85, 247, 0.35);
-      transform: scale(1.05);
-    }
-
-    .audio-enable.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    /* Gradient bg */
+    /* ── Background ── */
     .bg {
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 40%, #0d0b1e 70%, #1a0a2e 100%);
       z-index: 0;
-    }
-
-    .bg::after {
-      content: '';
-      position: absolute;
-      inset: 0;
       background: radial-gradient(ellipse at 50% 50%, rgba(155, 89, 247, 0.08) 0%, transparent 70%);
     }
 
-    /* Particles */
     .particles {
       position: absolute;
       inset: 0;
@@ -86,16 +49,14 @@
       0%,
       100% {
         transform: translateY(0) scale(1);
-        opacity: 0.3;
       }
 
       50% {
         transform: translateY(-40px) scale(1.2);
-        opacity: 0.6;
       }
     }
 
-    /* Scenes */
+    /* ── Scenes ── */
     .scene {
       position: absolute;
       inset: 0;
@@ -105,27 +66,47 @@
       align-items: center;
       justify-content: center;
       opacity: 0;
-      transform: scale(0.95);
-      transition: opacity 0.6s ease, transform 0.6s ease;
+      transition: opacity 0.6s ease-in-out;
       pointer-events: none;
     }
 
     .scene.active {
       opacity: 1;
-      transform: scale(1);
       pointer-events: auto;
     }
 
-    /* ═══════════════════════════════════
+    /* ── Audio Enable ── */
+    .audio-enable {
+      position: fixed;
+      top: 30px;
+      right: 30px;
+      z-index: 999;
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
+      animation: pulse 2s infinite;
+    }
+
+    .audio-enable.hidden {
+      display: none;
+    }
+
+    /* ═══════════════════════════
        Scene 1: Logo Reveal
-    ═══════════════════════════════════ */
+    ═══════════════════════════ */
     .scene-1 .logo-img {
       width: 100px;
       height: 100px;
       border-radius: 22px;
       margin-bottom: 16px;
       filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.5));
-      animation: pulse 0.8s ease-in-out;
+      animation: popIn 0.8s ease-out;
     }
 
     .scene-1 h1 {
@@ -136,38 +117,35 @@
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: slideUp 0.6s ease-out;
+      animation: slideUp 0.5s ease-out;
     }
 
     .scene-1 .sub-tagline {
-      font-size: 24px;
-      color: #b0b0cc;
+      font-size: 22px;
+      color: #ccc;
       margin-top: 8px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      animation: slideUp 0.6s ease-out 0.3s both;
+      animation: slideUp 0.5s ease-out 0.2s both;
     }
 
     .scene-1 .tagline {
-      font-size: 20px;
+      font-size: 15px;
       color: #888;
-      margin-top: 10px;
-      animation: slideUp 0.5s ease-out 0.5s both;
+      margin-top: 6px;
+      animation: slideUp 0.5s ease-out 0.3s both;
     }
 
     .scene-1 .mode-badges {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       margin-top: 20px;
-      animation: slideUp 0.5s ease-out 0.7s both;
+      animation: slideUp 0.5s ease-out 0.4s both;
     }
 
     .scene-1 .mode-badge {
       padding: 8px 18px;
-      border-radius: 24px;
-      font-size: 14px;
+      border-radius: 20px;
+      font-size: 13px;
       font-weight: 700;
-      letter-spacing: 0.5px;
     }
 
     .scene-1 .mode-badge.performer {
@@ -189,33 +167,32 @@
     }
 
     .scene-1 .mode-badge.touring {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1));
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      color: #10b981;
+      background: linear-gradient(135deg, rgba(52, 211, 153, 0.2), rgba(16, 185, 129, 0.1));
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      color: #34d399;
     }
 
-    /* ═══════════════════════════════════
+    /* ═══════════════════════════
        Scene 2: Problem
-    ═══════════════════════════════════ */
+    ═══════════════════════════ */
     .scene-2 .problem-badge {
-      background: rgba(255, 85, 85, 0.15);
-      border: 1px solid rgba(255, 85, 85, 0.4);
+      background: rgba(255, 85, 85, 0.12);
+      border: 1px solid rgba(255, 85, 85, 0.3);
       color: #ff5555;
       padding: 8px 24px;
       border-radius: 24px;
       font-size: 14px;
       text-transform: uppercase;
       letter-spacing: 2px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       animation: slideUp 0.4s ease-out;
     }
 
     .scene-2 h2 {
-      font-size: 48px;
+      font-size: 46px;
       font-weight: 900;
       text-align: center;
-      line-height: 1.2;
-      animation: slideUp 0.5s ease-out 0.15s both;
+      animation: slideUp 0.4s ease-out 0.1s both;
     }
 
     .scene-2 h2 span {
@@ -247,97 +224,96 @@
       margin-top: 4px;
     }
 
-    /* ═══════════════════════════════════
+    /* ═══════════════════════════
        Scene 3: AI Agent Team
-    ═══════════════════════════════════ */
+    ═══════════════════════════ */
     .scene-3 .features-title {
-      font-size: 16px;
-      color: #a855f7;
+      font-size: 14px;
       text-transform: uppercase;
-      letter-spacing: 3px;
-      margin-bottom: 28px;
-      animation: slideUp 0.4s ease-out;
+      letter-spacing: 2px;
+      color: #a855f7;
+      margin-bottom: 20px;
+      animation: slideUp 0.3s ease-out;
     }
 
     .scene-3 .feature-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      max-width: 960px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      max-width: 900px;
+      animation: slideUp 0.4s ease-out 0.1s both;
     }
 
     .scene-3 .feature-card {
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 14px;
-      padding: 20px;
+      padding: 18px 14px;
       text-align: center;
       animation: popIn 0.4s ease-out both;
     }
 
-    .scene-3 .feature-card:nth-child(1) {
+    .scene-3 .feature-card:nth-child(2) {
       animation-delay: 0.08s;
     }
 
-    .scene-3 .feature-card:nth-child(2) {
+    .scene-3 .feature-card:nth-child(3) {
       animation-delay: 0.16s;
     }
 
-    .scene-3 .feature-card:nth-child(3) {
+    .scene-3 .feature-card:nth-child(4) {
       animation-delay: 0.24s;
     }
 
-    .scene-3 .feature-card:nth-child(4) {
+    .scene-3 .feature-card:nth-child(5) {
       animation-delay: 0.32s;
     }
 
-    .scene-3 .feature-card:nth-child(5) {
+    .scene-3 .feature-card:nth-child(6) {
       animation-delay: 0.40s;
     }
 
-    .scene-3 .feature-card:nth-child(6) {
+    .scene-3 .feature-card:nth-child(7) {
       animation-delay: 0.48s;
     }
 
     .scene-3 .feature-icon {
-      font-size: 36px;
+      font-size: 32px;
       margin-bottom: 6px;
     }
 
     .scene-3 .feature-name {
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 700;
+      margin-bottom: 3px;
     }
 
     .scene-3 .feature-desc {
-      font-size: 11px;
+      font-size: 10px;
       color: #888;
-      margin-top: 4px;
       line-height: 1.4;
     }
 
-    /* ═══════════════════════════════════
+    /* ═══════════════════════════
        Scene 4: Four Modes
-    ═══════════════════════════════════ */
+    ═══════════════════════════ */
     .scene-4 h2 {
-      font-size: 42px;
+      font-size: 44px;
       font-weight: 900;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
       animation: slideUp 0.4s ease-out;
     }
 
     .scene-4 .mode-subtitle {
       font-size: 16px;
       color: #888;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       animation: slideUp 0.4s ease-out 0.1s both;
     }
 
     .scene-4 .mode-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      max-width: 1080px;
+      display: flex;
+      gap: 14px;
       animation: slideUp 0.5s ease-out 0.2s both;
     }
 
@@ -363,30 +339,13 @@
     }
 
     .scene-4 .mode-col.touring {
-      background: rgba(16, 185, 129, 0.06);
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: rgba(52, 211, 153, 0.06);
+      border: 1px solid rgba(52, 211, 153, 0.25);
     }
 
     .scene-4 .mode-col h3 {
       font-size: 18px;
-      font-weight: 800;
-      margin-bottom: 12px;
-    }
-
-    .scene-4 .mode-col.performer h3 {
-      color: #a855f7;
-    }
-
-    .scene-4 .mode-col.instructor h3 {
-      color: #38bdf8;
-    }
-
-    .scene-4 .mode-col.studio h3 {
-      color: #f97316;
-    }
-
-    .scene-4 .mode-col.touring h3 {
-      color: #10b981;
+      margin-bottom: 10px;
     }
 
     .scene-4 .mode-col ul {
@@ -396,14 +355,12 @@
 
     .scene-4 .mode-col li {
       font-size: 12px;
-      color: #ccc;
+      color: #bbb;
       padding: 3px 0;
-      line-height: 1.4;
     }
 
     .scene-4 .mode-col li::before {
       margin-right: 6px;
-      font-size: 11px;
     }
 
     .scene-4 .mode-col.performer li::before {
@@ -422,59 +379,39 @@
       content: '🚐';
     }
 
-    /* ═══════════════════════════════════
+    /* ═══════════════════════════
        Scene 5: How It Works
-    ═══════════════════════════════════ */
+    ═══════════════════════════ */
     .scene-5 h2 {
-      font-size: 42px;
+      font-size: 44px;
       font-weight: 900;
-      margin-bottom: 40px;
       animation: slideUp 0.4s ease-out;
     }
 
     .scene-5 h2 span {
-      color: #00d4e6;
+      color: #a855f7;
     }
 
     .scene-5 .steps {
       display: flex;
-      gap: 16px;
       align-items: center;
+      gap: 18px;
+      margin-top: 40px;
+      animation: slideUp 0.5s ease-out 0.2s both;
     }
 
     .scene-5 .step {
       text-align: center;
-      width: 160px;
-      animation: popIn 0.4s ease-out both;
-    }
-
-    .scene-5 .step:nth-child(1) {
-      animation-delay: 0.1s;
-    }
-
-    .scene-5 .step:nth-child(3) {
-      animation-delay: 0.25s;
-    }
-
-    .scene-5 .step:nth-child(5) {
-      animation-delay: 0.4s;
-    }
-
-    .scene-5 .step:nth-child(7) {
-      animation-delay: 0.55s;
-    }
-
-    .scene-5 .step:nth-child(9) {
-      animation-delay: 0.7s;
+      width: 110px;
     }
 
     .scene-5 .step-num {
-      font-size: 42px;
+      font-size: 44px;
       font-weight: 900;
     }
 
     .scene-5 .step-label {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 700;
       margin-top: 4px;
     }
@@ -491,43 +428,43 @@
       animation: fadeIn 0.3s ease-out both;
     }
 
-    /* ═══════════════════════════════════
-       Scene 6: Social Crew
-    ═══════════════════════════════════ */
-    .scene-6 .social-badge {
-      background: rgba(168, 85, 247, 0.12);
-      border: 1px solid rgba(168, 85, 247, 0.3);
-      color: #a855f7;
-      padding: 6px 20px;
-      border-radius: 20px;
-      font-size: 13px;
+    /* ═══════════════════════════
+       Scene 6: Power Tools (NEW)
+    ═══════════════════════════ */
+    .scene-6 .tools-badge {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(168, 85, 247, 0.12));
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      color: #fbbf24;
+      padding: 8px 24px;
+      border-radius: 24px;
+      font-size: 14px;
       text-transform: uppercase;
       letter-spacing: 2px;
       margin-bottom: 16px;
-      animation: slideUp 0.3s ease-out;
+      animation: slideUp 0.4s ease-out;
     }
 
     .scene-6 h2 {
-      font-size: 44px;
+      font-size: 42px;
       font-weight: 900;
-      margin-bottom: 12px;
+      margin-bottom: 6px;
       animation: slideUp 0.4s ease-out 0.1s both;
     }
 
-    .scene-6 .social-subtitle {
+    .scene-6 .tools-subtitle {
       font-size: 16px;
       color: #888;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
       animation: slideUp 0.4s ease-out 0.15s both;
     }
 
-    .scene-6 .social-features {
+    .scene-6 .tools-grid {
       display: flex;
-      gap: 20px;
+      gap: 16px;
       animation: slideUp 0.5s ease-out 0.2s both;
     }
 
-    .scene-6 .social-feature {
+    .scene-6 .tool-card {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 14px;
@@ -536,53 +473,115 @@
       text-align: center;
     }
 
-    .scene-6 .social-feature .sf-icon {
-      font-size: 32px;
+    .scene-6 .tool-icon {
+      font-size: 36px;
       margin-bottom: 8px;
     }
 
-    .scene-6 .social-feature .sf-name {
-      font-size: 14px;
+    .scene-6 .tool-name {
+      font-size: 15px;
       font-weight: 700;
       margin-bottom: 4px;
     }
 
-    .scene-6 .social-feature .sf-desc {
+    .scene-6 .tool-desc {
       font-size: 11px;
       color: #888;
       line-height: 1.4;
     }
 
-    /* ═══════════════════════════════════
-       Scene 7: Pricing
-    ═══════════════════════════════════ */
-    .scene-7 .pricing-badge {
-      background: rgba(0, 212, 230, 0.12);
-      border: 1px solid rgba(0, 212, 230, 0.3);
-      color: #00d4e6;
-      padding: 6px 20px;
-      border-radius: 20px;
-      font-size: 13px;
+    /* ═══════════════════════════
+       Scene 7: Social Crew
+    ═══════════════════════════ */
+    .scene-7 .social-badge {
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      color: #a855f7;
+      padding: 8px 24px;
+      border-radius: 24px;
+      font-size: 14px;
       text-transform: uppercase;
       letter-spacing: 2px;
       margin-bottom: 16px;
-      animation: slideUp 0.3s ease-out;
+      animation: slideUp 0.4s ease-out;
     }
 
     .scene-7 h2 {
       font-size: 44px;
       font-weight: 900;
-      margin-bottom: 28px;
+      margin-bottom: 6px;
       animation: slideUp 0.4s ease-out 0.1s both;
     }
 
-    .scene-7 .tier-row {
+    .scene-7 .social-subtitle {
+      font-size: 16px;
+      color: #888;
+      margin-bottom: 24px;
+      animation: slideUp 0.4s ease-out 0.15s both;
+    }
+
+    .scene-7 .social-features {
+      display: flex;
+      gap: 16px;
+      animation: slideUp 0.5s ease-out 0.2s both;
+    }
+
+    .scene-7 .social-feature {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 24px 20px;
+      width: 200px;
+      text-align: center;
+    }
+
+    .scene-7 .sf-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .scene-7 .sf-name {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .scene-7 .sf-desc {
+      font-size: 11px;
+      color: #888;
+      line-height: 1.4;
+    }
+
+    /* ═══════════════════════════
+       Scene 8: Pricing
+    ═══════════════════════════ */
+    .scene-8 .pricing-badge {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10b981;
+      padding: 8px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+      animation: slideUp 0.4s ease-out;
+    }
+
+    .scene-8 h2 {
+      font-size: 44px;
+      font-weight: 900;
+      margin-bottom: 20px;
+      animation: slideUp 0.4s ease-out 0.1s both;
+    }
+
+    .scene-8 .tier-row {
       display: flex;
       gap: 16px;
       animation: slideUp 0.4s ease-out 0.2s both;
     }
 
-    .scene-7 .tier {
+    .scene-8 .tier {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 16px;
@@ -591,50 +590,50 @@
       text-align: center;
     }
 
-    .scene-7 .tier.featured {
+    .scene-8 .tier.featured {
       border-color: #a855f7;
       background: rgba(168, 85, 247, 0.08);
       transform: scale(1.04);
     }
 
-    .scene-7 .tier-name {
+    .scene-8 .tier-name {
       font-size: 17px;
       font-weight: 700;
     }
 
-    .scene-7 .tier-price {
+    .scene-8 .tier-price {
       font-size: 34px;
       font-weight: 900;
       margin: 6px 0;
     }
 
-    .scene-7 .tier-price span {
+    .scene-8 .tier-price span {
       font-size: 14px;
       font-weight: 400;
       color: #888;
     }
 
-    .scene-7 .tier-features {
+    .scene-8 .tier-features {
       list-style: none;
       padding: 0;
       margin-top: 8px;
     }
 
-    .scene-7 .tier-features li {
+    .scene-8 .tier-features li {
       font-size: 11px;
       color: #999;
       padding: 2px 0;
     }
 
-    .scene-7 .tier-features li::before {
+    .scene-8 .tier-features li::before {
       content: '✓ ';
       color: #10b981;
     }
 
-    /* ═══════════════════════════════════
-       Scene 8: Ambassador Program
-    ═══════════════════════════════════ */
-    .scene-8 .ambassador-badge {
+    /* ═══════════════════════════
+       Scene 9: Ambassador
+    ═══════════════════════════ */
+    .scene-9 .ambassador-badge {
       background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1));
       border: 1px solid rgba(255, 215, 0, 0.4);
       color: #ffd700;
@@ -647,31 +646,31 @@
       animation: slideUp 0.4s ease-out;
     }
 
-    .scene-8 h2 {
+    .scene-9 h2 {
       font-size: 44px;
       font-weight: 900;
       margin-bottom: 10px;
       animation: slideUp 0.4s ease-out 0.1s both;
     }
 
-    .scene-8 h2 .gold {
+    .scene-9 h2 .gold {
       color: #ffd700;
     }
 
-    .scene-8 .ambassador-subtitle {
+    .scene-9 .ambassador-subtitle {
       font-size: 18px;
       color: #888;
       margin-bottom: 32px;
       animation: slideUp 0.4s ease-out 0.15s both;
     }
 
-    .scene-8 .ambassador-perks {
+    .scene-9 .ambassador-perks {
       display: flex;
       gap: 20px;
       animation: slideUp 0.5s ease-out 0.2s both;
     }
 
-    .scene-8 .perk {
+    .scene-9 .perk {
       background: rgba(255, 215, 0, 0.04);
       border: 1px solid rgba(255, 215, 0, 0.15);
       border-radius: 14px;
@@ -680,28 +679,28 @@
       text-align: center;
     }
 
-    .scene-8 .perk .perk-icon {
+    .scene-9 .perk .perk-icon {
       font-size: 36px;
       margin-bottom: 8px;
     }
 
-    .scene-8 .perk .perk-title {
+    .scene-9 .perk .perk-title {
       font-size: 15px;
       font-weight: 700;
       color: #ffd700;
       margin-bottom: 4px;
     }
 
-    .scene-8 .perk .perk-desc {
+    .scene-9 .perk .perk-desc {
       font-size: 12px;
       color: #999;
       line-height: 1.4;
     }
 
-    /* ═══════════════════════════════════
-       Scene 9: CTA
-    ═══════════════════════════════════ */
-    .scene-9 .logo-img {
+    /* ═══════════════════════════
+       Scene 10: CTA
+    ═══════════════════════════ */
+    .scene-10 .logo-img {
       width: 80px;
       height: 80px;
       border-radius: 18px;
@@ -710,7 +709,7 @@
       animation: pulse 0.8s ease-in-out;
     }
 
-    .scene-9 h1 {
+    .scene-10 h1 {
       font-size: 72px;
       font-weight: 900;
       background: linear-gradient(135deg, #fff 0%, #a855f7 50%, #00d4e6 100%);
@@ -720,14 +719,14 @@
       animation: slideUp 0.5s ease-out;
     }
 
-    .scene-9 .cta-tagline {
+    .scene-10 .cta-tagline {
       font-size: 22px;
       color: #ccc;
       margin: 12px 0 28px;
       animation: slideUp 0.5s ease-out 0.15s both;
     }
 
-    .scene-9 .cta-btn {
+    .scene-10 .cta-btn {
       background: linear-gradient(135deg, #a855f7, #7c3aed);
       color: #fff;
       font-size: 20px;
@@ -740,16 +739,14 @@
       cursor: pointer;
     }
 
-    .scene-9 .url {
+    .scene-10 .url {
       color: #a855f7;
       font-size: 16px;
       margin-top: 20px;
       animation: fadeIn 0.5s ease-out 0.5s both;
     }
 
-    /* ═══════════════════════════════════
-       Animations
-    ═══════════════════════════════════ */
+    /* ═══════ Animations ═══════ */
     @keyframes slideUp {
       from {
         opacity: 0;
@@ -813,9 +810,7 @@
 </head>
 
 <body>
-
-  <!-- Audio fallback button (shown if autoplay audio is blocked) -->
-  <button class="audio-enable" id="audioEnable" onclick="enableAudio()">🔊 Enable Audio</button>
+  <button class="audio-enable" id="audioEnable" onclick="startShow()">▶ Play Promo</button>
 
   <div class="bg"></div>
   <div class="particles" id="particles"></div>
@@ -824,8 +819,8 @@
   <div class="scene scene-1" id="scene-1">
     <img class="logo-img" src="/logo.png" alt="GigLift" />
     <h1>GIGLIFT</h1>
-    <div class="sub-tagline">Your AI Agent Team for the Music Hustle</div>
-    <div class="tagline">For DJs · Bands · Solo Artists · Music Instructors · Producers</div>
+    <div class="sub-tagline">Your AI Agent Team for the Music Industry</div>
+    <div class="tagline">For DJs · Bands · Solo Artists · Instructors · Producers</div>
     <div class="mode-badges">
       <div class="mode-badge performer">🎵 Performer</div>
       <div class="mode-badge instructor">📚 Instructor</div>
@@ -848,20 +843,20 @@
         <div class="stat-label">Hours/week on outreach</div>
       </div>
       <div class="stat">
-        <div class="stat-num">5</div>
+        <div class="stat-num">7</div>
         <div class="stat-label">AI Agents on your team</div>
       </div>
     </div>
   </div>
 
-  <!-- Scene 3: AI Agent Team -->
+  <!-- Scene 3: AI Agent Team (7 agents) -->
   <div class="scene scene-3" id="scene-3">
-    <div class="features-title">Your AI Agent Team</div>
+    <div class="features-title">Your 7 AI Agents</div>
     <div class="feature-grid">
       <div class="feature-card">
         <div class="feature-icon">🔍</div>
-        <div class="feature-name">Lead Scout Agent</div>
-        <div class="feature-desc">Discovers venues, schools, studios, and festivals across 10+ sources</div>
+        <div class="feature-name">Lead Scout</div>
+        <div class="feature-desc">Discovers venues, schools, studios & festivals across 10+ sources</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">✉️</div>
@@ -876,17 +871,22 @@
       <div class="feature-card">
         <div class="feature-icon">📱</div>
         <div class="feature-name">Social Strategist</div>
-        <div class="feature-desc">Weekly content plans with Reels, carousels, stories, and posts</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">✍️</div>
-        <div class="feature-name">Content Copywriter</div>
-        <div class="feature-desc">A/B post drafts with captions, hashtags, CTAs, and media selection</div>
+        <div class="feature-desc">Weekly content plans with Reels, carousels, stories & posts</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📊</div>
-        <div class="feature-name">Smart Lead Scoring</div>
+        <div class="feature-name">Smart Scoring</div>
         <div class="feature-desc">0–100 AI scoring with quality filtering and deduplication</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <div class="feature-name">Flyer Creator</div>
+        <div class="feature-desc">AI backgrounds via DALL-E 3, QR codes, logo overlay, PNG export</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <div class="feature-name">Booking Manager</div>
+        <div class="feature-desc">Calendar view with color-coded statuses and quick-add bookings</div>
       </div>
     </div>
   </div>
@@ -962,21 +962,56 @@
       </div>
       <div class="arrow">→</div>
       <div class="step">
-        <div class="step-num" style="color:#ffd700">4</div>
-        <div class="step-label">Build</div>
-        <div class="step-desc">EPK + brand</div>
+        <div class="step-num" style="color:#fbbf24">4</div>
+        <div class="step-label">Create</div>
+        <div class="step-desc">Flyers & EPK</div>
       </div>
       <div class="arrow">→</div>
       <div class="step">
-        <div class="step-num" style="color:#fff">5</div>
+        <div class="step-num" style="color:#f97316">5</div>
+        <div class="step-label">Build</div>
+        <div class="step-desc">Brand & content</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="step">
+        <div class="step-num" style="color:#fff">6</div>
         <div class="step-label">Book</div>
         <div class="step-desc">Land the gig!</div>
       </div>
     </div>
   </div>
 
-  <!-- Scene 6: Social Crew -->
+  <!-- Scene 6: Power Tools (NEW) -->
   <div class="scene scene-6" id="scene-6">
+    <div class="tools-badge">⚡ Power Tools</div>
+    <h2>Create, Book & Export</h2>
+    <div class="tools-subtitle">Tools that help you run your entire music business</div>
+    <div class="tools-grid">
+      <div class="tool-card">
+        <div class="tool-icon">🎨</div>
+        <div class="tool-name">AI Flyer Creator</div>
+        <div class="tool-desc">5 style presets, DALL-E 3 backgrounds, QR codes, logo overlay</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">📅</div>
+        <div class="tool-name">Calendar View</div>
+        <div class="tool-desc">Monthly calendar with color-coded statuses and quick-add booking</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">📧</div>
+        <div class="tool-name">Email System</div>
+        <div class="tool-desc">3 templates, send tracking, and personalized outreach at scale</div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">📥</div>
+        <div class="tool-name">CSV Export</div>
+        <div class="tool-desc">Export leads and email history for CRM imports or offline analysis</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene 7: Social Crew -->
+  <div class="scene scene-7" id="scene-7">
     <div class="social-badge">Social Media Suite</div>
     <h2>Your Social Crew</h2>
     <div class="social-subtitle">AI-powered content creation, scheduling, and management</div>
@@ -1004,8 +1039,8 @@
     </div>
   </div>
 
-  <!-- Scene 7: Pricing -->
-  <div class="scene scene-7" id="scene-7">
+  <!-- Scene 8: Pricing -->
+  <div class="scene scene-8" id="scene-8">
     <div class="pricing-badge">Simple Pricing</div>
     <h2>Plans That Scale With You</h2>
     <div class="tier-row">
@@ -1013,55 +1048,55 @@
         <div class="tier-name">Free</div>
         <div class="tier-price">$0<span>/mo</span></div>
         <ul class="tier-features">
-          <li>10 URL scans</li>
-          <li>25 lead storage</li>
-          <li>1 region</li>
-          <li>EPK builder</li>
+          <li>5 scans/month</li>
+          <li>Basic EPK</li>
+          <li>3 AI flyers/mo</li>
+          <li>Calendar view</li>
         </ul>
       </div>
       <div class="tier featured">
         <div class="tier-name">Pro ⭐</div>
-        <div class="tier-price">$19<span>/mo</span></div>
+        <div class="tier-price">$33<span>/mo</span></div>
         <ul class="tier-features">
-          <li>100 auto-scans</li>
-          <li>Unlimited leads</li>
-          <li>2 regions</li>
-          <li>Email templates</li>
+          <li>50 scans/month</li>
+          <li>AI outreach emails</li>
+          <li>20 flyers/mo</li>
+          <li>Email send & track</li>
         </ul>
       </div>
       <div class="tier">
         <div class="tier-name">Unlimited</div>
-        <div class="tier-price">$39<span>/mo</span></div>
+        <div class="tier-price">$79<span>/mo</span></div>
         <ul class="tier-features">
-          <li>250 auto-scans</li>
-          <li>Unlimited regions</li>
-          <li>Priority support</li>
-          <li>CRM features</li>
+          <li>Unlimited scans</li>
+          <li>Priority scoring</li>
+          <li>Unlimited flyers</li>
+          <li>Full Social Suite</li>
         </ul>
       </div>
       <div class="tier">
         <div class="tier-name">Agency 🏢</div>
         <div class="tier-price">$149<span>/mo</span></div>
         <ul class="tier-features">
-          <li>10 DJ sub-accounts</li>
-          <li>White-label EPK</li>
-          <li>Agency analytics</li>
-          <li>Account manager</li>
+          <li>5 artist profiles</li>
+          <li>White-label flyers</li>
+          <li>Team dashboard</li>
+          <li>Bulk outreach</li>
         </ul>
       </div>
     </div>
   </div>
 
-  <!-- Scene 8: Ambassador Program -->
-  <div class="scene scene-8" id="scene-8">
+  <!-- Scene 9: Ambassador Program -->
+  <div class="scene scene-9" id="scene-9">
     <div class="ambassador-badge">🤝 Brand Ambassador Program</div>
     <h2>Grow With <span class="gold">GigLift</span></h2>
-    <div class="ambassador-subtitle">Share your referral link. Earn rewards. Build your network.</div>
+    <div class="ambassador-subtitle">Share your link. Earn 20% recurring commission. Build your network.</div>
     <div class="ambassador-perks">
       <div class="perk">
         <div class="perk-icon">🔗</div>
         <div class="perk-title">Unique Link</div>
-        <div class="perk-desc">Personal referral URL with one-click copy and built-in tracking</div>
+        <div class="perk-desc">Personal referral URL with one-click copy and tracking</div>
       </div>
       <div class="perk">
         <div class="perk-icon">📊</div>
@@ -1070,29 +1105,43 @@
       </div>
       <div class="perk">
         <div class="perk-icon">🎁</div>
-        <div class="perk-title">Earn Rewards</div>
-        <div class="perk-desc">Exclusive perks and rewards for every referral who subscribes</div>
+        <div class="perk-title">Free Pro Access</div>
+        <div class="perk-desc">Earn free Pro tier by referring just 3 paying subscribers</div>
       </div>
     </div>
   </div>
 
-  <!-- Scene 9: CTA -->
-  <div class="scene scene-9" id="scene-9">
+  <!-- Scene 10: CTA -->
+  <div class="scene scene-10" id="scene-10">
     <img class="logo-img" src="/logo.png" alt="GigLift" />
     <h1>GIGLIFT</h1>
-    <div class="cta-tagline">Discover. Outreach. Build. Book.</div>
-    <button class="cta-btn" onclick="window.open('https://giglift.app/sign-up','_blank')">Deploy Your Agents Free
+    <div class="cta-tagline">7 AI Agents. 4 Modes. One Platform.</div>
+    <button class="cta-btn" onclick="window.open('https://giglift.com/sign-up','_blank')">Deploy Your Agents Free
       →</button>
-    <div class="url">giglift.app</div>
+    <div class="url">giglift.com</div>
   </div>
 
   <div class="progress" id="progress"></div>
 
+  <!-- Preload all audio -->
+  <audio id="vo-1" preload="auto" src="/audio/vo-scene-1.mp3"></audio>
+  <audio id="vo-2" preload="auto" src="/audio/vo-scene-2.mp3"></audio>
+  <audio id="vo-3" preload="auto" src="/audio/vo-scene-3.mp3"></audio>
+  <audio id="vo-4" preload="auto" src="/audio/vo-scene-4.mp3"></audio>
+  <audio id="vo-5" preload="auto" src="/audio/vo-scene-5.mp3"></audio>
+  <audio id="vo-6" preload="auto" src="/audio/vo-scene-6.mp3"></audio>
+  <audio id="vo-7" preload="auto" src="/audio/vo-scene-7.mp3"></audio>
+  <audio id="vo-8" preload="auto" src="/audio/vo-scene-8.mp3"></audio>
+  <audio id="vo-9" preload="auto" src="/audio/vo-scene-9.mp3"></audio>
+  <audio id="vo-10" preload="auto" src="/audio/vo-scene-10.mp3"></audio>
+
   <script>
-    // Create particles
+    // ═════════════════════════════════
+    // Particles
+    // ═════════════════════════════════
     try {
       var pEl = document.getElementById('particles');
-      for (var pi = 0; pi < 20; pi++) {
+      for (var i = 0; i < 20; i++) {
         var d = document.createElement('div');
         d.className = 'particle';
         var size = 4 + Math.random() * 8;
@@ -1105,137 +1154,50 @@
         if (Math.random() > 0.5) d.style.background = 'rgba(0,212,230,0.2)';
         pEl.appendChild(d);
       }
-    } catch (e) { console.error('particles', e); }
+    } catch (e) { }
 
-    // ═════════════════════════════════════════
-    // SCENES
-    // ═════════════════════════════════════════
-    function startScenes() {
-      var scenes = [
-        { id: 'scene-1', duration: 6000 },
-        { id: 'scene-2', duration: 6500 },
-        { id: 'scene-3', duration: 7000 },
-        { id: 'scene-4', duration: 8000 },
-        { id: 'scene-5', duration: 5500 },
-        { id: 'scene-6', duration: 6500 },
-        { id: 'scene-7', duration: 5500 },
-        { id: 'scene-8', duration: 6500 },
-        { id: 'scene-9', duration: 6000 },
-      ];
+    // ═════════════════════════════════
+    // Audio-Synced Scene Controller
+    // ═════════════════════════════════
+    var totalScenes = 10;
+    var currentScene = 0;
+    var showStarted = false;
+    var scenePadding = 1.0; // seconds of padding after each VO clip
 
-      var totalDuration = 0;
-      for (var si = 0; si < scenes.length; si++) totalDuration += scenes[si].duration;
+    function showScene(num) {
+      var all = document.querySelectorAll('.scene');
+      for (var j = 0; j < all.length; j++) all[j].classList.remove('active');
+      var el = document.getElementById('scene-' + num);
+      if (el) el.classList.add('active');
+      currentScene = num;
+    }
 
-      var bar = document.getElementById('progress');
-      var startTime = Date.now();
+    function playSceneAudio(sceneNum) {
+      if (sceneNum > totalScenes) return;
 
-      function updateProgress() {
-        var elapsed = Date.now() - startTime;
-        var pct = Math.min(100, (elapsed / totalDuration) * 100);
-        if (bar) bar.style.width = pct + '%';
-        if (pct < 100) requestAnimationFrame(updateProgress);
-      }
+      showScene(sceneNum);
 
-      // Show scene-1 now
-      var s1 = document.getElementById('scene-1');
-      if (s1) s1.classList.add('active');
+      var audio = document.getElementById('vo-' + sceneNum);
+      if (!audio) return;
 
-      // Schedule transitions (skip first since it's already showing)
-      var cumulative = scenes[0].duration;
-      for (var si = 1; si < scenes.length; si++) {
-        (function (sceneId) {
+      audio.play().then(function () {
+        audio.onended = function () {
+          // Wait a beat then advance to next scene
           setTimeout(function () {
-            var all = document.querySelectorAll('.scene');
-            for (var j = 0; j < all.length; j++) all[j].classList.remove('active');
-            var el = document.getElementById(sceneId);
-            if (el) el.classList.add('active');
-          }, cumulative);
-        })(scenes[si].id);
-        cumulative += scenes[si].duration;
-      }
-
-      requestAnimationFrame(updateProgress);
+            playSceneAudio(sceneNum + 1);
+          }, scenePadding * 1000);
+        };
+      }).catch(function (e) {
+        console.warn('Audio play failed for scene ' + sceneNum, e);
+        // Fallback: wait estimated time then advance
+        var fallbackMs = Math.max(4000, (audio.duration || 5) * 1000);
+        setTimeout(function () { playSceneAudio(sceneNum + 1); }, fallbackMs + scenePadding * 1000);
+      });
     }
 
-    // ═════════════════════════════════════════
-    // VOICEOVER
-    // ═════════════════════════════════════════
-    var voiceStartTime = 0;
-
-    function startVoiceover() {
-      var synth = window.speechSynthesis;
-      if (!synth) return;
-      synth.cancel();
-      voiceStartTime = Date.now();
-
-      var lines = [
-        { time: 400, text: "Introducing GigLift.", rate: 0.88 },
-        { time: 2000, text: "Your AI agent team for the music industry. Built for performers, instructors, studio professionals, and touring artists.", rate: 1.0 },
-        { time: 6200, text: "Seventy-eight percent of musicians earn under fifteen thousand dollars a year.", rate: 1.0 },
-        { time: 9200, text: "Most spend twenty hours a week just searching for opportunities. GigLift changes that.", rate: 1.05 },
-        { time: 12700, text: "Five AI agents work together autonomously. The Lead Scout discovers opportunities across ten-plus sources. The Outreach Writer crafts personalized emails. The EPK Architect builds your press kit. The Social Strategist plans your content. And Smart Scoring ranks every lead by fit.", rate: 1.1 },
-        { time: 19700, text: "Four distinct modes make GigLift adapt to how you work.", rate: 0.95 },
-        { time: 22000, text: "Performer mode finds venues and books gigs. Instructor mode connects you with schools and students. Studio mode targets recording sessions and production clients. And Touring mode manages festivals, agents, and multi-city pipelines.", rate: 1.1 },
-        { time: 27700, text: "Five steps. Discover. Score. Outreach. Build. Book. From search to stage, fully automated.", rate: 1.0 },
-        { time: 33200, text: "Your Social Crew handles content creation end to end. AI generates weekly plans with Reels, carousels, and stories. Edit drafts inline, swap media from your library, and push directly to platforms.", rate: 1.08 },
-        { time: 39700, text: "Start free with ten scans and twenty-five leads. Upgrade to Pro for nineteen a month, Unlimited for thirty-nine, or Agency for one forty-nine with ten sub-accounts.", rate: 1.08 },
-        { time: 45200, text: "Our Brand Ambassador program lets you earn rewards by sharing GigLift. Get a personal referral link, track signups on your live dashboard, and unlock exclusive perks.", rate: 1.05 },
-        { time: 51700, text: "GigLift. Deploy your AI agents free today at giglift dot app.", rate: 0.92 },
-      ];
-
-      var chosenVoice = null;
-      var voices = synth.getVoices();
-      var preferred = ['Google US English', 'Samantha', 'Alex', 'Daniel', 'Aaron', 'Evan'];
-      for (var p = 0; p < preferred.length; p++) {
-        for (var v = 0; v < voices.length; v++) {
-          if (voices[v].name.indexOf(preferred[p]) >= 0 && voices[v].lang.indexOf('en') === 0) {
-            chosenVoice = voices[v]; break;
-          }
-        }
-        if (chosenVoice) break;
-      }
-      if (!chosenVoice) {
-        for (var v = 0; v < voices.length; v++) {
-          if (voices[v].lang.indexOf('en-US') === 0) { chosenVoice = voices[v]; break; }
-        }
-      }
-      if (!chosenVoice) {
-        for (var v = 0; v < voices.length; v++) {
-          if (voices[v].lang.indexOf('en') === 0) { chosenVoice = voices[v]; break; }
-        }
-      }
-
-      // Adjust timing based on elapsed time since scenes started
-      var elapsed = Date.now() - sceneStartTime;
-
-      for (var li = 0; li < lines.length; li++) {
-        (function (vl) {
-          var delay = Math.max(0, vl.time - elapsed);
-          setTimeout(function () {
-            try {
-              var utter = new SpeechSynthesisUtterance(vl.text);
-              utter.rate = vl.rate || 1.0;
-              utter.pitch = 0.92;
-              utter.volume = 1.0;
-              if (chosenVoice) utter.voice = chosenVoice;
-              synth.speak(utter);
-            } catch (e) { }
-          }, delay);
-        })(lines[li]);
-      }
-    }
-
-    // Load voices
-    if (window.speechSynthesis) {
-      window.speechSynthesis.getVoices();
-      if (window.speechSynthesis.onvoiceschanged !== undefined) {
-        window.speechSynthesis.onvoiceschanged = function () { window.speechSynthesis.getVoices(); };
-      }
-    }
-
-    // ═════════════════════════════════════════
-    // MUSIC
-    // ═════════════════════════════════════════
+    // ═════════════════════════════════
+    // Background Music (Web Audio API)
+    // ═════════════════════════════════
     function startMusic() {
       var AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
@@ -1243,134 +1205,95 @@
       actx.resume();
 
       var masterGain = actx.createGain();
-      masterGain.gain.value = 0.15;
+      masterGain.gain.value = 0.10; // Lower volume so VO is clear
       masterGain.connect(actx.destination);
 
       var comp = actx.createDynamicsCompressor();
-      comp.threshold.value = -20;
-      comp.ratio.value = 6;
+      comp.threshold.value = -20; comp.ratio.value = 6;
       comp.connect(masterGain);
 
       function kick(time) {
-        var osc = actx.createOscillator();
-        var g = actx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(150, time);
+        var osc = actx.createOscillator(); var g = actx.createGain();
+        osc.type = 'sine'; osc.frequency.setValueAtTime(150, time);
         osc.frequency.exponentialRampToValueAtTime(30, time + 0.12);
-        g.gain.setValueAtTime(0.7, time);
-        g.gain.exponentialRampToValueAtTime(0.01, time + 0.25);
-        osc.connect(g); g.connect(comp);
-        osc.start(time); osc.stop(time + 0.25);
+        g.gain.setValueAtTime(0.6, time); g.gain.exponentialRampToValueAtTime(0.01, time + 0.25);
+        osc.connect(g); g.connect(comp); osc.start(time); osc.stop(time + 0.25);
       }
-
       function hihat(time) {
         var bufSize = actx.sampleRate * 0.04;
         var buf = actx.createBuffer(1, bufSize, actx.sampleRate);
         var data = buf.getChannelData(0);
         for (var i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-        var src = actx.createBufferSource();
-        src.buffer = buf;
-        var hp = actx.createBiquadFilter();
-        hp.type = 'highpass'; hp.frequency.value = 8000;
-        var g = actx.createGain();
-        g.gain.setValueAtTime(0.08, time);
+        var src = actx.createBufferSource(); src.buffer = buf;
+        var hp = actx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 8000;
+        var g = actx.createGain(); g.gain.setValueAtTime(0.06, time);
         g.gain.exponentialRampToValueAtTime(0.01, time + 0.04);
         src.connect(hp); hp.connect(g); g.connect(comp);
         src.start(time); src.stop(time + 0.05);
       }
-
-      function bass(time, freq, dur) {
-        var osc = actx.createOscillator();
-        var g = actx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.value = freq;
-        var lp = actx.createBiquadFilter();
-        lp.type = 'lowpass'; lp.frequency.value = 350;
-        g.gain.setValueAtTime(0.18, time);
-        g.gain.exponentialRampToValueAtTime(0.01, time + dur);
-        osc.connect(lp); lp.connect(g); g.connect(comp);
-        osc.start(time); osc.stop(time + dur);
-      }
-
       function pad(time, freq, dur) {
-        var osc1 = actx.createOscillator();
-        var osc2 = actx.createOscillator();
+        var osc1 = actx.createOscillator(); var osc2 = actx.createOscillator();
         var g = actx.createGain();
         osc1.type = 'sine'; osc1.frequency.value = freq;
         osc2.type = 'triangle'; osc2.frequency.value = freq * 1.003;
-        var lp = actx.createBiquadFilter();
-        lp.type = 'lowpass'; lp.frequency.value = 1200;
-        g.gain.setValueAtTime(0.035, time);
-        g.gain.setValueAtTime(0.035, time + dur - 0.1);
+        var lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1200;
+        g.gain.setValueAtTime(0.025, time);
+        g.gain.setValueAtTime(0.025, time + dur - 0.1);
         g.gain.exponentialRampToValueAtTime(0.001, time + dur);
         osc1.connect(lp); osc2.connect(lp); lp.connect(g); g.connect(comp);
-        osc1.start(time); osc1.stop(time + dur);
-        osc2.start(time); osc2.stop(time + dur);
+        osc1.start(time); osc1.stop(time + dur); osc2.start(time); osc2.stop(time + dur);
       }
 
-      var bpm = 115;
-      var beatLen = 60 / bpm;
+      var bpm = 115; var beatLen = 60 / bpm;
       var now = actx.currentTime + 0.05;
-      var totalBeats = Math.floor(60 / beatLen);
+      var totalBeats = Math.floor(150 / beatLen); // enough beats for full show
 
-      var bassNotes = [82.41, 98, 110, 82.41];
-      var padChords = [
-        [164.81, 196, 246.94],
-        [196, 246.94, 329.63],
-        [220, 277.18, 329.63],
-        [164.81, 196, 246.94],
-      ];
+      var padChords = [[164.81, 196, 246.94], [196, 246.94, 329.63], [220, 277.18, 329.63], [164.81, 196, 246.94]];
 
       for (var i = 0; i < totalBeats; i++) {
         var t = now + i * beatLen;
-        kick(t);
-        hihat(t);
-        hihat(t + beatLen * 0.5);
-        if (i % 2 === 0) {
-          var bn = bassNotes[(Math.floor(i / 2)) % bassNotes.length];
-          bass(t, bn, beatLen * 1.8);
-        }
+        kick(t); hihat(t); hihat(t + beatLen * 0.5);
         if (i % 4 === 0) {
           var chord = padChords[Math.floor(i / 4) % padChords.length];
           for (var c = 0; c < chord.length; c++) pad(t, chord[c], beatLen * 3.8);
         }
       }
 
-      masterGain.gain.setValueAtTime(0.15, now + 54);
-      masterGain.gain.linearRampToValueAtTime(0, now + 58);
+      // Fade out music at the end
+      masterGain.gain.setValueAtTime(0.10, now + 140);
+      masterGain.gain.linearRampToValueAtTime(0, now + 148);
     }
 
-    // ═════════════════════════════════════════
-    // STARTUP
-    // ═════════════════════════════════════════
-    var audioStarted = false;
-    var sceneStartTime = Date.now();
+    // ═════════════════════════════════
+    // Progress Bar
+    // ═════════════════════════════════
+    var progressStart = 0;
+    var estimatedTotal = 90000; // ~90s estimated total
 
-    function enableAudio() {
-      if (audioStarted) return;
-      try {
-        startMusic();
-        startVoiceover();
-        audioStarted = true;
-        var btn = document.getElementById('audioEnable');
-        if (btn) btn.classList.add('hidden');
-      } catch (e) {
-        console.error('audio', e);
-      }
+    function updateProgress() {
+      if (!showStarted) return;
+      var elapsed = Date.now() - progressStart;
+      var pct = Math.min(100, (elapsed / estimatedTotal) * 100);
+      var bar = document.getElementById('progress');
+      if (bar) bar.style.width = pct + '%';
+      if (pct < 100) requestAnimationFrame(updateProgress);
     }
 
-    // Start scenes NOW
-    try {
-      sceneStartTime = Date.now();
-      startScenes();
-    } catch (e) {
-      console.error('scenes', e);
-    }
+    // ═════════════════════════════════
+    // Start Show
+    // ═════════════════════════════════
+    function startShow() {
+      if (showStarted) return;
+      showStarted = true;
+      progressStart = Date.now();
 
-    // Audio requires user interaction — listen for any
-    document.addEventListener('click', enableAudio, { once: true });
-    document.addEventListener('keydown', enableAudio, { once: true });
-    document.addEventListener('touchstart', enableAudio, { once: true });
+      var btn = document.getElementById('audioEnable');
+      if (btn) btn.classList.add('hidden');
+
+      startMusic();
+      playSceneAudio(1);
+      requestAnimationFrame(updateProgress);
+    }
   </script>
 </body>
 
