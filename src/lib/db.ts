@@ -181,7 +181,9 @@ export async function dbGetSearchQuota(userId: string, planLimit?: number, custo
   const limit = planLimit ?? DEFAULT_SEARCH_LIMIT;
   const row = await db.execute({ sql: 'SELECT count FROM search_quota WHERE quota_key = ?', args: [key] });
   const used = row.rows.length > 0 ? Number(row.rows[0].count) : 0;
-  return { month, used, remaining: Math.max(0, limit - used), limit };
+  // -1 means unlimited
+  const remaining = limit < 0 ? 999999 : Math.max(0, limit - used);
+  return { month, used, remaining, limit };
 }
 
 export async function dbIncrementSearchQuota(userId: string, amount: number = 1, customKeyOrLimit?: string | number): Promise<{ allowed: boolean; used: number; remaining: number }> {
