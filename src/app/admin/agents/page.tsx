@@ -49,6 +49,7 @@ const AGENT_INFO = [
     { id: 'investor-pipeline', name: 'Investor Pipeline', emoji: '💰', schedule: 'M-F 9am', desc: 'CRM, scoring, outreach' },
     { id: 'content-marketing', name: 'Content Marketing', emoji: '📝', schedule: 'MWF 10am', desc: 'Blog, social, SEO' },
     { id: 'community', name: 'Community', emoji: '🤝', schedule: 'Daily 11am', desc: 'Feedback, power users, insights' },
+    { id: 'instagram', name: 'Instagram @gigliftapp', emoji: '📸', schedule: 'Every 6h', desc: 'Brand posts, publishing, analytics' },
 ];
 
 export default function AdminAgentsDashboard() {
@@ -122,6 +123,7 @@ export default function AdminAgentsDashboard() {
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/admin" className="btn btn-ghost btn-sm">🛡️ Admin</Link>
                     <Link href="/admin/agents" className="btn btn-secondary btn-sm">🤖 Agents</Link>
+                    <Link href="/admin/instagram" className="btn btn-ghost btn-sm">📸 Instagram</Link>
                     <UserButton />
                 </nav>
             </header>
@@ -130,7 +132,7 @@ export default function AdminAgentsDashboard() {
                 <div className="section-header">
                     <div>
                         <h2 className="section-title">🤖 Agent Control Center</h2>
-                        <p className="section-subtitle">Monitor and trigger your 6 autonomous agents</p>
+                        <p className="section-subtitle">Monitor and trigger your 7 autonomous agents</p>
                     </div>
                 </div>
 

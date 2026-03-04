@@ -116,6 +116,7 @@ export default function AdminDashboard() {
                     <Link href="/dashboard" className="btn btn-ghost btn-sm">📊 App</Link>
                     <Link href="/admin" className="btn btn-secondary btn-sm">🛡️ Admin</Link>
                     <Link href="/admin/agents" className="btn btn-ghost btn-sm">🤖 Agents</Link>
+                    <Link href="/admin/instagram" className="btn btn-ghost btn-sm">📸 Instagram</Link>
                     <UserButton />
                 </nav>
             </header>
