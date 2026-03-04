@@ -379,7 +379,7 @@ export default function LeadDetailPage() {
         <>
             <header className="topbar" style={headerStyle}>
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 48, height: 48, borderRadius: 10, filter: logoFilter }} />
+                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: logoFilter }} />
                     <span style={isInstructor ? { color: '#38bdf8' } : undefined}>Lead Detail</span>
                 </Link>
                 <nav className="topbar-nav">

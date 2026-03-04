@@ -149,7 +149,7 @@ export default function DashboardPage() {
             } : undefined}>
                 <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
                     <img src="/logo.png" alt="GigLift" style={{
-                        width: 48, height: 48, borderRadius: 10,
+                        width: 56, height: 56, borderRadius: 12,
                         filter: `drop-shadow(0 0 6px ${accentGlow})`,
                     }} />
                     <span style={activeMode !== 'performer' ? { color: accentColor } : undefined}>GigLift</span>
