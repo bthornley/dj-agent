@@ -49,13 +49,11 @@ export default function InstagramAdminPage() {
     const [editCaption, setEditCaption] = useState('');
     const [editHashtags, setEditHashtags] = useState('');
 
-    const cronSecret = typeof window !== 'undefined' ? '' : '';
-
     const fetchPosts = useCallback(async () => {
         try {
-            const res = await fetch('/api/agents/instagram', {
+            const res = await fetch('/api/admin/instagram', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || ''}` },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'queue', status: filter || undefined, limit: 50 }),
             });
             if (res.ok) {
@@ -74,9 +72,9 @@ export default function InstagramAdminPage() {
     async function handleGenerate() {
         setGenerating(true);
         try {
-            await fetch('/api/agents/instagram', {
+            await fetch('/api/admin/instagram', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || ''}` },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'generate', count: 3 }),
             });
             await fetchPosts();
@@ -88,8 +86,10 @@ export default function InstagramAdminPage() {
     async function handleRunAgent() {
         setRunningAgent(true);
         try {
-            await fetch('/api/agents/instagram', {
-                headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || ''}` },
+            await fetch('/api/admin/instagram', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'run' }),
             });
             await fetchPosts();
         } finally {
@@ -98,9 +98,9 @@ export default function InstagramAdminPage() {
     }
 
     async function handleStatusChange(id: string, newStatus: string) {
-        await fetch('/api/agents/instagram', {
+        await fetch('/api/admin/instagram', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || ''}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'update', id, updates: { status: newStatus } }),
         });
         await fetchPosts();
@@ -108,18 +108,18 @@ export default function InstagramAdminPage() {
 
     async function handleDelete(id: string) {
         if (!confirm('Delete this post?')) return;
-        await fetch('/api/agents/instagram', {
+        await fetch('/api/admin/instagram', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || ''}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'delete', id }),
         });
         await fetchPosts();
     }
 
     async function handleSaveEdit(id: string) {
-        await fetch('/api/agents/instagram', {
+        await fetch('/api/admin/instagram', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || ''}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'update', id, updates: { caption: editCaption, hashtags: editHashtags } }),
         });
         setEditingId(null);
@@ -141,221 +141,195 @@ export default function InstagramAdminPage() {
     const publishedCount = posts.filter(p => p.status === 'published').length;
 
     return (
-        <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <div>
-                    <h1 style={{ fontSize: '28px', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
-                        📸 @gigliftapp Instagram
-                    </h1>
-                    <p style={{ color: 'var(--text-muted)', margin: '4px 0 0' }}>
-                        AI-powered content management for the GigLift brand account
-                    </p>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <Link href="/admin" style={{ padding: '8px 16px', borderRadius: '8px', background: 'var(--card-bg)', color: 'var(--text-muted)', textDecoration: 'none', fontSize: '13px' }}>
-                        ← Admin
-                    </Link>
-                    <button onClick={handleGenerate} disabled={generating} style={{
-                        padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-                        background: generating ? '#555' : 'var(--accent)', color: '#fff', fontWeight: 600, fontSize: '13px',
-                    }}>
-                        {generating ? 'Generating...' : '✨ Generate Posts'}
-                    </button>
-                    <button onClick={handleRunAgent} disabled={runningAgent} style={{
-                        padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--accent)', cursor: 'pointer',
-                        background: 'transparent', color: 'var(--accent)', fontWeight: 600, fontSize: '13px',
-                    }}>
-                        {runningAgent ? 'Running...' : '🤖 Run Agent'}
-                    </button>
-                </div>
-            </div>
+        <>
+            <header className="topbar">
+                <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
+                    <span>GigLift</span>
+                </Link>
+                <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
+                    <Link href="/admin" className="btn btn-ghost btn-sm">🛡️ Admin</Link>
+                    <Link href="/admin/agents" className="btn btn-ghost btn-sm">🤖 Agents</Link>
+                    <Link href="/admin/instagram" className="btn btn-secondary btn-sm">📸 Instagram</Link>
+                </nav>
+            </header>
 
-            {/* Stats Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '24px' }}>
-                {[
-                    { label: 'Drafts', value: draftCount, color: '#94a3b8' },
-                    { label: 'Scheduled', value: scheduledCount, color: '#38bdf8' },
-                    { label: 'Published', value: publishedCount, color: '#a855f7' },
-                    { label: 'Total Reach', value: totalReach.toLocaleString(), color: '#22c55e' },
-                    { label: 'Impressions', value: totalImpressions.toLocaleString(), color: '#f59e0b' },
-                    { label: 'Engagement', value: totalEngagement.toLocaleString(), color: '#ef4444' },
-                ].map(stat => (
-                    <div key={stat.label} style={{
-                        background: 'var(--card-bg)', borderRadius: '12px', padding: '16px',
-                        border: '1px solid var(--border-color)',
-                    }}>
-                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{stat.label}</div>
-                        <div style={{ fontSize: '24px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+            <main className="main-content fade-in">
+                <div className="section-header">
+                    <div>
+                        <h2 className="section-title">📸 @gigliftapp Instagram</h2>
+                        <p className="section-subtitle">AI-powered content management for the GigLift brand account</p>
                     </div>
-                ))}
-            </div>
-
-            {/* Filter Tabs */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                {['', 'draft', 'approved', 'scheduled', 'published', 'failed'].map(s => (
-                    <button
-                        key={s}
-                        onClick={() => { setFilter(s); setLoading(true); }}
-                        style={{
-                            padding: '6px 14px', borderRadius: '20px', border: 'none', cursor: 'pointer',
-                            background: filter === s ? 'var(--accent)' : 'var(--card-bg)',
-                            color: filter === s ? '#fff' : 'var(--text-muted)',
-                            fontSize: '12px', fontWeight: 600,
-                        }}
-                    >
-                        {s ? STATUS_LABELS[s]?.label || s : '📋 All'}
-                    </button>
-                ))}
-            </div>
-
-            {/* Posts Grid */}
-            {loading ? (
-                <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>Loading posts...</div>
-            ) : posts.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
-                    <p style={{ fontSize: '18px' }}>No posts yet</p>
-                    <p>Click &quot;Generate Posts&quot; to create AI-generated content</p>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={handleGenerate} disabled={generating} className="btn btn-primary btn-sm">
+                            {generating ? '⏳ Generating...' : '✨ Generate Posts'}
+                        </button>
+                        <button onClick={handleRunAgent} disabled={runningAgent} className="btn btn-ghost btn-sm">
+                            {runningAgent ? '⏳ Running...' : '🤖 Run Agent'}
+                        </button>
+                    </div>
                 </div>
-            ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '16px' }}>
-                    {posts.map(post => (
-                        <div key={post.id} style={{
-                            background: 'var(--card-bg)', borderRadius: '12px', padding: '16px',
-                            border: `1px solid ${PILLAR_COLORS[post.pillar] || 'var(--border-color)'}33`,
-                        }}>
-                            {/* Header */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                    <span style={{
-                                        padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 600,
-                                        background: `${PILLAR_COLORS[post.pillar] || '#666'}22`,
-                                        color: PILLAR_COLORS[post.pillar] || '#666',
-                                    }}>
-                                        {post.pillar}
-                                    </span>
-                                    <span style={{
-                                        padding: '2px 8px', borderRadius: '12px', fontSize: '10px',
-                                        color: STATUS_LABELS[post.status]?.color || '#999',
-                                    }}>
-                                        {STATUS_LABELS[post.status]?.label || post.status}
-                                    </span>
-                                </div>
-                                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                                    {new Date(post.created_at).toLocaleDateString()}
-                                </span>
-                            </div>
 
-                            {/* Caption */}
-                            {editingId === post.id ? (
-                                <div>
-                                    <textarea
-                                        value={editCaption}
-                                        onChange={e => setEditCaption(e.target.value)}
-                                        style={{
-                                            width: '100%', minHeight: '120px', padding: '8px', borderRadius: '8px',
-                                            background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
-                                            color: 'var(--text-primary)', fontSize: '12px', resize: 'vertical',
-                                        }}
-                                    />
-                                    <input
-                                        value={editHashtags}
-                                        onChange={e => setEditHashtags(e.target.value)}
-                                        placeholder="Hashtags"
-                                        style={{
-                                            width: '100%', padding: '6px 8px', borderRadius: '6px', marginTop: '6px',
-                                            background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
-                                            color: 'var(--accent)', fontSize: '11px',
-                                        }}
-                                    />
-                                    <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
-                                        <button onClick={() => handleSaveEdit(post.id)} style={{
-                                            padding: '4px 12px', borderRadius: '6px', border: 'none',
-                                            background: 'var(--accent)', color: '#fff', fontSize: '11px', cursor: 'pointer',
-                                        }}>Save</button>
-                                        <button onClick={() => setEditingId(null)} style={{
-                                            padding: '4px 12px', borderRadius: '6px', border: '1px solid var(--border-color)',
-                                            background: 'transparent', color: 'var(--text-muted)', fontSize: '11px', cursor: 'pointer',
-                                        }}>Cancel</button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <p style={{
-                                        fontSize: '12px', lineHeight: '1.5', color: 'var(--text-primary)',
-                                        whiteSpace: 'pre-wrap', marginBottom: '6px',
-                                        maxHeight: '120px', overflow: 'hidden',
-                                    }}>
-                                        {post.caption}
-                                    </p>
-                                    {post.hashtags && (
-                                        <p style={{ fontSize: '11px', color: 'var(--accent)', marginBottom: '8px' }}>
-                                            {post.hashtags}
-                                        </p>
-                                    )}
-                                </>
-                            )}
-
-                            {/* Analytics (if published) */}
-                            {post.status === 'published' && (
-                                <div style={{
-                                    display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px',
-                                    marginTop: '8px', padding: '8px', borderRadius: '8px',
-                                    background: 'rgba(168, 85, 247, 0.05)',
-                                }}>
-                                    {[
-                                        { label: 'Reach', value: post.reach },
-                                        { label: 'Likes', value: post.likes },
-                                        { label: 'Comments', value: post.comments },
-                                        { label: 'Saves', value: post.saves },
-                                        { label: 'Shares', value: post.shares },
-                                        { label: 'Impr.', value: post.impressions },
-                                    ].map(m => (
-                                        <div key={m.label} style={{ textAlign: 'center' }}>
-                                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--accent)' }}>{m.value}</div>
-                                            <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{m.label}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Permalink */}
-                            {post.ig_permalink && (
-                                <a href={post.ig_permalink} target="_blank" rel="noopener noreferrer" style={{
-                                    display: 'block', marginTop: '6px', fontSize: '10px', color: 'var(--accent)',
-                                }}>
-                                    View on Instagram →
-                                </a>
-                            )}
-
-                            {/* Actions */}
-                            {editingId !== post.id && post.status !== 'published' && (
-                                <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
-                                    <button onClick={() => startEdit(post)} style={{
-                                        padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--border-color)',
-                                        background: 'transparent', color: 'var(--text-muted)', fontSize: '10px', cursor: 'pointer',
-                                    }}>✏️ Edit</button>
-                                    {post.status === 'draft' && (
-                                        <button onClick={() => handleStatusChange(post.id, 'approved')} style={{
-                                            padding: '4px 10px', borderRadius: '6px', border: 'none',
-                                            background: '#22c55e22', color: '#22c55e', fontSize: '10px', cursor: 'pointer',
-                                        }}>✅ Approve</button>
-                                    )}
-                                    {(post.status === 'draft' || post.status === 'approved') && (
-                                        <button onClick={() => handleStatusChange(post.id, 'scheduled')} style={{
-                                            padding: '4px 10px', borderRadius: '6px', border: 'none',
-                                            background: '#38bdf822', color: '#38bdf8', fontSize: '10px', cursor: 'pointer',
-                                        }}>📅 Schedule</button>
-                                    )}
-                                    <button onClick={() => handleDelete(post.id)} style={{
-                                        padding: '4px 10px', borderRadius: '6px', border: 'none',
-                                        background: '#ef444422', color: '#ef4444', fontSize: '10px', cursor: 'pointer',
-                                    }}>🗑</button>
-                                </div>
-                            )}
+                {/* Stats Cards */}
+                <div className="admin-stats-grid" style={{ marginBottom: '24px' }}>
+                    {[
+                        { label: 'Drafts', value: draftCount, color: '#94a3b8' },
+                        { label: 'Scheduled', value: scheduledCount, color: '#38bdf8' },
+                        { label: 'Published', value: publishedCount, color: '#a855f7' },
+                        { label: 'Total Reach', value: totalReach.toLocaleString(), color: '#22c55e' },
+                        { label: 'Impressions', value: totalImpressions.toLocaleString(), color: '#f59e0b' },
+                        { label: 'Engagement', value: totalEngagement.toLocaleString(), color: '#ef4444' },
+                    ].map(stat => (
+                        <div key={stat.label} className="admin-stat-card" style={{ borderLeft: `3px solid ${stat.color}` }}>
+                            <div className="admin-stat-value" style={{ color: stat.color }}>{stat.value}</div>
+                            <div className="admin-stat-label">{stat.label}</div>
                         </div>
                     ))}
                 </div>
-            )}
-        </div>
+
+                {/* Filter Tabs */}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                    {['', 'draft', 'approved', 'scheduled', 'published', 'failed'].map(s => (
+                        <button
+                            key={s}
+                            onClick={() => { setFilter(s); setLoading(true); }}
+                            className={`btn btn-sm ${filter === s ? 'btn-secondary' : 'btn-ghost'}`}
+                        >
+                            {s ? STATUS_LABELS[s]?.label || s : '📋 All'}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Posts Grid */}
+                {loading ? (
+                    <div className="empty-state"><div className="spinner" /></div>
+                ) : posts.length === 0 ? (
+                    <div className="empty-state">
+                        <div className="empty-icon">📸</div>
+                        <h3>No posts yet</h3>
+                        <p>Click &quot;Generate Posts&quot; to create AI-generated content</p>
+                    </div>
+                ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '16px' }}>
+                        {posts.map(post => (
+                            <div key={post.id} style={{
+                                background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '16px',
+                                border: `1px solid ${PILLAR_COLORS[post.pillar] || 'rgba(255,255,255,0.08)'}33`,
+                            }}>
+                                {/* Header */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <span className="badge" style={{
+                                            background: `${PILLAR_COLORS[post.pillar] || '#666'}22`,
+                                            color: PILLAR_COLORS[post.pillar] || '#666',
+                                            fontSize: '10px',
+                                        }}>
+                                            {post.pillar}
+                                        </span>
+                                        <span style={{
+                                            fontSize: '10px',
+                                            color: STATUS_LABELS[post.status]?.color || '#999',
+                                        }}>
+                                            {STATUS_LABELS[post.status]?.label || post.status}
+                                        </span>
+                                    </div>
+                                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                                        {new Date(post.created_at).toLocaleDateString()}
+                                    </span>
+                                </div>
+
+                                {/* Caption */}
+                                {editingId === post.id ? (
+                                    <div>
+                                        <textarea
+                                            value={editCaption}
+                                            onChange={e => setEditCaption(e.target.value)}
+                                            className="input"
+                                            style={{ width: '100%', minHeight: '120px', fontSize: '12px', resize: 'vertical' }}
+                                        />
+                                        <input
+                                            value={editHashtags}
+                                            onChange={e => setEditHashtags(e.target.value)}
+                                            placeholder="Hashtags"
+                                            className="input"
+                                            style={{ width: '100%', marginTop: '6px', fontSize: '11px', color: 'var(--accent)' }}
+                                        />
+                                        <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                                            <button onClick={() => handleSaveEdit(post.id)} className="btn btn-primary btn-sm" style={{ fontSize: '11px' }}>Save</button>
+                                            <button onClick={() => setEditingId(null)} className="btn btn-ghost btn-sm" style={{ fontSize: '11px' }}>Cancel</button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p style={{
+                                            fontSize: '12px', lineHeight: '1.5', color: 'var(--text-primary)',
+                                            whiteSpace: 'pre-wrap', marginBottom: '6px',
+                                            maxHeight: '120px', overflow: 'hidden',
+                                        }}>
+                                            {post.caption}
+                                        </p>
+                                        {post.hashtags && (
+                                            <p style={{ fontSize: '11px', color: 'var(--accent)', marginBottom: '8px' }}>
+                                                {post.hashtags}
+                                            </p>
+                                        )}
+                                    </>
+                                )}
+
+                                {/* Analytics (if published) */}
+                                {post.status === 'published' && (
+                                    <div style={{
+                                        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px',
+                                        marginTop: '8px', padding: '8px', borderRadius: '8px',
+                                        background: 'rgba(168, 85, 247, 0.05)',
+                                    }}>
+                                        {[
+                                            { label: 'Reach', value: post.reach },
+                                            { label: 'Likes', value: post.likes },
+                                            { label: 'Comments', value: post.comments },
+                                            { label: 'Saves', value: post.saves },
+                                            { label: 'Shares', value: post.shares },
+                                            { label: 'Impr.', value: post.impressions },
+                                        ].map(m => (
+                                            <div key={m.label} style={{ textAlign: 'center' }}>
+                                                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--accent)' }}>{m.value}</div>
+                                                <div style={{ fontSize: '9px', color: 'var(--text-muted)' }}>{m.label}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Permalink */}
+                                {post.ig_permalink && (
+                                    <a href={post.ig_permalink} target="_blank" rel="noopener noreferrer" style={{
+                                        display: 'block', marginTop: '6px', fontSize: '10px', color: 'var(--accent)',
+                                    }}>
+                                        View on Instagram →
+                                    </a>
+                                )}
+
+                                {/* Actions */}
+                                {editingId !== post.id && post.status !== 'published' && (
+                                    <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
+                                        <button onClick={() => startEdit(post)} className="btn btn-ghost btn-sm" style={{ fontSize: '10px' }}>✏️ Edit</button>
+                                        {post.status === 'draft' && (
+                                            <button onClick={() => handleStatusChange(post.id, 'approved')} className="btn btn-sm"
+                                                style={{ background: '#22c55e22', color: '#22c55e', border: 'none', fontSize: '10px' }}>✅ Approve</button>
+                                        )}
+                                        {(post.status === 'draft' || post.status === 'approved') && (
+                                            <button onClick={() => handleStatusChange(post.id, 'scheduled')} className="btn btn-sm"
+                                                style={{ background: '#38bdf822', color: '#38bdf8', border: 'none', fontSize: '10px' }}>📅 Schedule</button>
+                                        )}
+                                        <button onClick={() => handleDelete(post.id)} className="btn btn-sm"
+                                            style={{ background: '#ef444422', color: '#ef4444', border: 'none', fontSize: '10px' }}>🗑</button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </main>
+        </>
     );
 }

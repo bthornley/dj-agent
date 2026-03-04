@@ -6,6 +6,7 @@ import { getContentQueue, runContentMarketingAgent } from '@/lib/agents/content/
 import { runGrowthOpsAgent } from '@/lib/agents/growth/growth-ops';
 import { runCustomerSuccessAgent } from '@/lib/agents/customer-success/customer-success';
 import { runCommunityAgent } from '@/lib/agents/community/community-agent';
+import { runInstagramAgent } from '@/lib/agents/instagram/instagram-agent';
 
 export const maxDuration = 120;
 
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest) {
             'investor-pipeline': runInvestorPipelineAgent,
             'content-marketing': runContentMarketingAgent,
             'community': runCommunityAgent,
+            'instagram': runInstagramAgent,
         };
 
         const runner = runners[agentId];
