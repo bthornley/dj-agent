@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' blob: data: https: http:",
-            "connect-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://api.stripe.com https://plausible.io https://*.turso.io wss://*.turso.io https://api.openai.com https://*.vercel-storage.com https://*.public.blob.vercel-storage.com",
+            "connect-src 'self' https://*.clerk.dev https://*.clerk.accounts.dev https://api.stripe.com https://plausible.io https://*.turso.io wss://*.turso.io https://api.openai.com https://*.vercel-storage.com https://*.public.blob.vercel-storage.com https://graph.facebook.com",
             "frame-src 'self' https://*.clerk.accounts.dev https://js.stripe.com https://challenges.cloudflare.com",
             "worker-src 'self' blob:",
             "media-src 'self' blob: https://*.vercel-storage.com",
