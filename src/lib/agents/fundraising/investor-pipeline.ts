@@ -218,7 +218,7 @@ Would love 20 minutes to show you the platform in action.
 Best,
 Blake Thornley
 Founder, GigLift
-https://giglift.app`;
+https://giglift.com`;
 
     return `Subject: ${subject}\n\n${body}`;
 }

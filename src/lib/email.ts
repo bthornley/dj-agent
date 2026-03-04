@@ -48,7 +48,7 @@ export async function sendPlanChangeEmail(params: {
     const html = isUpgrade ? `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px; background: #0f0f23; color: #e2e8f0; border-radius: 16px;">
             <div style="text-align: center; margin-bottom: 24px;">
-                <img src="https://giglift.app/logo.png" alt="GigLift" style="width: 64px; height: 64px; border-radius: 12px;" />
+                <img src="https://giglift.com/logo.png" alt="GigLift" style="width: 64px; height: 64px; border-radius: 12px;" />
             </div>
             <h1 style="color: #a78bfa; font-size: 24px; text-align: center; margin-bottom: 8px;">
                 ${planEmoji[newPlan] || '🎉'} You're on ${planNames[newPlan] || newPlan}!
@@ -61,7 +61,7 @@ export async function sendPlanChangeEmail(params: {
                 ${getUpgradeFeatures(newPlan)}
             </div>
             <div style="text-align: center;">
-                <a href="https://giglift.app/dashboard" style="display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #a78bfa, #8b5cf6); color: white; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px;">
+                <a href="https://giglift.com/dashboard" style="display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #a78bfa, #8b5cf6); color: white; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px;">
                     Go to Dashboard →
                 </a>
             </div>
@@ -72,7 +72,7 @@ export async function sendPlanChangeEmail(params: {
     ` : `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px; background: #0f0f23; color: #e2e8f0; border-radius: 16px;">
             <div style="text-align: center; margin-bottom: 24px;">
-                <img src="https://giglift.app/logo.png" alt="GigLift" style="width: 64px; height: 64px; border-radius: 12px;" />
+                <img src="https://giglift.com/logo.png" alt="GigLift" style="width: 64px; height: 64px; border-radius: 12px;" />
             </div>
             <h2 style="color: #e2e8f0; font-size: 20px; text-align: center; margin-bottom: 8px;">
                 Your plan has been updated
@@ -81,7 +81,7 @@ export async function sendPlanChangeEmail(params: {
                 Hey ${firstName || 'there'}, your GigLift plan has changed from ${planNames[oldPlan] || oldPlan} to <strong>${planNames[newPlan] || newPlan}</strong>.
             </p>
             <div style="text-align: center;">
-                <a href="https://giglift.app/pricing" style="display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #a78bfa, #8b5cf6); color: white; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px;">
+                <a href="https://giglift.com/pricing" style="display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #a78bfa, #8b5cf6); color: white; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px;">
                     View Plans →
                 </a>
             </div>
@@ -117,7 +117,7 @@ export async function sendAmbassadorAcceptedEmail(params: {
     const html = `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px; background: #0f0f23; color: #e2e8f0; border-radius: 16px;">
             <div style="text-align: center; margin-bottom: 24px;">
-                <img src="https://giglift.app/logo.png" alt="GigLift" style="width: 64px; height: 64px; border-radius: 12px;" />
+                <img src="https://giglift.com/logo.png" alt="GigLift" style="width: 64px; height: 64px; border-radius: 12px;" />
             </div>
             <h1 style="background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; text-align: center; margin-bottom: 8px;">
                 🌟 Congratulations, ${firstName || artistName}!
@@ -141,7 +141,7 @@ export async function sendAmbassadorAcceptedEmail(params: {
                 No credit card needed — it's on us as a thank you for helping grow the GigLift community. 🙏
             </p>
             <div style="text-align: center; margin-bottom: 16px;">
-                <a href="https://giglift.app/dashboard" style="display: inline-block; padding: 14px 36px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a2e; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px;">
+                <a href="https://giglift.com/dashboard" style="display: inline-block; padding: 14px 36px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a2e; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px;">
                     Start Using Pro Features →
                 </a>
             </div>

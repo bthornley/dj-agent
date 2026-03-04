@@ -67,7 +67,7 @@ export async function GET() {
         return NextResponse.json({
             ambassadorId: userId,
             referralCode: userId,
-            referralLink: `https://giglift.app/?ref=${userId}`,
+            referralLink: `https://giglift.com/?ref=${userId}`,
             stats: {
                 totalReferrals,
                 paidReferrals,

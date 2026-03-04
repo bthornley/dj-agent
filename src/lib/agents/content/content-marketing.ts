@@ -168,7 +168,7 @@ export function generateBlogPost(topic: string, metrics?: DailyMetrics): Content
         ``,
         `## Getting Started`,
         ``,
-        `Sign up free at [giglift.app](https://giglift.app) and deploy your AI agents in under 2 minutes.`,
+        `Sign up free at [giglift.com](https://giglift.com) and deploy your AI agents in under 2 minutes.`,
         ``,
         `---`,
         `*Keywords: ${keywords}*`,
@@ -196,7 +196,7 @@ export function generateTwitterThread(topic: string, metrics?: DailyMetrics): Co
         metrics
             ? `The numbers so far:\n\n👥 ${metrics.totalUsers.toLocaleString()} musicians\n📋 ${metrics.totalLeads.toLocaleString()} leads found\n🔎 ${metrics.totalScansThisMonth} scans this month\n💰 Free tier available`
             : `Join hundreds of musicians already using AI to find their next opportunity.\n\nFree tier available — deploy your agents in 2 minutes.`,
-        `Try it free → giglift.app\n\nYour AI agents are waiting. 🤖`,
+        `Try it free → giglift.com\n\nYour AI agents are waiting. 🤖`,
     ];
 
     return {
@@ -229,7 +229,7 @@ export function generateLinkedInPost(topic: string, metrics?: DailyMetrics): Con
         ``,
         `The future of the creator economy is AI agents handling the business side so creators can focus on creating.`,
         ``,
-        `If you're a musician (or know one), check it out: giglift.app`,
+        `If you're a musician (or know one), check it out: giglift.com`,
         ``,
         `#MusicTech #AI #CreatorEconomy #Startups #Musicians`,
     ].filter(Boolean).join('\n');
