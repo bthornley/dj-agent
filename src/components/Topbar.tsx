@@ -29,17 +29,29 @@ const NAV_ITEMS = [
     { href: '/account', label: 'Account', emoji: '⚙️' },
 ];
 
+const ADMIN_NAV_ITEMS = [
+    { href: '/admin', label: 'Admin', emoji: '🛡️' },
+    { href: '/admin/agents', label: 'Agents', emoji: '🤖' },
+    { href: '/admin/docs', label: 'Docs', emoji: '📄' },
+    { href: '/admin/instagram', label: 'Instagram', emoji: '📸' },
+];
+
 export default function Topbar({ onModeChange }: TopbarProps) {
     const pathname = usePathname();
     const { headerStyle, logoFilter, accentColor, modeConfig } = useAppMode();
+
+    const isOnAdmin = pathname.startsWith('/admin');
 
     const isActive = (href: string) => {
         if (href === '/dashboard') return pathname === '/dashboard';
         if (href === '/leads') return pathname === '/leads' || pathname === '/leads/detail';
         if (href === '/leads/scan') return pathname === '/leads/scan' || pathname === '/leads/seeds';
         if (href === '/social') return pathname.startsWith('/social');
+        if (href === '/admin') return pathname === '/admin';
         return pathname === href || pathname.startsWith(href + '/');
     };
+
+    const navItems = isOnAdmin ? ADMIN_NAV_ITEMS : NAV_ITEMS;
 
     return (
         <header className="topbar" style={headerStyle}>
@@ -64,7 +76,10 @@ export default function Topbar({ onModeChange }: TopbarProps) {
             </Link>
 
             <nav className="topbar-nav" style={{ gap: '6px', alignItems: 'center' }}>
-                {NAV_ITEMS.map(item => (
+                {isOnAdmin && (
+                    <Link href="/dashboard" className="btn btn-ghost btn-sm">📊 App</Link>
+                )}
+                {navItems.map(item => (
                     <Link
                         key={item.href}
                         href={item.href}
