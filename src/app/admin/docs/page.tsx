@@ -70,6 +70,14 @@ const DOCS: Doc[] = [
         description: 'Trademark & patent plan with cost estimates, risk analysis, and implementation timeline.',
         format: 'PPTX',
     },
+    {
+        title: 'Launch Cost Estimate',
+        fileName: 'GigLift_Launch_Cost_Estimate.pptx',
+        category: 'business',
+        icon: '💰',
+        description: 'Third-party service costs by phase: pre-launch, launch, and growth with optimization strategies.',
+        format: 'PPTX',
+    },
     // ── Technical Documents ─────────────────────────────
     {
         title: 'System Architecture',
