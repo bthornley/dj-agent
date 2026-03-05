@@ -1,7 +1,19 @@
 import { getDb } from '@/lib/db';
 import { Client } from '@libsql/client';
 import { getRecentSnapshots, DailyMetrics, generateWeeklyInvestorUpdate } from '@/lib/agents/analytics/analytics-agent';
+import { aiJSON } from '@/lib/ai';
 import { randomUUID as uuid } from 'crypto';
+
+const SERPAPI_BASE = 'https://serpapi.com/search.json';
+
+// Search queries an expert fundraiser would use
+const INVESTOR_SEARCH_QUERIES = [
+    '"music tech" seed investor angel fund 2024 2025',
+    '"creator economy" venture capital pre-seed SaaS',
+    '"entertainment technology" angel investor portfolio music',
+    '"AI SaaS" seed fund music entertainment marketplace',
+    'angel investor "live music" booking technology startup',
+];
 
 // ============================================================
 // Investor Outreach Agent — CRM, Scoring & Outreach
@@ -189,7 +201,7 @@ export function draftPitchEmail(investor: Investor, metrics: DailyMetrics): stri
 
 I'm Blake, founder of GigLift — an AI agent platform that helps musicians find gigs, students, and studio work autonomously.
 
-We've built a crew of 5 AI agents that discover venues, score leads, draft booking emails, build press kits, and plan social content. Musicians deploy their agents and wake up to new opportunities.
+We've built a crew of 7 AI agents that discover venues, score leads, draft booking emails, build press kits, plan social content, create event flyers, and manage the full booking calendar. Musicians deploy their agents and wake up to new opportunities.
 
 **Quick numbers:**
 - ${metrics.totalUsers.toLocaleString()} users across 4 modes (Performer, Instructor, Studio, Touring)
@@ -202,12 +214,14 @@ We're raising a $1M seed round at a $5M pre-money valuation to scale our AI agen
 
 ${investor.firm ? `I noticed ${investor.firm}'s focus on ${investor.sectors || 'technology'} — our approach to autonomous AI agents for a massive fragmented market could be a strong fit.` : ''}
 
-Would love 20 minutes to show you the platform in action.
+I've attached our full pitch deck (co-branded with Bandsintown, our strategic M&A partner) for your review. Would love 20 minutes to walk you through the platform live.
 
 Best,
 Blake Thornley
-Founder, GigLift
-https://giglift.com`;
+Founder & CEO, GigLift
+https://giglift.com
+
+P.S. Pitch deck also available at: https://giglift.com/admin/docs`;
 
     return `Subject: ${subject}\n\n${body}`;
 }
@@ -249,14 +263,195 @@ export async function logOutreach(investorId: string, subject: string, body: str
     });
 }
 
+// ---- Get Outreach Drafts (joined with investor info) ----
+
+export interface OutreachDraft {
+    id: string;
+    investor_name: string;
+    investor_firm: string;
+    investor_email: string;
+    subject: string;
+    body: string;
+    status: string;
+    created_at: string;
+}
+
+export async function getOutreachDrafts(limit: number = 20): Promise<OutreachDraft[]> {
+    const db = await ensureInvestorSchema();
+    const result = await db.execute({
+        sql: `SELECT o.id, i.name as investor_name, i.firm as investor_firm, i.email as investor_email,
+              o.subject, o.body, o.status, o.created_at
+              FROM investor_outreach o
+              JOIN investors i ON o.investor_id = i.id
+              ORDER BY o.created_at DESC
+              LIMIT ?`,
+        args: [limit],
+    });
+    return result.rows.map(row => ({
+        id: String(row.id),
+        investor_name: String(row.investor_name),
+        investor_firm: String(row.investor_firm),
+        investor_email: String(row.investor_email),
+        subject: String(row.subject),
+        body: String(row.body),
+        status: String(row.status),
+        created_at: String(row.created_at),
+    }));
+}
+
+// ---- Internet Search Discovery ----
+
+interface ParsedInvestor {
+    name: string;
+    firm: string;
+    email: string;
+    linkedin: string;
+    stage_preference: string;
+    check_size: string;
+    sectors: string;
+}
+
+async function searchInvestors(query: string): Promise<Array<{ title: string; snippet: string; link: string }>> {
+    const apiKey = process.env.SERPAPI_KEY;
+    if (!apiKey) {
+        console.warn('[investor-agent] SERPAPI_KEY not set, skipping internet search');
+        return [];
+    }
+
+    try {
+        const searchUrl = new URL(SERPAPI_BASE);
+        searchUrl.searchParams.set('q', query);
+        searchUrl.searchParams.set('api_key', apiKey);
+        searchUrl.searchParams.set('engine', 'google');
+        searchUrl.searchParams.set('num', '10');
+        searchUrl.searchParams.set('gl', 'us');
+
+        const res = await fetch(searchUrl.toString(), {
+            headers: { 'Accept': 'application/json' },
+        });
+
+        if (!res.ok) {
+            console.error(`[investor-agent] SerpAPI returned ${res.status}`);
+            return [];
+        }
+
+        const data = await res.json();
+        return (data.organic_results || []).map((r: { title?: string; snippet?: string; link?: string }) => ({
+            title: r.title || '',
+            snippet: r.snippet || '',
+            link: r.link || '',
+        }));
+    } catch (err) {
+        console.error('[investor-agent] Search failed:', err);
+        return [];
+    }
+}
+
+async function parseInvestorsFromResults(
+    results: Array<{ title: string; snippet: string; link: string }>
+): Promise<ParsedInvestor[]> {
+    if (results.length === 0) return [];
+
+    const searchContext = results.map((r, i) =>
+        `[${i + 1}] ${r.title}\n${r.snippet}\nURL: ${r.link}`
+    ).join('\n\n');
+
+    const parsed = await aiJSON<{ investors: ParsedInvestor[] }>(
+        `You are an expert fundraising analyst. Extract investor/VC information from search results.
+Return a JSON object with an "investors" array. For each investor or firm found, extract:
+- name: full name of investor or managing partner
+- firm: fund/firm name
+- email: contact email if visible (empty string if not found)
+- linkedin: LinkedIn URL if visible (empty string if not found)
+- stage_preference: their investment stage (e.g. "pre-seed", "seed", "Series A")
+- check_size: typical check size if mentioned (e.g. "$100K-$500K")
+- sectors: their focus sectors (e.g. "music-tech, SaaS, AI")
+
+Only include entries that are clearly investors, VCs, or angel investors. Skip aggregator sites, news articles, or irrelevant results. If a result mentions a firm but no individual, use the firm name as "name" too.`,
+        `Extract investors from these search results:\n\n${searchContext}`,
+        { maxTokens: 2048, temperature: 0.3 }
+    );
+
+    return parsed?.investors || [];
+}
+
+export async function discoverInvestors(): Promise<{ discovered: number; skipped: number; errors: string[] }> {
+    console.log('[investor-agent] Starting internet search for investors...');
+    const errors: string[] = [];
+    let totalDiscovered = 0;
+    let totalSkipped = 0;
+
+    // Get existing investors to deduplicate
+    const existing = await getInvestors();
+    const existingKeys = new Set(
+        existing.map(i => `${i.name.toLowerCase().trim()}|${i.firm.toLowerCase().trim()}`)
+    );
+
+    // Rotate through search queries (use 2 per run to conserve API calls)
+    const now = new Date();
+    const queryIndex = (now.getDate() * 2) % INVESTOR_SEARCH_QUERIES.length;
+    const queries = [
+        INVESTOR_SEARCH_QUERIES[queryIndex % INVESTOR_SEARCH_QUERIES.length],
+        INVESTOR_SEARCH_QUERIES[(queryIndex + 1) % INVESTOR_SEARCH_QUERIES.length],
+    ];
+
+    for (const query of queries) {
+        try {
+            console.log(`[investor-agent] Searching: "${query.substring(0, 50)}..."`);
+            const results = await searchInvestors(query);
+            const parsed = await parseInvestorsFromResults(results);
+
+            for (const inv of parsed) {
+                const key = `${inv.name.toLowerCase().trim()}|${inv.firm.toLowerCase().trim()}`;
+                if (existingKeys.has(key)) {
+                    totalSkipped++;
+                    continue;
+                }
+                existingKeys.add(key);
+
+                const score = scoreInvestor(inv);
+                await addInvestor({
+                    name: inv.name,
+                    firm: inv.firm,
+                    email: inv.email,
+                    linkedin: inv.linkedin,
+                    stage_preference: inv.stage_preference,
+                    check_size: inv.check_size,
+                    sectors: inv.sectors,
+                    fit_score: score,
+                    status: 'discovered',
+                    notes: `Auto-discovered via web search. Score: ${score}/100`,
+                    last_contacted: '',
+                });
+                totalDiscovered++;
+            }
+
+            // Rate limit between searches
+            await new Promise(r => setTimeout(r, 1500));
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'unknown error';
+            errors.push(`Search failed for "${query.substring(0, 30)}...": ${msg}`);
+            console.error(`[investor-agent] Search error:`, msg);
+        }
+    }
+
+    console.log(`[investor-agent] Discovery complete: ${totalDiscovered} new, ${totalSkipped} duplicates`);
+    return { discovered: totalDiscovered, skipped: totalSkipped, errors };
+}
+
 // ---- Main Agent Entrypoint ----
 
 export async function runInvestorPipelineAgent(): Promise<{
     pipeline: Record<InvestorStatus, number>;
+    newDiscoveries: number;
     newDrafts: number;
     weeklyUpdate: string | null;
 }> {
-    console.log('[investor-agent] Starting pipeline run...');
+    console.log('[investor-agent] Starting outreach run...');
+
+    // 0. Discover new investors from the internet
+    const discovery = await discoverInvestors();
+    console.log(`[investor-agent] Discovered ${discovery.discovered} new investor leads`);
 
     // 1. Score any unscored investors
     const discovered = await getInvestors('discovered');
@@ -301,5 +496,5 @@ export async function runInvestorPipelineAgent(): Promise<{
 
     const pipeline = await getPipelineSummary();
 
-    return { pipeline, newDrafts, weeklyUpdate };
+    return { pipeline, newDiscoveries: discovery.discovered, newDrafts, weeklyUpdate };
 }

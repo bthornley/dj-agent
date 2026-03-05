@@ -40,7 +40,8 @@ interface AgentDashboardData {
     analytics: AnalyticsData | null;
     history: Array<{ date: string; mrr: number; users: number }>;
     pipeline: Record<string, number> | null;
-    investors: Array<{ name: string; firm: string; fit_score: number; status: string }>;
+    investors: Array<{ name: string; firm: string; email: string; linkedin: string; fit_score: number; status: string; last_contacted: string }>;
+    outreachDrafts: Array<{ id: string; investor_name: string; investor_firm: string; investor_email: string; subject: string; body: string; status: string; created_at: string }>;
     contentQueue: Array<{ title: string; content_type: string; platform: string; status: string }>;
     weeklyUpdate: string | null;
     agentRuns: AgentRunLog[];
@@ -78,6 +79,7 @@ export default function AdminAgentsDashboard() {
     const [agentResult, setAgentResult] = useState<string | null>(null);
     const [showUpdate, setShowUpdate] = useState(false);
     const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+    const [expandedDraft, setExpandedDraft] = useState<string | null>(null);
 
 
     async function fetchData() {
@@ -224,21 +226,34 @@ export default function AdminAgentsDashboard() {
 
                                 {/* Investor Table */}
                                 {data.investors.length > 0 && (
-                                    <div className="admin-table-wrap" style={{ marginBottom: '28px' }}>
+                                    <div className="admin-table-wrap" style={{ marginBottom: '16px' }}>
                                         <table className="admin-table">
                                             <thead>
                                                 <tr>
                                                     <th>Investor</th>
                                                     <th>Firm</th>
+                                                    <th>Email</th>
                                                     <th>Score</th>
                                                     <th>Status</th>
+                                                    <th>Last Contact</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {data.investors.map((inv, i) => (
                                                     <tr key={i}>
-                                                        <td style={{ fontWeight: 500 }}>{inv.name}</td>
+                                                        <td style={{ fontWeight: 500 }}>
+                                                            {inv.linkedin ? (
+                                                                <a href={inv.linkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-primary)', textDecoration: 'none' }}>
+                                                                    {inv.name} <span style={{ fontSize: '10px', color: 'var(--accent-cyan)' }}>🔗</span>
+                                                                </a>
+                                                            ) : inv.name}
+                                                        </td>
                                                         <td style={{ color: 'var(--text-muted)' }}>{inv.firm || '—'}</td>
+                                                        <td style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+                                                            {inv.email ? (
+                                                                <a href={`mailto:${inv.email}`} style={{ color: 'var(--accent-cyan)', textDecoration: 'none' }}>{inv.email}</a>
+                                                            ) : '—'}
+                                                        </td>
                                                         <td>
                                                             <span style={{
                                                                 color: inv.fit_score >= 70 ? '#10b981' : inv.fit_score >= 40 ? '#f97316' : 'var(--text-muted)',
@@ -246,15 +261,73 @@ export default function AdminAgentsDashboard() {
                                                             }}>{inv.fit_score}/100</span>
                                                         </td>
                                                         <td>
-                                                            <span className={`badge ${inv.status === 'closed' ? 'badge-approved' : inv.status === 'replied' || inv.status === 'intro_call' ? 'badge-scheduled' : 'badge-draft'}`}>
-                                                                {inv.status.replace('_', ' ')}
+                                                            <span className={`badge ${inv.status === 'closed' ? 'badge-approved' : inv.status === 'replied' || inv.status === 'intro_call' ? 'badge-scheduled' : inv.status === 'outreach_sent' ? 'badge-draft' : 'badge-draft'}`}>
+                                                                {inv.status.replace(/_/g, ' ')}
                                                             </span>
+                                                        </td>
+                                                        <td style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+                                                            {inv.last_contacted ? new Date(inv.last_contacted).toLocaleDateString() : '—'}
                                                         </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
                                     </div>
+                                )}
+
+                                {/* Outreach Drafts */}
+                                {data.outreachDrafts && data.outreachDrafts.length > 0 && (
+                                    <>
+                                        <h4 style={{ color: 'var(--text-primary)', marginBottom: '10px', fontSize: '14px', marginTop: '16px' }}>✉️ Outreach Drafts ({data.outreachDrafts.length})</h4>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '28px' }}>
+                                            {data.outreachDrafts.map(draft => (
+                                                <div key={draft.id} style={{
+                                                    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                                                    borderRadius: '10px', overflow: 'hidden',
+                                                }}>
+                                                    <div
+                                                        style={{ padding: '12px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                                                        onClick={() => setExpandedDraft(expandedDraft === draft.id ? null : draft.id)}
+                                                    >
+                                                        <div>
+                                                            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>
+                                                                {draft.investor_name} {draft.investor_firm && <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>@ {draft.investor_firm}</span>}
+                                                            </div>
+                                                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>📧 {draft.subject}</div>
+                                                        </div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <span className={`badge ${draft.status === 'sent' ? 'badge-scheduled' : draft.status === 'replied' ? 'badge-approved' : 'badge-draft'}`}
+                                                                style={{ fontSize: '10px' }}>
+                                                                {draft.status}
+                                                            </span>
+                                                            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{expandedDraft === draft.id ? '▼' : '▶'}</span>
+                                                        </div>
+                                                    </div>
+                                                    {expandedDraft === draft.id && (
+                                                        <div style={{
+                                                            padding: '0 16px 14px', borderTop: '1px solid rgba(255,255,255,0.06)',
+                                                        }}>
+                                                            {draft.investor_email && (
+                                                                <div style={{ fontSize: '11px', color: 'var(--accent-cyan)', marginTop: '10px', marginBottom: '6px' }}>
+                                                                    To: {draft.investor_email}
+                                                                </div>
+                                                            )}
+                                                            <pre style={{
+                                                                fontSize: '12px', lineHeight: '1.5', color: 'var(--text-secondary)',
+                                                                whiteSpace: 'pre-wrap', margin: 0, padding: '10px',
+                                                                background: 'rgba(0,0,0,0.2)', borderRadius: '8px',
+                                                            }}>
+                                                                {draft.body}
+                                                            </pre>
+                                                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                                                                Created: {new Date(draft.created_at).toLocaleString()}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
                                 )}
                             </>
                         )}

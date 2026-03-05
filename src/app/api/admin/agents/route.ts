@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-guard';
 import { getSnapshot, getRecentSnapshots, generateWeeklyInvestorUpdate, runAnalyticsAgent } from '@/lib/agents/analytics/analytics-agent';
-import { getInvestors, getPipelineSummary, runInvestorPipelineAgent } from '@/lib/agents/fundraising/investor-pipeline';
+import { getInvestors, getPipelineSummary, getOutreachDrafts, runInvestorPipelineAgent } from '@/lib/agents/fundraising/investor-pipeline';
 import { getContentQueue, runContentMarketingAgent } from '@/lib/agents/content/content-marketing';
 import { runGrowthOpsAgent } from '@/lib/agents/growth/growth-ops';
 import { runCustomerSuccessAgent } from '@/lib/agents/customer-success/customer-success';
@@ -35,13 +35,16 @@ export async function GET() {
 
     // Investor Outreach
     let pipeline = null;
-    let investors: Array<{ name: string; firm: string; fit_score: number; status: string }> = [];
+    let investors: Array<{ name: string; firm: string; email: string; linkedin: string; fit_score: number; status: string; last_contacted: string }> = [];
+    let outreachDrafts: Awaited<ReturnType<typeof getOutreachDrafts>> = [];
     try {
         pipeline = await getPipelineSummary();
         const allInvestors = await getInvestors();
-        investors = allInvestors.slice(0, 20).map(i => ({
-            name: i.name, firm: i.firm, fit_score: i.fit_score, status: i.status,
+        investors = allInvestors.slice(0, 30).map(i => ({
+            name: i.name, firm: i.firm, email: i.email, linkedin: i.linkedin,
+            fit_score: i.fit_score, status: i.status, last_contacted: i.last_contacted,
         }));
+        outreachDrafts = await getOutreachDrafts(20);
     } catch (e) { console.error('[admin/agents] investor:', e); }
 
     // Content queue
@@ -73,6 +76,7 @@ export async function GET() {
         history,
         pipeline,
         investors,
+        outreachDrafts,
         contentQueue,
         weeklyUpdate,
         agentRuns,
@@ -169,6 +173,16 @@ function extractSummary(agentId: string, result: unknown): {
                 hasAlerts: alerts.length > 0,
                 alertsCount: alerts.length,
                 actionsCount: 1,
+            };
+        }
+        case 'investor-pipeline': {
+            const discoveries = Number(r?.newDiscoveries) || 0;
+            const drafts = Number(r?.newDrafts) || 0;
+            return {
+                text: `Investor Outreach: ${discoveries} new leads discovered, ${drafts} emails drafted`,
+                hasAlerts: false,
+                alertsCount: 0,
+                actionsCount: discoveries + drafts,
             };
         }
         default: {
