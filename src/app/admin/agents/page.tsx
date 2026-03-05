@@ -384,91 +384,102 @@ export default function AdminAgentsDashboard() {
                             </>
                         )}
 
-                        {/* Agent Activity Log */}
-                        <div id="activity-log">
-                            {data?.agentRuns && data.agentRuns.length > 0 && (
-                                <>
-                                    <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>
-                                        📜 Agent Activity Log
-                                        {selectedAgent && (
-                                            <span style={{ fontSize: '13px', color: 'var(--accent-cyan)', marginLeft: '8px', fontWeight: 400 }}>
-                                                — filtered: {AGENT_INFO.find(a => a.id === selectedAgent)?.name}
-                                                <button
-                                                    onClick={() => setSelectedAgent(null)}
-                                                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', marginLeft: '6px' }}
-                                                >✕ clear</button>
-                                            </span>
-                                        )}
-                                    </h3>
-                                    {/* Filter pills */}
-                                    <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                        {/* Agent Activity Log — always visible */}
+                        <div id="activity-log" style={{ paddingTop: '8px' }}>
+                            <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>
+                                📜 Agent Activity Log
+                                {selectedAgent && (
+                                    <span style={{ fontSize: '13px', color: 'var(--accent-cyan)', marginLeft: '8px', fontWeight: 400 }}>
+                                        — {AGENT_INFO.find(a => a.id === selectedAgent)?.emoji} {AGENT_INFO.find(a => a.id === selectedAgent)?.name}
                                         <button
-                                            className={`badge ${!selectedAgent ? 'badge-approved' : 'badge-draft'}`}
-                                            style={{ cursor: 'pointer', border: 'none', fontSize: '11px' }}
                                             onClick={() => setSelectedAgent(null)}
-                                        >All Agents</button>
-                                        {AGENT_INFO.map(a => (
-                                            <button
-                                                key={a.id}
-                                                className={`badge ${selectedAgent === a.id ? 'badge-scheduled' : 'badge-draft'}`}
-                                                style={{ cursor: 'pointer', border: 'none', fontSize: '11px' }}
-                                                onClick={() => setSelectedAgent(selectedAgent === a.id ? null : a.id)}
-                                            >{a.emoji} {a.name}</button>
-                                        ))}
-                                    </div>
-                                    <div className="admin-table-wrap" style={{ marginBottom: '28px' }}>
-                                        <table className="admin-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Agent</th>
-                                                    <th>Status</th>
-                                                    <th>Summary</th>
-                                                    <th>Alerts</th>
-                                                    <th>Duration</th>
-                                                    <th>Time</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {data.agentRuns
-                                                    .filter(run => !selectedAgent || run.agent_id === selectedAgent)
-                                                    .map((run) => {
-                                                        const statusEmoji = run.status === 'success' ? '🟢' : run.status === 'warning' ? '🟡' : run.status === 'failed' ? '🔴' : '⏳';
-                                                        const statusColor = run.status === 'success' ? '#10b981' : run.status === 'warning' ? '#f97316' : run.status === 'failed' ? '#ef4444' : '#6b7280';
-                                                        return (
-                                                            <tr key={run.id}>
-                                                                <td style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
-                                                                    {run.agent_name}
-                                                                </td>
-                                                                <td>
-                                                                    <span style={{ color: statusColor, fontWeight: 600, fontSize: '12px' }}>
-                                                                        {statusEmoji} {run.status}
+                                            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', marginLeft: '6px' }}
+                                        >✕ clear</button>
+                                    </span>
+                                )}
+                            </h3>
+                            {/* Filter pills */}
+                            <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                                <button
+                                    className={`badge ${!selectedAgent ? 'badge-approved' : 'badge-draft'}`}
+                                    style={{ cursor: 'pointer', border: 'none', fontSize: '11px' }}
+                                    onClick={() => setSelectedAgent(null)}
+                                >All Agents</button>
+                                {AGENT_INFO.map(a => (
+                                    <button
+                                        key={a.id}
+                                        className={`badge ${selectedAgent === a.id ? 'badge-scheduled' : 'badge-draft'}`}
+                                        style={{ cursor: 'pointer', border: 'none', fontSize: '11px' }}
+                                        onClick={() => setSelectedAgent(selectedAgent === a.id ? null : a.id)}
+                                    >{a.emoji} {a.name}</button>
+                                ))}
+                            </div>
+
+                            {data?.agentRuns && data.agentRuns.filter(run => !selectedAgent || run.agent_id === selectedAgent).length > 0 ? (
+                                <div className="admin-table-wrap" style={{ marginBottom: '28px' }}>
+                                    <table className="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Agent</th>
+                                                <th>Status</th>
+                                                <th>Summary</th>
+                                                <th>Alerts</th>
+                                                <th>Duration</th>
+                                                <th>Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {data.agentRuns
+                                                .filter(run => !selectedAgent || run.agent_id === selectedAgent)
+                                                .map((run) => {
+                                                    const statusEmoji = run.status === 'success' ? '🟢' : run.status === 'warning' ? '🟡' : run.status === 'failed' ? '🔴' : '⏳';
+                                                    const statusColor = run.status === 'success' ? '#10b981' : run.status === 'warning' ? '#f97316' : run.status === 'failed' ? '#ef4444' : '#6b7280';
+                                                    return (
+                                                        <tr key={run.id}>
+                                                            <td style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
+                                                                {run.agent_name}
+                                                            </td>
+                                                            <td>
+                                                                <span style={{ color: statusColor, fontWeight: 600, fontSize: '12px' }}>
+                                                                    {statusEmoji} {run.status}
+                                                                </span>
+                                                            </td>
+                                                            <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                                                                {run.error || run.summary || '—'}
+                                                            </td>
+                                                            <td style={{ textAlign: 'center' }}>
+                                                                {run.alerts_count > 0 ? (
+                                                                    <span className="badge" style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316', fontSize: '11px' }}>
+                                                                        {run.alerts_count} ⚠️
                                                                     </span>
-                                                                </td>
-                                                                <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-secondary)', fontSize: '13px' }}>
-                                                                    {run.error || run.summary || '—'}
-                                                                </td>
-                                                                <td style={{ textAlign: 'center' }}>
-                                                                    {run.alerts_count > 0 ? (
-                                                                        <span className="badge" style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316', fontSize: '11px' }}>
-                                                                            {run.alerts_count} ⚠️
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
-                                                                    )}
-                                                                </td>
-                                                                <td style={{ color: 'var(--text-muted)', fontSize: '12px', whiteSpace: 'nowrap' }}>
-                                                                    {run.duration_ms ? `${(run.duration_ms / 1000).toFixed(1)}s` : '...'}
-                                                                </td>
-                                                                <td style={{ color: 'var(--text-muted)', fontSize: '12px', whiteSpace: 'nowrap' }}>
-                                                                    {run.started_at ? new Date(run.started_at + 'Z').toLocaleString() : '—'}
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    })}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </>
+                                                                ) : (
+                                                                    <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                                                                )}
+                                                            </td>
+                                                            <td style={{ color: 'var(--text-muted)', fontSize: '12px', whiteSpace: 'nowrap' }}>
+                                                                {run.duration_ms ? `${(run.duration_ms / 1000).toFixed(1)}s` : '...'}
+                                                            </td>
+                                                            <td style={{ color: 'var(--text-muted)', fontSize: '12px', whiteSpace: 'nowrap' }}>
+                                                                {run.started_at ? new Date(run.started_at + 'Z').toLocaleString() : '—'}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div style={{
+                                    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                                    borderRadius: '12px', padding: '32px', textAlign: 'center', marginBottom: '28px',
+                                }}>
+                                    <div style={{ fontSize: '32px', marginBottom: '8px' }}>📜</div>
+                                    <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: 0 }}>
+                                        {selectedAgent
+                                            ? `No activity logs for ${AGENT_INFO.find(a => a.id === selectedAgent)?.name || selectedAgent} yet. Click "▶ Run Now" above to trigger a run.`
+                                            : 'No agent activity logs yet. Run an agent above to generate your first log entry.'}
+                                    </p>
+                                </div>
                             )}
                         </div>
                         {/* No data state */}
