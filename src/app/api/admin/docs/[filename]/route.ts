@@ -16,6 +16,7 @@ const ALLOWED_FILES: Record<string, string> = {
     'GigLift_IP_Strategy.pptx': 'business',
     'GigLift_Launch_Cost_Estimate.pptx': 'business',
     'GigLift_Year1_Financial_Plan.pptx': 'business',
+    'Bandsintown_x_GigLift_MA_Deck.pptx': 'business',
     // Tech docs
     'GigLift_Architecture.pptx': 'tech',
     'GigLift_Data_Dictionary.pptx': 'tech',

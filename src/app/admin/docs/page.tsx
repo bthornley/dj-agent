@@ -86,6 +86,14 @@ const DOCS: Doc[] = [
         description: 'Projected revenue, costs, P&L, cash flow, break-even analysis, and risk assessment for Year 1.',
         format: 'PPTX',
     },
+    {
+        title: 'Bandsintown × GigLift M&A Deck',
+        fileName: 'Bandsintown_x_GigLift_MA_Deck.pptx',
+        category: 'business',
+        icon: '🤝',
+        description: 'Strategic acquisition proposal: synergies, valuation, deal structure, and integration roadmap.',
+        format: 'PPTX',
+    },
     // ── Technical Documents ─────────────────────────────
     {
         title: 'System Architecture',
