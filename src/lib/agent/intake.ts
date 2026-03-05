@@ -1,5 +1,6 @@
 import { Event, IntakeResult, ScheduleMoment, EventType } from '../types';
 import { v4 as uuid } from 'uuid';
+import { aiJSON } from '../ai';
 
 // ============================================================
 // Intake Module — Parse raw inquiry text into structured Event
@@ -216,5 +217,102 @@ export function parseInquiry(rawText: string): IntakeResult {
         event,
         missingFields,
         questions: topQuestions,
+    };
+}
+
+// ---- AI-powered intake parsing ----
+
+interface AIIntakeResult {
+    clientName?: string;
+    org?: string;
+    email?: string;
+    phone?: string;
+    date?: string;           // YYYY-MM-DD
+    startTime?: string;      // HH:MM AM/PM
+    endTime?: string;
+    setupTime?: string;
+    venueName?: string;
+    address?: string;
+    attendanceEstimate?: number;
+    eventType?: string;
+    indoorOutdoor?: string;
+    vibeDescription?: string;
+    budgetRange?: string;
+    loadInNotes?: string;
+    scheduleMoments?: Array<{ time: string; moment: string }>;
+    followUpQuestions: string[];
+}
+
+export async function parseInquiryAI(rawText: string): Promise<IntakeResult | null> {
+    const system = `You are an expert event intake specialist for a DJ/music performance booking service. Parse client inquiry messages into structured data. Extract every piece of information available, infer what you can from context, and identify what's missing. Return JSON.`;
+
+    const user = `Parse this inquiry into structured event data.
+
+## Inquiry Text
+${rawText.substring(0, 2000)}
+
+Extract the following fields (set to null if not found):
+- clientName: Full name of the person reaching out
+- org: Organization/company name if mentioned
+- email: Email address
+- phone: Phone number
+- date: Event date in YYYY-MM-DD format
+- startTime: Start time (e.g. "7:00 PM")
+- endTime: End time
+- setupTime: Load-in/setup time
+- venueName: Venue or location name
+- address: Full street address
+- attendanceEstimate: Number of expected guests (integer)
+- eventType: One of: wedding, corporate, charity, birthday, after_party, concert, festival, other
+- indoorOutdoor: "indoor", "outdoor", or "both"
+- vibeDescription: Description of the mood/theme/style they want
+- budgetRange: Budget mentioned (e.g. "$1,500 - $2,000")
+- loadInNotes: Parking, elevator, stairs, access notes
+- scheduleMoments: Array of { time, moment } for key timeline items
+- followUpQuestions: 3-5 specific follow-up questions to ask for missing critical info (date, venue details, attendance, mic needs, power availability)
+
+Return JSON matching this structure exactly.`;
+
+    const result = await aiJSON<AIIntakeResult>(system, user, { maxTokens: 1000, temperature: 0.3 });
+    if (!result) return null;
+
+    const event: Partial<Event> = {
+        id: uuid(),
+        status: 'inquiry',
+        rawInquiry: rawText.trim(),
+        clientName: result.clientName || '',
+        org: result.org || '',
+        email: result.email || '',
+        phone: result.phone || '',
+        date: result.date || '',
+        startTime: result.startTime || '',
+        endTime: result.endTime || '',
+        setupTime: result.setupTime || '',
+        venueName: result.venueName || '',
+        address: result.address || '',
+        attendanceEstimate: result.attendanceEstimate || 0,
+        eventType: (result.eventType as EventType) || 'other',
+        indoorOutdoor: (result.indoorOutdoor as Event['indoorOutdoor']) || '',
+        vibeDescription: result.vibeDescription || '',
+        budgetRange: result.budgetRange || '',
+        loadInNotes: result.loadInNotes || '',
+        scheduleMoments: (result.scheduleMoments || []).map(m => ({ time: m.time, moment: m.moment, notes: '' })),
+        deliverables: [],
+        inventoryRequired: [],
+        risks: [],
+        questions: result.followUpQuestions || [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    };
+
+    const missingFields: string[] = [];
+    if (!event.date) missingFields.push('date');
+    if (!event.venueName && !event.address) missingFields.push('address');
+    if (!event.attendanceEstimate) missingFields.push('attendanceEstimate');
+
+    return {
+        event,
+        missingFields,
+        questions: (result.followUpQuestions || []).slice(0, 5),
     };
 }

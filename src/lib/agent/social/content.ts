@@ -1,5 +1,6 @@
 import { SocialPost, BrandProfile, Event, ContentPillar } from '../../types';
 import { v4 as uuid } from 'uuid';
+import { aiJSON } from '../../ai';
 
 // ============================================================
 // Content Agent — The Editor
@@ -67,19 +68,113 @@ const HASHTAG_POOLS: Record<ContentPillar, string[]> = {
 /**
  * Fill in a post shell with content (hook, caption, hashtags, CTA).
  * Returns two variants (A/B) for testing.
+ * Tries AI first, falls back to templates.
  */
-export function generatePostContent(
+export async function generatePostContent(
     post: SocialPost,
     brand: BrandProfile | null,
     event?: Event | null,
-): { variantA: SocialPost; variantB: SocialPost } {
+): Promise<{ variantA: SocialPost; variantB: SocialPost }> {
     const now = new Date().toISOString();
     const pairId = uuid();
 
+    // Try AI-powered generation
+    const aiResult = await generatePostContentAI(post, brand, event);
+    if (aiResult) {
+        return {
+            variantA: {
+                ...post,
+                id: post.id,
+                hookText: aiResult.variantA.hookText,
+                caption: aiResult.variantA.caption,
+                hashtags: aiResult.variantA.hashtags,
+                cta: aiResult.variantA.cta,
+                status: 'draft',
+                variant: 'A',
+                variantPairId: pairId,
+                updatedAt: now,
+            },
+            variantB: {
+                ...post,
+                id: uuid(),
+                hookText: aiResult.variantB.hookText,
+                caption: aiResult.variantB.caption,
+                hashtags: aiResult.variantB.hashtags,
+                cta: aiResult.variantB.cta,
+                status: 'draft',
+                variant: 'B',
+                variantPairId: pairId,
+                updatedAt: now,
+            },
+        };
+    }
+
+    // Fallback to templates
     const variantA = fillContent(post, brand, event, 'A', 0, pairId, now);
     const variantB = fillContent(post, brand, event, 'B', 1, pairId, now);
 
     return { variantA, variantB };
+}
+
+// ---- AI-powered content generation ----
+
+interface AIPostContent {
+    variantA: { hookText: string; caption: string; hashtags: string[]; cta: string };
+    variantB: { hookText: string; caption: string; hashtags: string[]; cta: string };
+}
+
+async function generatePostContentAI(
+    post: SocialPost,
+    brand: BrandProfile | null,
+    event?: Event | null,
+): Promise<AIPostContent | null> {
+    const pillarLabel = post.pillar.replace(/_/g, ' ');
+    const platformLabel = post.platform === 'both' ? 'Instagram & Facebook' : post.platform;
+
+    const brandCtx = brand ? [
+        brand.djName ? `Artist: ${brand.djName}` : '',
+        brand.vibeWords?.length ? `Vibe: ${brand.vibeWords.join(', ')}` : '',
+        brand.locations?.length ? `Based in: ${brand.locations.join(', ')}` : '',
+        brand.emojis?.length ? `Emojis they use: ${brand.emojis.join(' ')}` : '',
+        brand.voiceExamples?.length ? `Voice examples: ${brand.voiceExamples.slice(0, 2).join(' | ')}` : '',
+        brand.profanityLevel ? `Profanity level: ${brand.profanityLevel}` : '',
+    ].filter(Boolean).join('\n') : '';
+
+    const eventCtx = event ? [
+        `Event: ${event.clientName || event.venueName || 'Upcoming event'}`,
+        event.date ? `Date: ${event.date}` : '',
+        event.venueName ? `Venue: ${event.venueName}` : '',
+        event.startTime ? `Time: ${event.startTime}${event.endTime ? ` – ${event.endTime}` : ''}` : '',
+        event.vibeDescription ? `Vibe: ${event.vibeDescription}` : '',
+    ].filter(Boolean).join('\n') : '';
+
+    const system = `You are a social media content strategist for a DJ/music artist. Write engaging, scroll-stopping content that feels authentic to the artist's voice. Never use generic filler. Every caption should make someone stop scrolling. Return JSON.`;
+
+    const user = `Generate 2 A/B test variants for a ${post.postType} on ${platformLabel}.
+
+Content pillar: ${pillarLabel}
+${brandCtx ? `\n## Artist\n${brandCtx}` : ''}
+${eventCtx ? `\n## Event\n${eventCtx}` : ''}
+
+For EACH variant, generate:
+- hookText: The opening 1-2 lines that stop the scroll (10-20 words)
+- caption: Full caption including the hook (${post.postType === 'story' ? '20-40 words' : '40-80 words'})
+- hashtags: 8-12 relevant hashtags (mix of niche + broad)
+- cta: A call-to-action (5-10 words)
+
+Rules:
+- Variant A should be bold/direct, variant B should be more conversational
+- Use emojis naturally (not excessively)
+- ${brand?.profanityLevel === 'none' ? 'Keep it clean, no profanity' : 'Mild slang is OK'}
+- Reference specific details (venue, city, event) when available
+- Hashtags should include location tags if a city is known
+
+Return JSON: {
+  "variantA": { "hookText": "...", "caption": "...", "hashtags": ["#..."], "cta": "..." },
+  "variantB": { "hookText": "...", "caption": "...", "hashtags": ["#..."], "cta": "..." }
+}`;
+
+    return await aiJSON<AIPostContent>(system, user, { maxTokens: 800, temperature: 0.9 });
 }
 
 /**

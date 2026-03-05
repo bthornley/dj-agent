@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     const allPosts = [];
     for (const post of posts) {
         const event = post.eventId ? events.find(e => e.id === post.eventId) : null;
-        const { variantA, variantB } = generatePostContent(post, brand, event);
+        const { variantA, variantB } = await generatePostContent(post, brand, event);
         allPosts.push(variantA);
         // Only include B variant for reels and carousels (not stories)
         if (post.postType === 'reel' || post.postType === 'carousel') {

@@ -1,4 +1,5 @@
 import { BrandProfile, EPKConfig } from '../types';
+import { aiJSON } from '../ai';
 
 // ============================================================
 // EPK Writer — AI Content Generator
@@ -60,7 +61,7 @@ function storytellingBio(brand: BrandProfile): string {
     return parts.join(' ');
 }
 
-export function generateBioVariants(brand: BrandProfile): EPKContentVariant[] {
+export function generateBioVariantsTemplate(brand: BrandProfile): EPKContentVariant[] {
     return [
         { style: 'Professional', text: professionalBio(brand) },
         { style: 'Casual', text: casualBio(brand) },
@@ -68,9 +69,53 @@ export function generateBioVariants(brand: BrandProfile): EPKContentVariant[] {
     ];
 }
 
+// ---- AI-powered bio generation ----
+
+interface AIBioSet {
+    variants: Array<{ style: string; text: string }>;
+}
+
+export async function generateBioVariants(brand: BrandProfile): Promise<EPKContentVariant[]> {
+    const brandCtx = [
+        brand.djName ? `Artist name: ${brand.djName}` : '',
+        brand.vibeWords?.length ? `Vibe: ${brand.vibeWords.join(', ')}` : '',
+        brand.locations?.length ? `Based in: ${brand.locations.join(', ')}` : '',
+        brand.typicalVenues?.length ? `Past venues: ${brand.typicalVenues.join(', ')}` : '',
+        brand.bio ? `Existing bio: ${brand.bio.substring(0, 300)}` : '',
+        brand.emojis?.length ? `Emojis they use: ${brand.emojis.join(' ')}` : '',
+        brand.connectedAccounts?.length ? `Platforms: ${brand.connectedAccounts.map(a => a.platform).join(', ')}` : '',
+    ].filter(Boolean).join('\n');
+
+    const system = `You are an expert music industry copywriter who writes compelling artist bios for Electronic Press Kits (EPKs). Write authentic, engaging bios that capture the artist's unique identity. Never use clichés like "spinning tracks" or "dropping beats". Return JSON.`;
+
+    const user = `Write 3 bio variants for this artist's EPK.
+
+## Artist Profile
+${brandCtx}
+
+Generate exactly 3 bios:
+1. "Professional" — Third-person, polished, suitable for press releases and booking agents (150-200 words)
+2. "Casual" — First-person, conversational, with personality. Great for social media bios (80-120 words)
+3. "Storytelling" — Third-person narrative arc, emotionally engaging, tells their journey (150-200 words)
+
+Each bio must:
+- Feel genuinely human and original
+- Reference specific details from their profile (venues, locations, vibe)
+- Avoid generic DJ clichés
+- Match the energy/vibe of the artist
+
+Return JSON: { "variants": [{ "style": "Professional"|"Casual"|"Storytelling", "text": "..." }] }`;
+
+    const result = await aiJSON<AIBioSet>(system, user, { maxTokens: 1200, temperature: 0.85 });
+    if (result?.variants?.length) {
+        return result.variants.map(v => ({ style: v.style, text: v.text }));
+    }
+    return generateBioVariantsTemplate(brand);
+}
+
 // ---- Tagline generators ----
 
-export function generateTaglineVariants(brand: BrandProfile): EPKContentVariant[] {
+export function generateTaglineVariantsTemplate(brand: BrandProfile): EPKContentVariant[] {
     const name = brand.djName || 'Artist';
     const vibes = brand.vibeWords || [];
     const locations = brand.locations || [];
@@ -98,6 +143,46 @@ export function generateTaglineVariants(brand: BrandProfile): EPKContentVariant[
     taglines.push({ style: 'Energy', text: `${emojis[0]} Every set tells a story. Let ${name} write yours.` });
 
     return taglines;
+}
+
+// ---- AI-powered tagline generation ----
+
+interface AITaglineSet {
+    taglines: Array<{ style: string; text: string }>;
+}
+
+export async function generateTaglineVariants(brand: BrandProfile): Promise<EPKContentVariant[]> {
+    const brandCtx = [
+        brand.djName ? `Artist: ${brand.djName}` : '',
+        brand.vibeWords?.length ? `Vibe: ${brand.vibeWords.join(', ')}` : '',
+        brand.locations?.length ? `Based in: ${brand.locations.join(', ')}` : '',
+        brand.emojis?.length ? `Emojis: ${brand.emojis.join(' ')}` : '',
+    ].filter(Boolean).join('\n');
+
+    const system = `You are a branding expert who writes punchy, memorable taglines for music artists. Think Nike "Just Do It" level — short, bold, sticky. Return JSON.`;
+
+    const user = `Write 3 tagline variants for this artist's EPK.
+
+## Artist Profile
+${brandCtx}
+
+Generate exactly 3 taglines:
+1. "Vibe" — Captures their musical identity and energy (5-10 words)
+2. "Local" — Ties to their city/region (5-10 words)
+3. "Energy" — Describes the experience of seeing them live (5-10 words)
+
+Taglines must be:
+- Punchy and memorable
+- Original (no clichés like "feel the beat")
+- Can include one emoji if it fits naturally
+
+Return JSON: { "taglines": [{ "style": "Vibe"|"Local"|"Energy", "text": "..." }] }`;
+
+    const result = await aiJSON<AITaglineSet>(system, user, { maxTokens: 300, temperature: 0.9 });
+    if (result?.taglines?.length) {
+        return result.taglines.map(t => ({ style: t.style, text: t.text }));
+    }
+    return generateTaglineVariantsTemplate(brand);
 }
 
 // ---- Section intro generators ----

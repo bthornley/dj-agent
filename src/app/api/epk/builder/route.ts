@@ -56,9 +56,9 @@ export async function POST(request: NextRequest) {
         }
 
         if (type === 'bio') {
-            return NextResponse.json({ variants: generateBioVariants(brand) });
+            return NextResponse.json({ variants: await generateBioVariants(brand) });
         } else if (type === 'tagline') {
-            return NextResponse.json({ variants: generateTaglineVariants(brand) });
+            return NextResponse.json({ variants: await generateTaglineVariants(brand) });
         } else {
             return NextResponse.json({ error: 'Invalid type — use "bio" or "tagline"' }, { status: 400 });
         }

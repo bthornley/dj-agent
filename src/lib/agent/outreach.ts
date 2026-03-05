@@ -1,4 +1,5 @@
 import { Lead, BrandProfile, ArtistType } from '../types';
+import { aiJSON } from '../ai';
 
 // ============================================================
 // Outreach Agent — Email Drafter
@@ -256,17 +257,103 @@ function followUpEmail(lead: Lead, brand: BrandProfile | null, ctx: ArtistContex
 
 // ---- Main entry point ----
 
-export function generateOutreachEmails(lead: Lead, brand: BrandProfile | null, artistType: ArtistType = 'dj', specialties?: string[]): OutreachResult {
+// ---- AI-powered email generation ----
+
+interface AIEmailSet {
+    emails: Array<{
+        variant: 'formal' | 'casual' | 'follow_up';
+        subject: string;
+        body: string;
+    }>;
+}
+
+async function generateOutreachEmailsAI(
+    lead: Lead,
+    brand: BrandProfile | null,
+    artistType: ArtistType = 'dj',
+    specialties?: string[],
+): Promise<OutreachEmail[] | null> {
+    const artistLabel = artistType.replace(/_/g, ' ');
+    const brandInfo = brand ? [
+        brand.djName ? `Artist name: ${brand.djName}` : '',
+        brand.vibeWords?.length ? `Style/Vibe: ${brand.vibeWords.join(', ')}` : '',
+        brand.locations?.length ? `Based in: ${brand.locations.join(', ')}` : '',
+        brand.bio ? `Bio: ${brand.bio.substring(0, 200)}` : '',
+        brand.typicalVenues?.length ? `Past venues: ${brand.typicalVenues.join(', ')}` : '',
+    ].filter(Boolean).join('\n') : 'No brand profile available';
+
+    const venueInfo = [
+        `Venue: ${lead.entity_name}`,
+        lead.city ? `City: ${lead.city}` : '',
+        lead.entity_type ? `Type: ${lead.entity_type.replace(/_/g, ' ')}` : '',
+        lead.contact_name ? `Contact: ${lead.contact_name}` : '',
+        lead.music_fit_tags?.length ? `Music vibe: ${lead.music_fit_tags.join(', ')}` : '',
+        lead.event_types_seen?.length ? `Events they host: ${lead.event_types_seen.join(', ')}` : '',
+        lead.capacity_estimate ? `Capacity: ~${lead.capacity_estimate}` : '',
+        lead.notes ? `Notes: ${lead.notes}` : '',
+    ].filter(Boolean).join('\n');
+
+    const specialtiesInfo = specialties?.length ? `Specialties: ${specialties.join(', ')}` : '';
+
+    const system = `You are an expert cold-outreach copywriter for a ${artistLabel}. Write booking inquiry emails that feel personal, reference specific venue details, and sound human — never generic or spammy. Each email must feel like it was hand-written for THIS specific venue. Return JSON.`;
+
+    const user = `Write 3 outreach email variants for this ${artistLabel} to send to a venue.
+
+## Artist Profile
+${brandInfo}
+${specialtiesInfo}
+
+## Venue Details
+${venueInfo}
+
+Generate exactly 3 emails:
+1. "formal" — Professional, concise, suitable for corporate or upscale venues
+2. "casual" — Friendly, conversational, with personality and maybe an emoji
+3. "follow_up" — Brief follow-up assuming no response to initial outreach
+
+Each email must:
+- Have a unique, compelling subject line (not generic like "DJ Services Inquiry")
+- Reference something specific about the venue (their events, vibe, neighborhood)
+- Include the artist's name and relevant experience
+- End with a clear call-to-action
+- Be 100-200 words for formal/casual, 50-100 words for follow-up
+
+Return JSON: { "emails": [{ "variant": "formal"|"casual"|"follow_up", "subject": "...", "body": "..." }] }`;
+
+    const result = await aiJSON<AIEmailSet>(system, user, { maxTokens: 1500, temperature: 0.85 });
+    if (!result?.emails?.length) return null;
+
+    return result.emails.map(e => ({
+        variant: e.variant,
+        subject: e.subject,
+        body: e.body,
+    }));
+}
+
+// ---- Main entry point ----
+
+export async function generateOutreachEmails(
+    lead: Lead,
+    brand: BrandProfile | null,
+    artistType: ArtistType = 'dj',
+    specialties?: string[],
+): Promise<OutreachResult> {
+    // Try AI-powered generation first
+    const aiEmails = await generateOutreachEmailsAI(lead, brand, artistType, specialties);
+
+    // Fall back to templates if AI is unavailable
     const ctx = getArtistContext(artistType, brand);
+    const emails = aiEmails || [
+        formalEmail(lead, brand, ctx, specialties),
+        casualEmail(lead, brand, ctx, specialties),
+        followUpEmail(lead, brand, ctx),
+    ];
+
     return {
         leadId: lead.lead_id,
         venueName: lead.entity_name,
         contactName: lead.contact_name || '',
         contactEmail: lead.email || '',
-        emails: [
-            formalEmail(lead, brand, ctx, specialties),
-            casualEmail(lead, brand, ctx, specialties),
-            followUpEmail(lead, brand, ctx),
-        ],
+        emails,
     };
 }

@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
             specialties = Array.isArray(meta.specialties) ? meta.specialties as string[] : [];
         } catch { /* fallback to dj */ }
 
-        const result = generateOutreachEmails(lead, brand, artistType, specialties);
+        const result = await generateOutreachEmails(lead, brand, artistType, specialties);
         return NextResponse.json(result);
     } catch (err) {
         console.error('Outreach generation error:', err);

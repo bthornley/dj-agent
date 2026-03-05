@@ -1,6 +1,7 @@
 import { Lead, EntityType } from '../../types';
 import { ENTITY_TYPE_KEYWORDS, MUSIC_FIT_KEYWORDS, EVENT_TYPE_INDICATORS } from './sources';
 import { validateExternalUrl } from '../../security';
+import { aiJSON } from '../../ai';
 
 // ============================================================
 // Lead Finder — Enrichment Module
@@ -172,7 +173,7 @@ export async function enrichFromUrl(url: string): Promise<EnrichmentResult> {
         .trim()
         .substring(0, 500);
 
-    return {
+    const baseResult: EnrichmentResult = {
         emails,
         phones,
         contact_form_url: contactFormUrl,
@@ -187,6 +188,41 @@ export async function enrichFromUrl(url: string): Promise<EnrichmentResult> {
         raw_snippet,
         agent_trace: trace.join('\n'),
     };
+
+    // ---- AI-powered deep analysis ----
+    const aiEnrichment = await enrichWithAI(raw_snippet, baseResult, url);
+    if (aiEnrichment) {
+        trace.push('AI enrichment applied');
+
+        // Merge AI insights into base result
+        if (aiEnrichment.contact_name && !baseResult.contact_name) {
+            baseResult.contact_name = aiEnrichment.contact_name;
+        }
+        if (aiEnrichment.role && !baseResult.role) {
+            baseResult.role = aiEnrichment.role;
+        }
+        if (aiEnrichment.entity_type !== 'other' && baseResult.entity_type === 'other') {
+            baseResult.entity_type = aiEnrichment.entity_type as EntityType;
+        }
+        // Merge new tags that regex missed
+        if (aiEnrichment.music_fit_tags?.length) {
+            baseResult.music_fit_tags = [...new Set([...baseResult.music_fit_tags, ...aiEnrichment.music_fit_tags])];
+        }
+        if (aiEnrichment.event_types_seen?.length) {
+            baseResult.event_types_seen = [...new Set([...baseResult.event_types_seen, ...aiEnrichment.event_types_seen])];
+        }
+        if (aiEnrichment.capacity_estimate && !baseResult.capacity_estimate) {
+            baseResult.capacity_estimate = aiEnrichment.capacity_estimate;
+        }
+        // AI-generated venue summary replaces generic snippet
+        if (aiEnrichment.venue_summary) {
+            baseResult.raw_snippet = aiEnrichment.venue_summary;
+        }
+
+        baseResult.agent_trace = trace.join('\n');
+    }
+
+    return baseResult;
 }
 
 /**
@@ -209,6 +245,55 @@ export function applyEnrichment(lead: Partial<Lead>, enrichment: EnrichmentResul
         raw_snippet: enrichment.raw_snippet,
         agent_trace: [lead.agent_trace, enrichment.agent_trace].filter(Boolean).join('\n---\n'),
     };
+}
+
+// ---- AI-powered deep enrichment ----
+
+interface AIEnrichmentResult {
+    entity_type: string;
+    contact_name: string;
+    role: string;
+    music_fit_tags: string[];
+    event_types_seen: string[];
+    capacity_estimate: number | null;
+    venue_summary: string;
+}
+
+async function enrichWithAI(
+    snippet: string,
+    baseResult: EnrichmentResult,
+    url: string,
+): Promise<AIEnrichmentResult | null> {
+    if (!snippet || snippet.length < 50) return null;
+
+    const system = `You are a venue research analyst for a DJ booking platform. Analyze venue website text to extract insights about entertainment opportunities. Focus on: what kind of music/events they host, their vibe, booking opportunities for DJs, and key decision-maker info. Return JSON.`;
+
+    const user = `Analyze this venue website text and extract DJ-relevant insights.
+
+## Website URL
+${url}
+
+## Page Text (first 500 chars)
+${snippet}
+
+## Already Extracted (by regex)
+- Entity type: ${baseResult.entity_type}
+- Emails found: ${baseResult.emails.length}
+- Music tags found: ${baseResult.music_fit_tags.join(', ') || 'none'}
+- Event types found: ${baseResult.event_types_seen.join(', ') || 'none'}
+
+Analyze the text and return:
+- entity_type: Best classification (club, bar, hotel, event_planner, promoter, corporate, festival, restaurant, lounge, event_space, brewery_winery, rooftop, other)
+- contact_name: Any person's name mentioned in a decision-making role (empty string if none)
+- role: Their role/title (empty string if none)
+- music_fit_tags: Music genres/styles this venue likely wants (e.g. "latin", "open format", "house", "corporate", "hip hop")
+- event_types_seen: Types of events they host (e.g. "DJ night", "private party", "corporate mixer", "happy hour")
+- capacity_estimate: Estimated capacity if inferable (null if not)
+- venue_summary: 2-3 sentence natural-language summary of the venue from a DJ's perspective — what's the vibe, what kind of DJ would fit, are there booking opportunities?
+
+Return JSON matching this structure.`;
+
+    return await aiJSON<AIEnrichmentResult>(system, user, { maxTokens: 500, temperature: 0.4 });
 }
 
 // ---- Helpers ----
