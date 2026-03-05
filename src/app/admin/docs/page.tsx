@@ -78,6 +78,14 @@ const DOCS: Doc[] = [
         description: 'Third-party service costs by phase: pre-launch, launch, and growth with optimization strategies.',
         format: 'PPTX',
     },
+    {
+        title: 'Year 1 Financial Plan',
+        fileName: 'GigLift_Year1_Financial_Plan.pptx',
+        category: 'business',
+        icon: '📊',
+        description: 'Projected revenue, costs, P&L, cash flow, break-even analysis, and risk assessment for Year 1.',
+        format: 'PPTX',
+    },
     // ── Technical Documents ─────────────────────────────
     {
         title: 'System Architecture',
