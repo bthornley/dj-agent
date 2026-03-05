@@ -4,7 +4,7 @@ import { getRecentSnapshots, DailyMetrics, generateWeeklyInvestorUpdate } from '
 import { randomUUID as uuid } from 'crypto';
 
 // ============================================================
-// Investor Pipeline Agent — CRM, Scoring & Outreach
+// Investor Outreach Agent — CRM, Scoring & Outreach
 // Manages the fundraising pipeline: discover → score → draft → track
 // ============================================================
 

@@ -33,7 +33,7 @@ export async function GET() {
         history = recent.map(s => ({ date: s.date, mrr: s.mrr, users: s.totalUsers }));
     } catch (e) { console.error('[admin/agents] analytics:', e); }
 
-    // Investor Pipeline
+    // Investor Outreach
     let pipeline = null;
     let investors: Array<{ name: string; firm: string; fit_score: number; status: string }> = [];
     try {
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
             'analytics': { name: 'Analytics', run: runAnalyticsAgent },
             'growth-ops': { name: 'Growth Ops', run: runGrowthOpsAgent },
             'customer-success': { name: 'Customer Success', run: runCustomerSuccessAgent },
-            'investor-pipeline': { name: 'Investor Pipeline', run: runInvestorPipelineAgent },
+            'investor-pipeline': { name: 'Investor Outreach', run: runInvestorPipelineAgent },
             'content-marketing': { name: 'Content Marketing', run: runContentMarketingAgent },
             'community': { name: 'Community', run: runCommunityAgent },
             'instagram': { name: 'Instagram', run: runInstagramAgent },

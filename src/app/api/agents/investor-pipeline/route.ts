@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('[investor-pipeline-cron] Failed:', error);
         return NextResponse.json({
-            error: 'Investor pipeline failed',
+            error: 'Investor outreach failed',
             details: error instanceof Error ? error.message : 'Unknown error',
         }, { status: 500 });
     }

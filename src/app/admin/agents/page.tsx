@@ -64,7 +64,7 @@ const AGENT_INFO = [
     { id: 'analytics', name: 'Analytics', emoji: '📊', schedule: 'Daily 6am', desc: 'KPIs, revenue, anomalies' },
     { id: 'growth-ops', name: 'Growth Ops', emoji: '🚀', schedule: 'Daily 7am', desc: 'Onboarding, funnel, ambassadors' },
     { id: 'customer-success', name: 'Customer Success', emoji: '🎯', schedule: 'Daily 8am', desc: 'Health scores, churn, upgrades' },
-    { id: 'investor-pipeline', name: 'Investor Pipeline', emoji: '💰', schedule: 'M-F 9am', desc: 'CRM, scoring, outreach' },
+    { id: 'investor-pipeline', name: 'Investor Outreach', emoji: '💰', schedule: 'M-F 9am', desc: 'CRM, scoring, outreach' },
     { id: 'content-marketing', name: 'Content Marketing', emoji: '📝', schedule: 'MWF 10am', desc: 'Blog, social, SEO' },
     { id: 'community', name: 'Community', emoji: '🤝', schedule: 'Daily 11am', desc: 'Feedback, power users, insights' },
     { id: 'instagram', name: 'Instagram @gigliftapp', emoji: '📸', schedule: 'Every 6h', desc: 'Brand posts, publishing, analytics' },
@@ -199,10 +199,10 @@ export default function AdminAgentsDashboard() {
                             </>
                         )}
 
-                        {/* Investor Pipeline Funnel */}
+                        {/* Investor Outreach Funnel */}
                         {data?.pipeline && (
                             <>
-                                <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>💰 Investor Pipeline</h3>
+                                <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>💰 Investor Outreach</h3>
                                 <div style={{
                                     display: 'flex', gap: '4px', marginBottom: '16px', overflowX: 'auto', padding: '4px 0',
                                 }}>
