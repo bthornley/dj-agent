@@ -62,6 +62,14 @@ const DOCS: Doc[] = [
         description: 'Ambassador program strategy, incentive structures, and referral mechanics.',
         format: 'PPTX',
     },
+    {
+        title: 'IP Strategy',
+        fileName: 'GigLift_IP_Strategy.pptx',
+        category: 'business',
+        icon: '🛡️',
+        description: 'Trademark & patent plan with cost estimates, risk analysis, and implementation timeline.',
+        format: 'PPTX',
+    },
     // ── Technical Documents ─────────────────────────────
     {
         title: 'System Architecture',

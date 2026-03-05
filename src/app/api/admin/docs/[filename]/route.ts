@@ -13,6 +13,7 @@ const ALLOWED_FILES: Record<string, string> = {
     'GigLift_Marketing_Sales_Plan.pptx': 'business',
     'GigLift_Strategic_Outlook.pptx': 'business',
     'GigLift_Brand_Ambassador_Plan.pptx': 'business',
+    'GigLift_IP_Strategy.pptx': 'business',
     // Tech docs
     'GigLift_Architecture.pptx': 'tech',
     'GigLift_Data_Dictionary.pptx': 'tech',
