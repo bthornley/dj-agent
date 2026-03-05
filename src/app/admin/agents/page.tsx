@@ -43,6 +43,7 @@ const PIPELINE_STAGES = [
 ];
 
 const AGENT_INFO = [
+    { id: 'qa', name: 'QA Agent', emoji: '🧪', schedule: 'Daily 4:30am', desc: 'Build validation, health checks, integration tests' },
     { id: 'cost-guardian', name: 'Cost Guardian', emoji: '🛡️', schedule: 'Daily 5am', desc: 'Infra costs, guardrails, budget alerts' },
     { id: 'analytics', name: 'Analytics', emoji: '📊', schedule: 'Daily 6am', desc: 'KPIs, revenue, anomalies' },
     { id: 'growth-ops', name: 'Growth Ops', emoji: '🚀', schedule: 'Daily 7am', desc: 'Onboarding, funnel, ambassadors' },
