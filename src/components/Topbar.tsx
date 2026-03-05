@@ -10,6 +10,7 @@ import { useAppMode, AppMode } from '@/hooks/useAppMode';
 // ============================================================
 // Shared Topbar — One nav component for all pages
 // Logo always links to '/', company name + tagline always visible
+// Admin/App switching via AdminLink toggle (next to user icon)
 // ============================================================
 
 interface TopbarProps {
@@ -30,7 +31,7 @@ const NAV_ITEMS = [
 ];
 
 const ADMIN_NAV_ITEMS = [
-    { href: '/admin', label: 'Admin', emoji: '🛡️' },
+    { href: '/admin', label: 'Overview', emoji: '🛡️' },
     { href: '/admin/agents', label: 'Agents', emoji: '🤖' },
     { href: '/admin/docs', label: 'Docs', emoji: '📄' },
     { href: '/admin/instagram', label: 'Instagram', emoji: '📸' },
@@ -51,6 +52,7 @@ export default function Topbar({ onModeChange }: TopbarProps) {
         return pathname === href || pathname.startsWith(href + '/');
     };
 
+    // Show admin sub-nav when on admin pages, regular nav otherwise
     const navItems = isOnAdmin ? ADMIN_NAV_ITEMS : NAV_ITEMS;
 
     return (
@@ -76,9 +78,6 @@ export default function Topbar({ onModeChange }: TopbarProps) {
             </Link>
 
             <nav className="topbar-nav" style={{ gap: '6px', alignItems: 'center' }}>
-                {isOnAdmin && (
-                    <Link href="/dashboard" className="btn btn-ghost btn-sm">📊 App</Link>
-                )}
                 {navItems.map(item => (
                     <Link
                         key={item.href}
