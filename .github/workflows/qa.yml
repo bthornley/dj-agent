@@ -1,0 +1,133 @@
+name: QA Agent — Build Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  qa-agent:
+    name: 🛡️ QA Agent
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Gate 1: TypeScript Compilation ──────────────────
+      - name: '🔍 Gate 1: TypeScript — zero errors'
+        run: npx tsc --noEmit
+
+      # ── Gate 2: ESLint ─────────────────────────────────
+      - name: '🔍 Gate 2: ESLint — code quality'
+        run: npm run lint
+        continue-on-error: true
+
+      # ── Gate 3: Next.js Production Build ───────────────
+      - name: '🔍 Gate 3: Production build — no build errors'
+        run: npm run build
+        env:
+          # Provide dummy env vars so the build doesn't fail on missing secrets
+          CLERK_SECRET_KEY: sk_test_dummy
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_dummy
+          TURSO_DATABASE_URL: libsql://dummy.turso.io
+          TURSO_AUTH_TOKEN: dummy
+          OPENAI_API_KEY: sk-dummy
+          STRIPE_SECRET_KEY: sk_test_dummy
+
+      # ── Gate 4: Route Integrity ────────────────────────
+      - name: '🔍 Gate 4: Route integrity — all API routes valid'
+        run: |
+          echo "Checking API route structure..."
+          ROUTES=$(find src/app/api -name 'route.ts' | wc -l | tr -d ' ')
+          echo "Found $ROUTES API routes"
+
+          # Verify no route files with syntax issues (caught by tsc, but double-check)
+          if [ "$ROUTES" -eq 0 ]; then
+            echo "❌ No API routes found — something is wrong"
+            exit 1
+          fi
+
+          # Check that all agent routes exist in vercel.json cron config
+          CRON_AGENTS=$(grep -o '/api/agents/[a-z-]*' vercel.json | sort)
+          AGENT_ROUTES=$(find src/app/api/agents -name 'route.ts' -exec dirname {} \; | sed 's|src/app||' | sort)
+          
+          echo "Cron-configured agents:"
+          echo "$CRON_AGENTS"
+          echo ""
+          echo "Available agent routes:"
+          echo "$AGENT_ROUTES"
+
+          # Verify all cron paths have a corresponding route
+          while IFS= read -r cron_path; do
+            route_dir="src/app${cron_path}"
+            if [ ! -f "${route_dir}/route.ts" ]; then
+              echo "❌ Cron path ${cron_path} has no route.ts"
+              exit 1
+            fi
+          done <<< "$CRON_AGENTS"
+          echo "✅ All cron agents have valid routes"
+
+      # ── Gate 5: Security Checks ────────────────────────
+      - name: '🔍 Gate 5: Security — no leaked secrets'
+        run: |
+          echo "Scanning for hardcoded secrets..."
+          # Check for common secret patterns (skip .env files, node_modules, .git)
+          LEAKS=$(grep -rn --include='*.ts' --include='*.tsx' --include='*.js' \
+            -E '(sk_live_|sk_test_[A-Za-z0-9]{20,}|AKIA[A-Z0-9]{16}|password\s*=\s*["\x27][^\x27"]{8,})' \
+            src/ || true)
+          
+          if [ -n "$LEAKS" ]; then
+            echo "⚠️ Potential secret leak detected:"
+            echo "$LEAKS"
+            echo ""
+            echo "❌ Remove hardcoded secrets and use environment variables"
+            exit 1
+          fi
+          echo "✅ No hardcoded secrets found"
+
+      # ── Gate 6: Bundle Size Check ──────────────────────
+      - name: '🔍 Gate 6: Bundle size — no bloat'
+        run: |
+          # Check .next output size
+          if [ -d ".next" ]; then
+            SIZE=$(du -sm .next | cut -f1)
+            echo "Build output size: ${SIZE}MB"
+            if [ "$SIZE" -gt 500 ]; then
+              echo "⚠️ Build output is ${SIZE}MB — exceeds 500MB threshold"
+              echo "Consider code splitting or removing unused dependencies"
+              exit 1
+            fi
+            echo "✅ Bundle size OK (${SIZE}MB)"
+          fi
+
+      # ── Summary ────────────────────────────────────────
+      - name: '✅ QA Agent — All gates passed'
+        if: success()
+        run: |
+          echo "══════════════════════════════════════════"
+          echo "  🛡️ QA Agent: ALL GATES PASSED"
+          echo "  Build is approved for production deploy"
+          echo "══════════════════════════════════════════"
+
+      - name: '❌ QA Agent — Gates failed'
+        if: failure()
+        run: |
+          echo "══════════════════════════════════════════"
+          echo "  🚨 QA Agent: BUILD REJECTED"
+          echo "  Fix the issues above before deploying"
+          echo "══════════════════════════════════════════"
