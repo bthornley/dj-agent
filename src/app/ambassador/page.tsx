@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Topbar from '@/components/Topbar';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 
@@ -63,12 +64,7 @@ export default function AmbassadorApplyPage() {
     if (submitted) {
         return (
             <>
-                <header className="topbar">
-                    <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                        <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                        <span>GigLift</span>
-                    </Link>
-                </header>
+            <Topbar />
                 <main className="main-content fade-in" style={{ display: 'flex', justifyContent: 'center', paddingTop: '80px' }}>
                     <div style={{ textAlign: 'center', maxWidth: '500px' }}>
                         <div style={{ fontSize: '64px', marginBottom: '20px' }}>🌟</div>
@@ -97,12 +93,7 @@ export default function AmbassadorApplyPage() {
 
     return (
         <>
-            <header className="topbar">
-                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                    <span>GigLift</span>
-                </Link>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in" style={{ display: 'flex', justifyContent: 'center', paddingTop: '40px' }}>
                 <div style={{ maxWidth: '600px', width: '100%' }}>

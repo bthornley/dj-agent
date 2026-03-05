@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Topbar from '@/components/Topbar';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
 import { useToast } from '@/components/ToastProvider';
 import { v4 as uuid } from 'uuid';
 
@@ -94,15 +94,7 @@ export default function OnboardingPage() {
 
     return (
         <>
-            <header className="topbar">
-                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: 'drop-shadow(0 0 6px rgba(168,85,247,0.4))' }} />
-                    <span>GigLift</span>
-                </Link>
-                <nav className="topbar-nav">
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in" style={{ maxWidth: '640px', margin: '0 auto' }}>
                 {/* Progress bar */}

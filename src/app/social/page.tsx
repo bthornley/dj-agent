@@ -2,10 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
-import AdminLink from '@/components/AdminLink';
-import ModeSwitch from '@/components/ModeSwitch';
-import { useAppMode } from '@/hooks/useAppMode';
+import Topbar from '@/components/Topbar';
 import { ContentPlan, SocialPost, EngagementTask, MediaAsset } from '@/lib/types';
 
 export default function SocialDashboardPage() {
@@ -65,27 +62,9 @@ export default function SocialDashboardPage() {
         event: '🎪', proof_of_party: '📸', taste_identity: '🎵', education: '📚', credibility: '⭐',
     };
 
-    const { isInstructor, headerStyle, logoFilter } = useAppMode();
-
     return (
         <>
-            <header className="topbar" style={headerStyle}>
-                <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: logoFilter }} />
-                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>GigLift</span>
-                </Link>
-                <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
-                    <Link href="/dashboard" className="btn btn-ghost btn-sm">📋 Events</Link>
-                    <Link href="/leads" className="btn btn-ghost btn-sm">🔍 Leads</Link>
-                    <Link href="/social" className="btn btn-secondary btn-sm">�� Social Crew</Link>
-                    <Link href="/social/queue" className="btn btn-ghost btn-sm">📝 Queue</Link>
-                    <Link href="/social/brand" className="btn btn-ghost btn-sm">🎨 Brand</Link>
-                    <Link href="/social/analytics" className="btn btn-ghost btn-sm">📊 Analytics</Link>
-                    <ModeSwitch />
-                    <AdminLink />
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in">
                 <div className="section-header">

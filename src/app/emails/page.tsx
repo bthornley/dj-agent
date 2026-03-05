@@ -1,15 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Topbar from '@/components/Topbar';
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
-import ModeSwitch from '@/components/ModeSwitch';
-import { useAppMode } from '@/hooks/useAppMode';
 import { SentEmail } from '@/lib/types';
 import { fetchSentEmails } from '@/lib/api-client';
 
 export default function SentEmailsPage() {
-    const { isInstructor, headerStyle, logoFilter } = useAppMode();
     const [emails, setEmails] = useState<SentEmail[]>([]);
     const [loading, setLoading] = useState(true);
     const [expanded, setExpanded] = useState<string | null>(null);
@@ -32,17 +29,7 @@ export default function SentEmailsPage() {
 
     return (
         <>
-            <header className="topbar" style={headerStyle}>
-                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: logoFilter }} />
-                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>GigLift</span>
-                </Link>
-                <nav className="topbar-nav">
-                    <Link href="/dashboard" className="btn btn-ghost btn-sm">← Dashboard</Link>
-                    <ModeSwitch />
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>

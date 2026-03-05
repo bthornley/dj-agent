@@ -1,11 +1,9 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import Topbar from '@/components/Topbar';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
-import ModeSwitch from '@/components/ModeSwitch';
-import { useAppMode } from '@/hooks/useAppMode';
 import { Event, Deliverable, DeliverableType } from '@/lib/types';
 import { renderMarkdown } from '@/lib/markdown';
 import { createDoc } from '@/lib/agent/tools';
@@ -475,22 +473,10 @@ function EventDetailInner() {
 }
 
 export default function EventDetail() {
-    const { isInstructor, headerStyle, logoFilter } = useAppMode();
 
     return (
         <>
-            <header className="topbar" style={headerStyle}>
-                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: logoFilter }} />
-                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>GigLift</span>
-                </Link>
-                <nav className="topbar-nav">
-                    <Link href="/" className="btn btn-ghost btn-sm">← Dashboard</Link>
-                    <Link href="/new" className="btn btn-secondary btn-sm">+ New</Link>
-                    <ModeSwitch />
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
             <Suspense fallback={
                 <main className="main-content">
                     <div className="loading-overlay">

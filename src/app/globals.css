@@ -187,10 +187,32 @@ a:hover {
 .topbar-logo {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   font-weight: 700;
   font-size: 26px;
   letter-spacing: -0.3px;
+  flex-shrink: 0;
+}
+
+.topbar-brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.topbar-brand-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.topbar-tagline {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--md-outline);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 1px;
 }
 
 .topbar-logo .icon {
@@ -207,7 +229,10 @@ a:hover {
 
 .topbar-nav {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow-x: auto;
 }
 
 .main-content {

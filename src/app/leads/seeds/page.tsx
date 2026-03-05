@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Topbar from '@/components/Topbar';
 import Link from 'next/link';
 import { QuerySeed } from '@/lib/types';
 import { fetchSeeds, createSeed, deleteSeed, deleteAllSeeds } from '@/lib/api-client';
-import { UserButton } from '@clerk/nextjs';
-import ModeSwitch from '@/components/ModeSwitch';
 
 type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
 
@@ -236,58 +235,7 @@ export default function SeedsPage() {
 
     return (
         <>
-            <header className="topbar" style={isInstructor ? {
-                borderBottom: '1px solid rgba(56, 189, 248, 0.2)',
-                background: 'linear-gradient(135deg, rgba(15,15,35,0.98), rgba(10,30,50,0.98))',
-            } : undefined}>
-                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{
-                        width: 56, height: 56, borderRadius: 12,
-                        filter: isInstructor
-                            ? 'drop-shadow(0 0 6px rgba(56,189,248,0.4))'
-                            : 'drop-shadow(0 0 6px rgba(168,85,247,0.4))',
-                    }} />
-                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>
-                        {isInstructor ? '📚 Teaching Seeds' : '🎵 Query Seeds'}
-                    </span>
-                </Link>
-                <nav className="topbar-nav" style={{ gap: '8px' }}>
-                    <Link href="/leads" className="btn btn-ghost btn-sm">← Leads</Link>
-                    <button
-                        className="btn btn-secondary btn-sm"
-                        onClick={handleAddPresets}
-                        disabled={addingPresets}
-                        style={{
-                            opacity: addingPresets ? 0.6 : 1,
-                            ...(isInstructor ? {
-                                background: 'linear-gradient(135deg, rgba(56,189,248,0.15), rgba(34,211,238,0.08))',
-                                borderColor: 'rgba(56,189,248,0.3)',
-                                color: '#38bdf8',
-                            } : {}),
-                        }}
-                    >
-                        {addingPresets ? '⏳ Adding...' : isInstructor ? '🏫 Add Teaching Seeds' : '🏪 Add Marketplace Seeds'}
-                    </button>
-                    <button className="btn btn-primary btn-sm" onClick={() => setShowForm(!showForm)} style={isInstructor ? {
-                        background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
-                        boxShadow: '0 0 16px rgba(56,189,248,0.2)',
-                    } : undefined}>
-                        + Add Seed
-                    </button>
-                    {seeds.length > 0 && (
-                        <button
-                            className="btn btn-ghost btn-sm"
-                            onClick={handleDeleteAll}
-                            disabled={deleting}
-                            style={{ color: 'var(--accent-red)', opacity: deleting ? 0.6 : 1 }}
-                        >
-                            {deleting ? '⏳ Deleting...' : '🗑 Delete All'}
-                        </button>
-                    )}
-                    <ModeSwitch onChange={(m) => setActiveMode(m as AppMode)} />
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in">
                 {/* Mode indicator banner */}

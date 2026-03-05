@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Topbar from '@/components/Topbar';
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
 
 interface UserRow {
     id: string;
@@ -87,13 +87,7 @@ export default function AdminDashboard() {
     if (error) {
         return (
             <>
-                <header className="topbar">
-                    <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                        <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                        <span>GigLift</span>
-                    </Link>
-                    <nav className="topbar-nav"><UserButton /></nav>
-                </header>
+            <Topbar />
                 <main className="main-content fade-in">
                     <div className="empty-state">
                         <div className="empty-icon">🔒</div>
@@ -107,20 +101,7 @@ export default function AdminDashboard() {
 
     return (
         <>
-            <header className="topbar">
-                <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                    <span>GigLift</span>
-                </Link>
-                <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
-                    <Link href="/dashboard" className="btn btn-ghost btn-sm">📊 App</Link>
-                    <Link href="/admin" className="btn btn-secondary btn-sm">🛡️ Admin</Link>
-                    <Link href="/admin/agents" className="btn btn-ghost btn-sm">🤖 Agents</Link>
-                    <Link href="/admin/docs" className="btn btn-ghost btn-sm">📄 Docs</Link>
-                    <Link href="/admin/instagram" className="btn btn-ghost btn-sm">📸 Instagram</Link>
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in">
                 <div className="section-header">

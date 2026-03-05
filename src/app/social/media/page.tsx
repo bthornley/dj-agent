@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Topbar from '@/components/Topbar';
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
 import { MediaAsset } from '@/lib/types';
 
 type FilterType = 'all' | 'image' | 'video' | 'audio';
@@ -160,20 +160,7 @@ export default function MediaLibraryPage() {
 
     return (
         <>
-            <header className="topbar">
-                <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                    <span>GigLift</span>
-                </Link>
-                <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
-                    <Link href="/social" className="btn btn-ghost btn-sm">�� Social Crew</Link>
-                    <Link href="/social/queue" className="btn btn-ghost btn-sm">📝 Queue</Link>
-                    <Link href="/social/media" className="btn btn-secondary btn-sm">📁 Media</Link>
-                    <Link href="/social/brand" className="btn btn-ghost btn-sm">🎨 Brand</Link>
-                    <Link href="/social/analytics" className="btn btn-ghost btn-sm">📊 Analytics</Link>
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in">
                 <div className="section-header">

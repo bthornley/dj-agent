@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Topbar from '@/components/Topbar';
 import Link from 'next/link';
-import { useUser, UserButton } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
 
 interface Referral {
     id: string;
@@ -82,12 +83,7 @@ export default function AmbassadorDashboardPage() {
     if (!isAmbassador) {
         return (
             <>
-                <header className="topbar">
-                    <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                        <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                        <span>GigLift</span>
-                    </Link>
-                </header>
+            <Topbar />
                 <main className="main-content fade-in" style={{ display: 'flex', justifyContent: 'center', paddingTop: '80px' }}>
                     <div style={{ textAlign: 'center', maxWidth: '400px' }}>
                         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌟</div>
@@ -104,16 +100,7 @@ export default function AmbassadorDashboardPage() {
 
     return (
         <>
-            <header className="topbar">
-                <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                    <span>GigLift</span>
-                </Link>
-                <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
-                    <Link href="/dashboard" className="btn btn-ghost btn-sm">← Dashboard</Link>
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in">
                 <div style={{ marginBottom: '24px' }}>

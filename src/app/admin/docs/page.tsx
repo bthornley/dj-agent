@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
+import Topbar from '@/components/Topbar';
 
 interface Doc {
     title: string;
@@ -138,21 +138,7 @@ export default function AdminDocsPage() {
 
     return (
         <>
-            <header className="topbar">
-                <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                    <span>GigLift</span>
-                </Link>
-                <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
-                    <Link href="/dashboard" className="btn btn-ghost btn-sm">📊 App</Link>
-                    <Link href="/admin" className="btn btn-ghost btn-sm">🛡️ Admin</Link>
-                    <Link href="/admin/agents" className="btn btn-ghost btn-sm">🤖 Agents</Link>
-                    <Link href="/admin/docs" className="btn btn-secondary btn-sm">📄 Docs</Link>
-                    <Link href="/admin/instagram" className="btn btn-ghost btn-sm">📸 Instagram</Link>
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in">
                 <div className="section-header">

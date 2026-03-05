@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Topbar from '@/components/Topbar';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
-import ModeSwitch from '@/components/ModeSwitch';
-import { useAppMode } from '@/hooks/useAppMode';
 import { parseInquiry } from '@/lib/agent/intake';
 import { plan } from '@/lib/agent/planner';
 import { createDoc } from '@/lib/agent/tools';
@@ -229,21 +227,9 @@ export default function NewInquiry() {
 
     const isFormReady = mode === 'paste' ? rawText.trim().length > 0 : form.clientName.trim().length > 0;
 
-    const { isInstructor, headerStyle, logoFilter } = useAppMode();
-
     return (
         <>
-            <header className="topbar" style={headerStyle}>
-                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: logoFilter }} />
-                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>GigLift</span>
-                </Link>
-                <nav className="topbar-nav">
-                    <Link href="/" className="btn btn-ghost">← Back</Link>
-                    <ModeSwitch />
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in">
                 <div className="section-header">

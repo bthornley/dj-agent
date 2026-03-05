@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Topbar from '@/components/Topbar';
 import Link from 'next/link';
-import { UserButton, useUser } from '@clerk/nextjs';
-import AdminLink from '@/components/AdminLink';
-import ModeSwitch from '@/components/ModeSwitch';
+import { useUser } from '@clerk/nextjs';
 
 type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
 
@@ -216,18 +215,7 @@ export default function AccountPage() {
 
     return (
         <>
-            <header className="topbar">
-                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <div className="icon">🎵</div>
-                    <span>GigLift</span>
-                </Link>
-                <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
-                    <Link href="/dashboard" className="btn btn-ghost btn-sm">← Dashboard</Link>
-                    <ModeSwitch onChange={(m) => setActiveMode(m as AppMode)} />
-                    <AdminLink />
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in">
                 <div className="section-header">

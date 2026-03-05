@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { UserButton, useUser } from '@clerk/nextjs';
-import AdminLink from '@/components/AdminLink';
-import ModeSwitch from '@/components/ModeSwitch';
+import { useUser } from '@clerk/nextjs';
+import Topbar from '@/components/Topbar';
 import { Event } from '@/lib/types';
 import { fetchLeadStats } from '@/lib/api-client';
 import { MODE_CONFIGS } from '@/hooks/useAppMode';
@@ -143,32 +142,7 @@ export default function DashboardPage() {
 
     return (
         <>
-            <header className="topbar" style={cfg.headerBg ? {
-                borderBottom: cfg.headerBorder,
-                background: cfg.headerBg,
-            } : undefined}>
-                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{
-                        width: 56, height: 56, borderRadius: 12,
-                        filter: `drop-shadow(0 0 6px ${accentGlow})`,
-                    }} />
-                    <span style={activeMode !== 'performer' ? { color: accentColor } : undefined}>GigLift</span>
-                </Link>
-                <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
-                    <Link href="/leads" className="btn btn-ghost btn-sm">🔍 Leads</Link>
-                    <Link href="/leads/scan" className="btn btn-ghost btn-sm">📡 Scan</Link>
-                    <Link href="/social" className="btn btn-ghost btn-sm">👥 Social Crew</Link>
-                    <Link href="/pricing" className="btn btn-ghost btn-sm">💎 Plans</Link>
-                    <Link href="/epk/builder" className="btn btn-ghost btn-sm">📋 EPK Builder</Link>
-                    <Link href="/flyer/create" className="btn btn-ghost btn-sm">🎨 Flyer Creator</Link>
-                    <Link href="/emails" className="btn btn-ghost btn-sm">📧 Emails</Link>
-                    <Link href="/guide" className="btn btn-ghost btn-sm">📖 Guide</Link>
-                    <Link href="/account" className="btn btn-ghost btn-sm">⚙️ Account</Link>
-                    <ModeSwitch onChange={(m) => setActiveMode(m as AppMode)} />
-                    <AdminLink />
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar onModeChange={(m) => setActiveMode(m)} />
 
             <main className="main-content fade-in">
                 {/* Welcome banner for new users */}

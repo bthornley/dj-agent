@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Topbar from '@/components/Topbar';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 
@@ -155,22 +156,7 @@ export default function PricingPage() {
 
     return (
         <>
-            <header className="topbar">
-                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: "drop-shadow(0 0 6px rgba(168,85,247,0.4))" }} />
-                    <span>GigLift</span>
-                </Link>
-                <nav className="topbar-nav">
-                    {user ? (
-                        <Link href="/dashboard" className="btn btn-ghost btn-sm">← Dashboard</Link>
-                    ) : (
-                        <>
-                            <Link href="/sign-in" className="btn btn-ghost btn-sm">Sign In</Link>
-                            <Link href="/sign-up" className="btn btn-primary btn-sm">Get Started</Link>
-                        </>
-                    )}
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in">
                 <div className="pricing-header">

@@ -1,10 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Topbar from '@/components/Topbar';
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
-import ModeSwitch from '@/components/ModeSwitch';
-import { useAppMode } from '@/hooks/useAppMode';
 import { useToast } from '@/components/ToastProvider';
 import { FLYER_STYLES, ASPECT_RATIOS, FONT_OPTIONS, getStylePreset } from '@/lib/flyer/styles';
 import { Event } from '@/lib/types';
@@ -33,7 +31,6 @@ const DEFAULT_FLYER: Omit<FlyerConfig, 'id' | 'userId' | 'createdAt' | 'updatedA
 };
 
 export default function FlyerCreatorPage() {
-    const { isInstructor, headerStyle, logoFilter } = useAppMode();
     const { toast } = useToast();
     const previewRef = useRef<HTMLDivElement>(null);
 
@@ -247,17 +244,7 @@ export default function FlyerCreatorPage() {
 
     return (
         <>
-            <header className="topbar" style={headerStyle}>
-                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: logoFilter }} />
-                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>🎨 Flyer Creator</span>
-                </Link>
-                <nav className="topbar-nav" style={{ gap: '8px' }}>
-                    <Link href="/dashboard" className="btn btn-ghost btn-sm">← Dashboard</Link>
-                    <ModeSwitch />
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in">
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '24px', alignItems: 'start' }}>

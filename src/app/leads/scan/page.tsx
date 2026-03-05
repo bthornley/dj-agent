@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Topbar from '@/components/Topbar';
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
 import { Lead } from '@/lib/types';
 import { scanUrl, autoScan, batchScanUrls } from '@/lib/api-client';
-import ModeSwitch from '@/components/ModeSwitch';
-import { useAppMode } from '@/hooks/useAppMode';
 
 type ScanMode = 'single' | 'batch' | 'auto';
 
@@ -141,23 +139,9 @@ export default function ScanPage() {
     const scoreColor = (s: number) =>
         s >= 70 ? 'var(--accent-green)' : s >= 40 ? 'var(--accent-amber)' : 'var(--accent-red)';
 
-    const { isInstructor, headerStyle, logoFilter } = useAppMode();
-
     return (
         <>
-            <header className="topbar" style={headerStyle}>
-                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: logoFilter }} />
-                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>
-                        {isInstructor ? '📚 Lead Scanner' : '🔍 Lead Scanner'}
-                    </span>
-                </Link>
-                <nav className="topbar-nav">
-                    <Link href="/leads" className="btn btn-ghost btn-sm">← Leads</Link>
-                    <ModeSwitch />
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in">
                 <div className="section-header">

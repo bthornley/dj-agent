@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Topbar from '@/components/Topbar';
 import Link from 'next/link';
-import { useUser, UserButton } from '@clerk/nextjs';
-import ModeSwitch from '@/components/ModeSwitch';
-import { useAppMode } from '@/hooks/useAppMode';
+import { useUser } from '@clerk/nextjs';
 
 interface EPKConfig {
     headline: string;
@@ -159,8 +158,6 @@ export default function EPKBuilderPage() {
         });
     };
 
-    const { isInstructor, headerStyle, logoFilter } = useAppMode();
-
     if (loading) return (
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
             <div className="spinner" />
@@ -173,25 +170,7 @@ export default function EPKBuilderPage() {
 
     return (
         <>
-            <header className="topbar" style={headerStyle}>
-                <Link href="/dashboard" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: logoFilter }} />
-                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>EPK Builder</span>
-                </Link>
-                <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
-                    <Link href="/dashboard" className="btn btn-ghost btn-sm">← Dashboard</Link>
-                    {user && (
-                        <a href={`/epk/${user.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm">
-                            👁 View Public EPK
-                        </a>
-                    )}
-                    <button className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving || saved}>
-                        {saving ? '💾 Saving...' : saved ? '✅ Saved' : '💾 Save EPK'}
-                    </button>
-                    <ModeSwitch />
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in" style={{ maxWidth: '1200px' }}>
                 {message && <div className="alert alert-success">{message}</div>}

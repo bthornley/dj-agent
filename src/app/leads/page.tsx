@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Topbar from '@/components/Topbar';
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
 import { Lead, LeadStatus, Priority } from '@/lib/types';
 import { fetchLeads, fetchLeadStats, updateLead, deleteLead, deleteAllLeads, handoffLeads, sendEmail } from '@/lib/api-client';
 import { generateLeadOutreach } from '@/lib/agent/tools';
 import { useToast } from '@/components/ToastProvider';
-import ModeSwitch from '@/components/ModeSwitch';
 import { EmailTemplate } from '@/lib/db';
 
 type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
@@ -163,49 +162,7 @@ export default function LeadsDashboard() {
 
     return (
         <>
-            <header className="topbar" style={isInstructor ? {
-                borderBottom: '1px solid rgba(56, 189, 248, 0.2)',
-                background: 'linear-gradient(135deg, rgba(15,15,35,0.98), rgba(10,30,50,0.98))',
-            } : undefined}>
-                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{
-                        width: 56, height: 56, borderRadius: 12,
-                        filter: isInstructor
-                            ? 'drop-shadow(0 0 6px rgba(56,189,248,0.4))'
-                            : 'drop-shadow(0 0 6px rgba(168,85,247,0.4))',
-                    }} />
-                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>
-                        {isInstructor ? '📚 Teaching Leads' : '🎵 Gig Leads'}
-                    </span>
-                </Link>
-                <nav className="topbar-nav">
-                    <Link href="/" className="btn btn-ghost btn-sm">← Events</Link>
-                    <Link href="/leads/scan" className="btn btn-primary" style={isInstructor ? {
-                        background: 'linear-gradient(135deg, #0ea5e9, #0284c7)',
-                        boxShadow: '0 0 16px rgba(56,189,248,0.2)',
-                    } : undefined}>🔍 Scan URL</Link>
-                    <Link href="/leads/seeds" className="btn btn-secondary btn-sm">⚙ Seeds</Link>
-                    {leads.length > 0 && (
-                        <button
-                            className="btn btn-ghost btn-sm"
-                            onClick={handleDeleteAll}
-                            disabled={deletingAll}
-                            style={{ color: 'var(--accent-red)', opacity: deletingAll ? 0.6 : 1 }}
-                        >
-                            {deletingAll ? '⏳ Deleting...' : '🗑 Delete All'}
-                        </button>
-                    )}
-                    {leads.length > 0 && (
-                        <a
-                            href={`/api/leads/export?mode=${activeMode || 'performer'}`}
-                            className="btn btn-ghost btn-sm"
-                            download
-                        >📥 Export CSV</a>
-                    )}
-                    <ModeSwitch onChange={(m) => setActiveMode(m as AppMode)} />
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
 
             <main className="main-content fade-in">
                 {/* Mode indicator banner */}

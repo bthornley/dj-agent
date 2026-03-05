@@ -1,14 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Topbar from '@/components/Topbar';
 import Link from 'next/link';
-import { UserButton } from '@clerk/nextjs';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { Lead } from '@/lib/types';
 import { fetchLead, updateLead, handoffLeads } from '@/lib/api-client';
-import ModeSwitch from '@/components/ModeSwitch';
-import { useAppMode } from '@/hooks/useAppMode';
 
 function LeadDetailContent() {
     const searchParams = useSearchParams();
@@ -373,22 +371,10 @@ function DetailField({ label, value, editing, editValue, onChange, isLink }: {
 }
 
 export default function LeadDetailPage() {
-    const { isInstructor, headerStyle, logoFilter } = useAppMode();
 
     return (
         <>
-            <header className="topbar" style={headerStyle}>
-                <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
-                    <img src="/logo.png" alt="GigLift" style={{ width: 56, height: 56, borderRadius: 12, filter: logoFilter }} />
-                    <span style={isInstructor ? { color: '#38bdf8' } : undefined}>Lead Detail</span>
-                </Link>
-                <nav className="topbar-nav">
-                    <Link href="/leads" className="btn btn-ghost btn-sm">← Back to Leads</Link>
-                    <Link href="/leads/scan" className="btn btn-secondary btn-sm">🔍 Scan</Link>
-                    <ModeSwitch />
-                    <UserButton />
-                </nav>
-            </header>
+            <Topbar />
             <Suspense fallback={<div className="loading-overlay"><div className="spinner" /><span>Loading...</span></div>}>
                 <LeadDetailContent />
             </Suspense>
