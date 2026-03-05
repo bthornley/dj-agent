@@ -5,11 +5,10 @@ from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
+from pptx.oxml.ns import qn
 import os
 
 OUT = os.path.join(os.path.dirname(__file__), "data", "docs", "business", "Bandsintown_x_GigLift_MA_Deck.pptx")
-COVER_BG = "/Users/bthornley/.gemini/antigravity/brain/d900a025-a940-458f-9e2e-9809b998c050/ma_deck_cover_1772749793901.png"
-INNER_BG = "/Users/bthornley/.gemini/antigravity/brain/d900a025-a940-458f-9e2e-9809b998c050/ma_deck_inner_1772749807429.png"
 
 W = Inches(13.333)
 H = Inches(7.5)
@@ -33,13 +32,23 @@ prs.slide_height = H
 
 
 def add_bg(slide, cover=False):
+    """Pure gradient background — no images, no alignment issues."""
     slide.background.fill.solid()
     slide.background.fill.fore_color.rgb = DARK_BG
-    try:
-        bg_path = COVER_BG if cover else INNER_BG
-        slide.shapes.add_picture(bg_path, Emu(0), Emu(0), W, H)
-    except Exception:
-        pass
+    # Add a subtle gradient overlay shape spanning the full slide
+    overlay = slide.shapes.add_shape(1, Emu(0), Emu(0), W, H)
+    overlay.line.fill.background()  # no border
+    fill = overlay.fill
+    fill.gradient()
+    fill.gradient_stops[0].color.rgb = RGBColor(10, 15, 30)
+    fill.gradient_stops[0].position = 0.0
+    fill.gradient_stops[1].color.rgb = RGBColor(12, 30, 45) if not cover else RGBColor(8, 25, 50)
+    fill.gradient_stops[1].position = 1.0
+    # Add a thin accent line at the top
+    accent_line = slide.shapes.add_shape(1, Emu(0), Emu(0), W, Inches(0.03))
+    accent_line.fill.solid()
+    accent_line.fill.fore_color.rgb = TEAL if not cover else RGBColor(45, 212, 191)
+    accent_line.line.fill.background()
 
 
 def tx(slide, left, top, width, height, text, size=18, color=WHITE, bold=False, align=PP_ALIGN.LEFT):
