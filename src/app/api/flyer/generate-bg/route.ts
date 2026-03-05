@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     // Rate limit: 3 AI generations per minute per user
-    const rl = rateLimit(`flyer-bg:${userId}`, 3, 60_000);
+    const rl = await rateLimit(`flyer-bg:${userId}`, 3, 60_000);
     if (!rl.allowed) {
         return NextResponse.json({ error: 'Too many AI generation requests. Please wait.' }, { status: 429 });
     }

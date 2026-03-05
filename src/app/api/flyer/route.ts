@@ -11,8 +11,8 @@ export async function GET() {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const flyers = await dbGetFlyers(userId);
-    return NextResponse.json(flyers);
+    const result = await dbGetFlyers(userId);
+    return NextResponse.json(result);
 }
 
 // POST /api/flyer — Create or update a flyer
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const rl = rateLimit(`flyer:${userId}`, 10, 60_000);
+    const rl = await rateLimit(`flyer:${userId}`, 10, 60_000);
     if (!rl.allowed) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
     const body = await request.json();

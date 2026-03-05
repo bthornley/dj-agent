@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get posts for context
-    const posts = await dbGetAllSocialPosts(userId);
+    const postResult = await dbGetAllSocialPosts(userId); const posts = postResult.data;
 
     const report = generateWeeklyReport(weekOf, stats, posts, previousReport);
     return NextResponse.json({ report }, { status: 201 });

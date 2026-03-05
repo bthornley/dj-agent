@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     // Rate limit: 5 auto-scans per minute per user
-    const rl = rateLimit(`auto-scan:${userId}`, 5, 60_000);
+    const rl = await rateLimit(`auto-scan:${userId}`, 5, 60_000);
     if (!rl.allowed) {
         return NextResponse.json(
             { error: 'Too many requests. Please wait before scanning again.' },
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
                 }, { status: 429 });
             }
 
-            const seeds = await dbGetAllSeeds(userId, activeMode);
+            const seedResult = await dbGetAllSeeds(userId, activeMode); const seeds = seedResult.data;
             const activeSeeds = seeds.filter(s => s.active);
 
             if (activeSeeds.length === 0) {

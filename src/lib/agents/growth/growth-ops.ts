@@ -1,21 +1,11 @@
-import { createClient, Client } from '@libsql/client';
+import { getDb } from '@/lib/db';
+import { Client } from '@libsql/client';
 import { randomUUID as uuid } from 'crypto';
 
 // ============================================================
 // Growth Ops Agent — Onboarding, Activation & Ambassador Pipeline
 // Automates user acquisition, activation, and retention workflows.
 // ============================================================
-
-let _db: Client | null = null;
-function getDb(): Client {
-    if (!_db) {
-        _db = createClient({
-            url: process.env.TURSO_DATABASE_URL || 'file:data/giglift.db',
-            authToken: process.env.TURSO_AUTH_TOKEN,
-        });
-    }
-    return _db;
-}
 
 let _migrated = false;
 async function ensureGrowthSchema(): Promise<Client> {

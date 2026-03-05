@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(stats);
     }
 
-    const posts = await dbGetAllSocialPosts(userId, { status, pillar, postType, planId });
-    return NextResponse.json(posts);
+    const result = await dbGetAllSocialPosts(userId, { status, pillar, postType, planId });
+    return NextResponse.json(result);
 }
 
 // POST /api/social/posts — Create or update a post
@@ -61,7 +61,7 @@ export async function PATCH(request: NextRequest) {
 
     // Run guardrails on approval
     if (status === 'approved') {
-        const events = await dbGetAllEvents(userId);
+        const events = (await dbGetAllEvents(userId)).data;
         const brand = await dbGetBrandProfile(userId);
         const guardrails = checkPostGuardrails(post, brand, events);
         if (!guardrails.passed) {
@@ -87,7 +87,7 @@ export async function DELETE(request: NextRequest) {
 
     // Bulk cleanup: delete all posts with no media
     if (cleanup === 'noMedia') {
-        const allPosts = await dbGetAllSocialPosts(userId);
+        const allPosts = (await dbGetAllSocialPosts(userId)).data;
         const noMedia = allPosts.filter(p => !p.mediaRefs || p.mediaRefs.length === 0);
         for (const p of noMedia) {
             await dbDeleteSocialPost(p.id, userId);

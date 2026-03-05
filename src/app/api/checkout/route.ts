@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         const planId = body.planId as PlanId;
 
         // Rate limit: 5 checkout attempts per minute per user
-        const rl = rateLimit(`checkout:${userId}`, 5, 60_000);
+        const rl = await rateLimit(`checkout:${userId}`, 5, 60_000);
         if (!rl.allowed) {
             return NextResponse.json(
                 { error: 'Too many checkout attempts. Please wait.' },

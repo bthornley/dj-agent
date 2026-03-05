@@ -10,8 +10,8 @@ export async function GET() {
     }
 
     try {
-        const emails = await dbGetSentEmails(userId);
-        return NextResponse.json(emails);
+        const result = await dbGetSentEmails(userId);
+        return NextResponse.json(result);
     } catch (err) {
         console.error('[emails] Error:', err);
         return NextResponse.json({ error: 'Failed to fetch sent emails' }, { status: 500 });

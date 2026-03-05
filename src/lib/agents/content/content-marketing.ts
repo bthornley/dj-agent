@@ -1,4 +1,5 @@
-import { createClient, Client } from '@libsql/client';
+import { getDb } from '@/lib/db';
+import { Client } from '@libsql/client';
 import { randomUUID as uuid } from 'crypto';
 import { getRecentSnapshots, DailyMetrics } from '@/lib/agents/analytics/analytics-agent';
 
@@ -6,17 +7,6 @@ import { getRecentSnapshots, DailyMetrics } from '@/lib/agents/analytics/analyti
 // Content Marketing Agent — Blog, Social Threads & Topic Scanning
 // Generates SEO content and social posts to build authority.
 // ============================================================
-
-let _db: Client | null = null;
-function getDb(): Client {
-    if (!_db) {
-        _db = createClient({
-            url: process.env.TURSO_DATABASE_URL || 'file:data/giglift.db',
-            authToken: process.env.TURSO_AUTH_TOKEN,
-        });
-    }
-    return _db;
-}
 
 let _migrated = false;
 async function ensureContentSchema(): Promise<Client> {

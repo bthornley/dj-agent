@@ -7,6 +7,29 @@ import { escapeLikeQuery } from './security';
 // All tables have user_id for data isolation between users.
 // ============================================================
 
+// ---- Pagination ----
+
+export const DEFAULT_PAGE_SIZE = 200;
+export const MAX_PAGE_SIZE = 1000;
+
+export interface PaginationOptions {
+  limit?: number;
+  offset?: number;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+
+function clampPageSize(limit?: number): number {
+  if (!limit || limit <= 0) return DEFAULT_PAGE_SIZE;
+  return Math.min(limit, MAX_PAGE_SIZE);
+}
+
 let _db: Client | null = null;
 
 export function getDb(): Client {
@@ -19,150 +42,6 @@ export function getDb(): Client {
   return _db;
 }
 
-// Run schema migration on first call
-let _migrated = false;
-async function ensureSchema(): Promise<Client> {
-  const db = getDb();
-  if (!_migrated) {
-    await db.executeMultiple(`
-      CREATE TABLE IF NOT EXISTS events (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL DEFAULT '',
-        data TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-      );
-
-      CREATE TABLE IF NOT EXISTS leads (
-        lead_id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL DEFAULT '',
-        data TEXT NOT NULL,
-        dedupe_key TEXT,
-        lead_score INTEGER DEFAULT 0,
-        status TEXT DEFAULT 'new',
-        priority TEXT DEFAULT 'P3',
-        mode TEXT DEFAULT 'performer',
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-      );
-
-      CREATE TABLE IF NOT EXISTS query_seeds (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL DEFAULT '',
-        data TEXT NOT NULL,
-        active INTEGER DEFAULT 1,
-        mode TEXT DEFAULT 'performer',
-        created_at TEXT NOT NULL DEFAULT (datetime('now'))
-      );
-
-      CREATE TABLE IF NOT EXISTS search_quota (
-        quota_key TEXT PRIMARY KEY,
-        count INTEGER DEFAULT 0
-      );
-
-      CREATE TABLE IF NOT EXISTS brand_profiles (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL DEFAULT '',
-        data TEXT NOT NULL,
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-      );
-
-      CREATE TABLE IF NOT EXISTS social_posts (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL DEFAULT '',
-        data TEXT NOT NULL,
-        status TEXT DEFAULT 'idea',
-        pillar TEXT DEFAULT '',
-        post_type TEXT DEFAULT '',
-        plan_id TEXT DEFAULT '',
-        scheduled_for TEXT DEFAULT '',
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-      );
-
-      CREATE TABLE IF NOT EXISTS content_plans (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL DEFAULT '',
-        data TEXT NOT NULL,
-        week_of TEXT DEFAULT '',
-        status TEXT DEFAULT 'draft',
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-      );
-
-      CREATE TABLE IF NOT EXISTS engagement_tasks (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL DEFAULT '',
-        data TEXT NOT NULL,
-        type TEXT DEFAULT '',
-        status TEXT DEFAULT 'pending',
-        requires_approval INTEGER DEFAULT 0,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-      );
-
-      CREATE TABLE IF NOT EXISTS media_assets (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL DEFAULT '',
-        data TEXT NOT NULL,
-        file_name TEXT DEFAULT '',
-        media_type TEXT DEFAULT '',
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-      );
-
-      CREATE TABLE IF NOT EXISTS epk_configs (
-        user_id TEXT PRIMARY KEY,
-        data TEXT NOT NULL,
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-      );
-
-      CREATE TABLE IF NOT EXISTS sent_emails (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        event_id TEXT DEFAULT '',
-        to_email TEXT NOT NULL,
-        subject TEXT NOT NULL,
-        body TEXT NOT NULL,
-        status TEXT DEFAULT 'sent',
-        resend_id TEXT DEFAULT '',
-        sent_at TEXT NOT NULL DEFAULT (datetime('now'))
-      );
-
-      CREATE TABLE IF NOT EXISTS email_templates (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        name TEXT NOT NULL,
-        subject TEXT NOT NULL,
-        body_template TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-      );
-
-      CREATE TABLE IF NOT EXISTS flyer_configs (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL,
-        event_id TEXT DEFAULT '',
-        data TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-      );
-    `);
-
-    // Migration: add mode column if it doesn't exist
-    try {
-      await db.execute({ sql: `ALTER TABLE leads ADD COLUMN mode TEXT DEFAULT 'performer'`, args: [] });
-    } catch { /* column already exists */ }
-
-    // Migration: add mode column to query_seeds if it doesn't exist
-    try {
-      await db.execute({ sql: `ALTER TABLE query_seeds ADD COLUMN mode TEXT DEFAULT 'performer'`, args: [] });
-    } catch { /* column already exists */ }
-
-    _migrated = true;
-  }
-  return db;
-}
 
 // ---- Search Quota (user-scoped) ----
 
@@ -175,7 +54,7 @@ function quotaKey(userId: string): string {
 }
 
 export async function dbGetSearchQuota(userId: string, planLimit?: number, customKey?: string): Promise<{ month: string; used: number; remaining: number; limit: number }> {
-  const db = await ensureSchema();
+  const db = getDb();
   const key = customKey || quotaKey(userId);
   const month = customKey ? 'lifetime' : key.split(':')[1];
   const limit = planLimit ?? DEFAULT_SEARCH_LIMIT;
@@ -187,7 +66,7 @@ export async function dbGetSearchQuota(userId: string, planLimit?: number, custo
 }
 
 export async function dbIncrementSearchQuota(userId: string, amount: number = 1, customKeyOrLimit?: string | number): Promise<{ allowed: boolean; used: number; remaining: number }> {
-  const db = await ensureSchema();
+  const db = getDb();
   const isCustomKey = typeof customKeyOrLimit === 'string';
   const key = isCustomKey ? customKeyOrLimit : quotaKey(userId);
   const limit = isCustomKey ? 9999 : (customKeyOrLimit as number ?? DEFAULT_SEARCH_LIMIT);
@@ -208,20 +87,28 @@ export async function dbIncrementSearchQuota(userId: string, amount: number = 1,
 
 // ---- Event CRUD (user-scoped) ----
 
-export async function dbGetAllEvents(userId: string): Promise<Event[]> {
-  const db = await ensureSchema();
-  const result = await db.execute({ sql: 'SELECT data FROM events WHERE user_id = ? ORDER BY created_at DESC', args: [userId] });
-  return result.rows.map((row) => JSON.parse(row.data as string));
+export async function dbGetAllEvents(userId: string, pagination?: PaginationOptions): Promise<PaginatedResult<Event>> {
+  const db = getDb();
+  const limit = clampPageSize(pagination?.limit);
+  const offset = pagination?.offset ?? 0;
+
+  const [countResult, result] = await Promise.all([
+    db.execute({ sql: 'SELECT COUNT(*) as cnt FROM events WHERE user_id = ?', args: [userId] }),
+    db.execute({ sql: 'SELECT data FROM events WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?', args: [userId, limit, offset] }),
+  ]);
+  const total = Number(countResult.rows[0]?.cnt ?? 0);
+  const data = result.rows.map((row) => JSON.parse(row.data as string));
+  return { data, total, limit, offset, hasMore: offset + data.length < total };
 }
 
 export async function dbGetEvent(id: string, userId: string): Promise<Event | null> {
-  const db = await ensureSchema();
+  const db = getDb();
   const result = await db.execute({ sql: 'SELECT data FROM events WHERE id = ? AND user_id = ?', args: [id, userId] });
   return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
 export async function dbSaveEvent(event: Event, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   const now = new Date().toISOString();
   const data = JSON.stringify(event);
 
@@ -236,12 +123,12 @@ export async function dbSaveEvent(event: Event, userId: string): Promise<void> {
 }
 
 export async function dbDeleteEvent(id: string, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   await db.execute({ sql: 'DELETE FROM events WHERE id = ? AND user_id = ?', args: [id, userId] });
 }
 
 export async function dbSearchEvents(query: string, userId: string): Promise<Event[]> {
-  const db = await ensureSchema();
+  const db = getDb();
   const safeQuery = escapeLikeQuery(query);
   const result = await db.execute({
     sql: `SELECT data FROM events WHERE user_id = ? AND data LIKE ? ESCAPE '\\' ORDER BY created_at DESC`,
@@ -260,46 +147,53 @@ export interface LeadFilters {
   mode?: string;
 }
 
-export async function dbGetAllLeads(userId: string, filters?: LeadFilters): Promise<Lead[]> {
-  const db = await ensureSchema();
-  let sql = 'SELECT data FROM leads WHERE user_id = ?';
+export async function dbGetAllLeads(userId: string, filters?: LeadFilters, pagination?: PaginationOptions): Promise<PaginatedResult<Lead>> {
+  const db = getDb();
+  const limit = clampPageSize(pagination?.limit);
+  const offset = pagination?.offset ?? 0;
+
+  let whereClause = 'WHERE user_id = ?';
   const params: (string | number)[] = [userId];
 
   if (filters?.mode) {
-    sql += ' AND mode = ?';
+    whereClause += ' AND mode = ?';
     params.push(filters.mode);
   }
   if (filters?.status) {
-    sql += ' AND status = ?';
+    whereClause += ' AND status = ?';
     params.push(filters.status);
   }
   if (filters?.priority) {
-    sql += ' AND priority = ?';
+    whereClause += ' AND priority = ?';
     params.push(filters.priority);
   }
   if (filters?.minScore !== undefined) {
-    sql += ' AND lead_score >= ?';
+    whereClause += ' AND lead_score >= ?';
     params.push(filters.minScore);
   }
   if (filters?.search) {
-    sql += " AND data LIKE ? ESCAPE '\\'";
+    whereClause += " AND data LIKE ? ESCAPE '\\'";
     params.push(`%${escapeLikeQuery(filters.search)}%`);
   }
 
-  sql += ' ORDER BY lead_score DESC, created_at DESC';
-
-  const result = await db.execute({ sql, args: params });
-  return result.rows.map((row) => JSON.parse(row.data as string));
+  const countParams = [...params];
+  const [countResult, result] = await Promise.all([
+    db.execute({ sql: `SELECT COUNT(*) as cnt FROM leads ${whereClause}`, args: countParams }),
+    db.execute({ sql: `SELECT data FROM leads ${whereClause} ORDER BY lead_score DESC, created_at DESC LIMIT ? OFFSET ?`, args: [...params, limit, offset] }),
+  ]);
+  const total = Number(countResult.rows[0]?.cnt ?? 0);
+  const data = result.rows.map((row) => JSON.parse(row.data as string));
+  return { data, total, limit, offset, hasMore: offset + data.length < total };
 }
 
 export async function dbGetLead(id: string, userId: string): Promise<Lead | null> {
-  const db = await ensureSchema();
+  const db = getDb();
   const result = await db.execute({ sql: 'SELECT data FROM leads WHERE lead_id = ? AND user_id = ?', args: [id, userId] });
   return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
 export async function dbSaveLead(lead: Lead, userId: string, mode?: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   const now = new Date().toISOString();
   const data = JSON.stringify(lead);
 
@@ -322,12 +216,12 @@ export async function dbSaveLead(lead: Lead, userId: string, mode?: string): Pro
 }
 
 export async function dbDeleteLead(id: string, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   await db.execute({ sql: 'DELETE FROM leads WHERE lead_id = ? AND user_id = ?', args: [id, userId] });
 }
 
 export async function dbDeleteAllLeads(userId: string, mode?: string): Promise<number> {
-  const db = await ensureSchema();
+  const db = getDb();
   let sql = 'DELETE FROM leads WHERE user_id = ?';
   const args: string[] = [userId];
   if (mode) {
@@ -339,56 +233,77 @@ export async function dbDeleteAllLeads(userId: string, mode?: string): Promise<n
 }
 
 export async function dbFindLeadByDedupeKey(key: string, userId: string): Promise<Lead | null> {
-  const db = await ensureSchema();
+  const db = getDb();
   const result = await db.execute({ sql: 'SELECT data FROM leads WHERE dedupe_key = ? AND user_id = ?', args: [key, userId] });
   return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
 export async function dbGetLeadStats(userId: string, mode?: string): Promise<{ total: number; byStatus: Record<string, number>; byPriority: Record<string, number>; avgScore: number }> {
-  const db = await ensureSchema();
+  const db = getDb();
   const modeFilter = mode ? ' AND mode = ?' : '';
   const modeArgs = mode ? [mode] : [];
 
-  const totalRow = await db.execute({ sql: `SELECT COUNT(*) as c FROM leads WHERE user_id = ?${modeFilter}`, args: [userId, ...modeArgs] });
-  const total = Number(totalRow.rows[0].c);
+  // Single combined query instead of 4 sequential queries
+  const [groupRows, avgRow] = await Promise.all([
+    db.execute({
+      sql: `SELECT status, priority, COUNT(*) as c FROM leads WHERE user_id = ?${modeFilter} GROUP BY status, priority`,
+      args: [userId, ...modeArgs],
+    }),
+    db.execute({
+      sql: `SELECT AVG(lead_score) as avg FROM leads WHERE user_id = ?${modeFilter}`,
+      args: [userId, ...modeArgs],
+    }),
+  ]);
 
-  const statusRows = await db.execute({ sql: `SELECT status, COUNT(*) as c FROM leads WHERE user_id = ?${modeFilter} GROUP BY status`, args: [userId, ...modeArgs] });
+  let total = 0;
   const byStatus: Record<string, number> = {};
-  for (const r of statusRows.rows) byStatus[r.status as string] = Number(r.c);
-
-  const priorityRows = await db.execute({ sql: `SELECT priority, COUNT(*) as c FROM leads WHERE user_id = ?${modeFilter} GROUP BY priority`, args: [userId, ...modeArgs] });
   const byPriority: Record<string, number> = {};
-  for (const r of priorityRows.rows) byPriority[r.priority as string] = Number(r.c);
+  for (const r of groupRows.rows) {
+    const count = Number(r.c);
+    total += count;
+    const status = r.status as string;
+    const priority = r.priority as string;
+    byStatus[status] = (byStatus[status] || 0) + count;
+    byPriority[priority] = (byPriority[priority] || 0) + count;
+  }
 
-  const avgRow = await db.execute({ sql: `SELECT AVG(lead_score) as avg FROM leads WHERE user_id = ?${modeFilter}`, args: [userId, ...modeArgs] });
   const avgScore = Math.round(Number(avgRow.rows[0].avg) || 0);
 
   return { total, byStatus, byPriority, avgScore };
 }
 
 export async function dbGetHandoffQueue(userId: string): Promise<Lead[]> {
-  const db = await ensureSchema();
+  const db = getDb();
   const result = await db.execute({ sql: "SELECT data FROM leads WHERE user_id = ? AND status = 'queued_for_dj_agent' ORDER BY lead_score DESC", args: [userId] });
   return result.rows.map((row) => JSON.parse(row.data as string));
 }
 
 // ---- Query Seed CRUD (user-scoped) ----
 
-export async function dbGetAllSeeds(userId: string, mode?: string): Promise<QuerySeed[]> {
-  const db = await ensureSchema();
-  let sql = 'SELECT data FROM query_seeds WHERE user_id = ?';
+export async function dbGetAllSeeds(userId: string, mode?: string, pagination?: PaginationOptions): Promise<PaginatedResult<QuerySeed>> {
+  const db = getDb();
+  const limit = clampPageSize(pagination?.limit);
+  const offset = pagination?.offset ?? 0;
+
+  let whereClause = 'WHERE user_id = ?';
   const args: (string | number)[] = [userId];
   if (mode) {
-    sql += ' AND mode = ?';
+    whereClause += ' AND mode = ?';
     args.push(mode);
   }
-  sql += ' ORDER BY created_at DESC';
-  const result = await db.execute({ sql, args });
-  return result.rows.map((row) => JSON.parse(row.data as string));
+
+  const countArgs = [...args];
+  const [countResult, result] = await Promise.all([
+    db.execute({ sql: `SELECT COUNT(*) as cnt FROM query_seeds ${whereClause}`, args: countArgs }),
+    db.execute({ sql: `SELECT data FROM query_seeds ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`, args: [...args, limit, offset] }),
+  ]);
+  const total = Number(countResult.rows[0]?.cnt ?? 0);
+  const data = result.rows.map((row) => JSON.parse(row.data as string));
+  return { data, total, limit, offset, hasMore: offset + data.length < total };
 }
 
 export async function dbSaveSeed(seed: QuerySeed, userId: string, mode: string = 'performer'): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   const data = JSON.stringify({ ...seed, mode });
   await db.execute({
     sql: `INSERT INTO query_seeds (id, user_id, data, active, mode, created_at)
@@ -402,12 +317,12 @@ export async function dbSaveSeed(seed: QuerySeed, userId: string, mode: string =
 }
 
 export async function dbDeleteSeed(id: string, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   await db.execute({ sql: 'DELETE FROM query_seeds WHERE id = ? AND user_id = ?', args: [id, userId] });
 }
 
 export async function dbDeleteAllSeeds(userId: string, mode?: string): Promise<number> {
-  const db = await ensureSchema();
+  const db = getDb();
   let sql = 'DELETE FROM query_seeds WHERE user_id = ?';
   const args: string[] = [userId];
   if (mode) {
@@ -425,13 +340,13 @@ export async function dbDeleteAllSeeds(userId: string, mode?: string): Promise<n
 // ---- Brand Profile ----
 
 export async function dbGetBrandProfile(userId: string): Promise<BrandProfile | null> {
-  const db = await ensureSchema();
+  const db = getDb();
   const result = await db.execute({ sql: 'SELECT data FROM brand_profiles WHERE user_id = ? LIMIT 1', args: [userId] });
   return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
 export async function dbSaveBrandProfile(profile: BrandProfile, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   const now = new Date().toISOString();
   const data = JSON.stringify(profile);
   await db.execute({
@@ -453,29 +368,37 @@ export interface SocialPostFilters {
   planId?: string;
 }
 
-export async function dbGetAllSocialPosts(userId: string, filters?: SocialPostFilters): Promise<SocialPost[]> {
-  const db = await ensureSchema();
-  let sql = 'SELECT data FROM social_posts WHERE user_id = ?';
+export async function dbGetAllSocialPosts(userId: string, filters?: SocialPostFilters, pagination?: PaginationOptions): Promise<PaginatedResult<SocialPost>> {
+  const db = getDb();
+  const limit = clampPageSize(pagination?.limit);
+  const offset = pagination?.offset ?? 0;
+
+  let whereClause = 'WHERE user_id = ?';
   const params: (string | number)[] = [userId];
 
-  if (filters?.status) { sql += ' AND status = ?'; params.push(filters.status); }
-  if (filters?.pillar) { sql += ' AND pillar = ?'; params.push(filters.pillar); }
-  if (filters?.postType) { sql += ' AND post_type = ?'; params.push(filters.postType); }
-  if (filters?.planId) { sql += ' AND plan_id = ?'; params.push(filters.planId); }
+  if (filters?.status) { whereClause += ' AND status = ?'; params.push(filters.status); }
+  if (filters?.pillar) { whereClause += ' AND pillar = ?'; params.push(filters.pillar); }
+  if (filters?.postType) { whereClause += ' AND post_type = ?'; params.push(filters.postType); }
+  if (filters?.planId) { whereClause += ' AND plan_id = ?'; params.push(filters.planId); }
 
-  sql += ' ORDER BY created_at DESC';
-  const result = await db.execute({ sql, args: params });
-  return result.rows.map((row) => JSON.parse(row.data as string));
+  const countParams = [...params];
+  const [countResult, result] = await Promise.all([
+    db.execute({ sql: `SELECT COUNT(*) as cnt FROM social_posts ${whereClause}`, args: countParams }),
+    db.execute({ sql: `SELECT data FROM social_posts ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`, args: [...params, limit, offset] }),
+  ]);
+  const total = Number(countResult.rows[0]?.cnt ?? 0);
+  const data = result.rows.map((row) => JSON.parse(row.data as string));
+  return { data, total, limit, offset, hasMore: offset + data.length < total };
 }
 
 export async function dbGetSocialPost(id: string, userId: string): Promise<SocialPost | null> {
-  const db = await ensureSchema();
+  const db = getDb();
   const result = await db.execute({ sql: 'SELECT data FROM social_posts WHERE id = ? AND user_id = ?', args: [id, userId] });
   return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
 export async function dbSaveSocialPost(post: SocialPost, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   const now = new Date().toISOString();
   const data = JSON.stringify(post);
   await db.execute({
@@ -494,12 +417,12 @@ export async function dbSaveSocialPost(post: SocialPost, userId: string): Promis
 }
 
 export async function dbDeleteSocialPost(id: string, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   await db.execute({ sql: 'DELETE FROM social_posts WHERE id = ? AND user_id = ?', args: [id, userId] });
 }
 
 export async function dbGetPostStats(userId: string): Promise<{ total: number; byStatus: Record<string, number>; byPillar: Record<string, number> }> {
-  const db = await ensureSchema();
+  const db = getDb();
   const totalRow = await db.execute({ sql: 'SELECT COUNT(*) as c FROM social_posts WHERE user_id = ?', args: [userId] });
   const total = Number(totalRow.rows[0].c);
 
@@ -517,19 +440,19 @@ export async function dbGetPostStats(userId: string): Promise<{ total: number; b
 // ---- Content Plans ----
 
 export async function dbGetContentPlan(weekOf: string, userId: string): Promise<ContentPlan | null> {
-  const db = await ensureSchema();
+  const db = getDb();
   const result = await db.execute({ sql: 'SELECT data FROM content_plans WHERE week_of = ? AND user_id = ?', args: [weekOf, userId] });
   return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
 export async function dbGetLatestContentPlan(userId: string): Promise<ContentPlan | null> {
-  const db = await ensureSchema();
+  const db = getDb();
   const result = await db.execute({ sql: 'SELECT data FROM content_plans WHERE user_id = ? ORDER BY week_of DESC LIMIT 1', args: [userId] });
   return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
 export async function dbSaveContentPlan(plan: ContentPlan, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   const now = new Date().toISOString();
   const data = JSON.stringify(plan);
   await db.execute({
@@ -546,18 +469,27 @@ export async function dbSaveContentPlan(plan: ContentPlan, userId: string): Prom
 
 // ---- Engagement Tasks ----
 
-export async function dbGetEngagementTasks(userId: string, status?: string): Promise<EngagementTask[]> {
-  const db = await ensureSchema();
-  let sql = 'SELECT data FROM engagement_tasks WHERE user_id = ?';
+export async function dbGetEngagementTasks(userId: string, status?: string, pagination?: PaginationOptions): Promise<PaginatedResult<EngagementTask>> {
+  const db = getDb();
+  const limit = clampPageSize(pagination?.limit);
+  const offset = pagination?.offset ?? 0;
+
+  let whereClause = 'WHERE user_id = ?';
   const params: (string | number)[] = [userId];
-  if (status) { sql += ' AND status = ?'; params.push(status); }
-  sql += ' ORDER BY requires_approval DESC, created_at DESC';
-  const result = await db.execute({ sql, args: params });
-  return result.rows.map((row) => JSON.parse(row.data as string));
+  if (status) { whereClause += ' AND status = ?'; params.push(status); }
+
+  const countParams = [...params];
+  const [countResult, result] = await Promise.all([
+    db.execute({ sql: `SELECT COUNT(*) as cnt FROM engagement_tasks ${whereClause}`, args: countParams }),
+    db.execute({ sql: `SELECT data FROM engagement_tasks ${whereClause} ORDER BY requires_approval DESC, created_at DESC LIMIT ? OFFSET ?`, args: [...params, limit, offset] }),
+  ]);
+  const total = Number(countResult.rows[0]?.cnt ?? 0);
+  const data = result.rows.map((row) => JSON.parse(row.data as string));
+  return { data, total, limit, offset, hasMore: offset + data.length < total };
 }
 
 export async function dbSaveEngagementTask(task: EngagementTask, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   const now = new Date().toISOString();
   const data = JSON.stringify(task);
   await db.execute({
@@ -575,21 +507,29 @@ export async function dbSaveEngagementTask(task: EngagementTask, userId: string)
 
 // ---- Media Assets ----
 
-export async function dbGetAllMediaAssets(userId: string): Promise<MediaAsset[]> {
-  const db = await ensureSchema();
-  const result = await db.execute({ sql: 'SELECT data FROM media_assets WHERE user_id = ? ORDER BY created_at DESC', args: [userId] });
-  return result.rows.map(r => JSON.parse(r.data as string));
+export async function dbGetAllMediaAssets(userId: string, pagination?: PaginationOptions): Promise<PaginatedResult<MediaAsset>> {
+  const db = getDb();
+  const limit = clampPageSize(pagination?.limit);
+  const offset = pagination?.offset ?? 0;
+
+  const [countResult, result] = await Promise.all([
+    db.execute({ sql: 'SELECT COUNT(*) as cnt FROM media_assets WHERE user_id = ?', args: [userId] }),
+    db.execute({ sql: 'SELECT data FROM media_assets WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?', args: [userId, limit, offset] }),
+  ]);
+  const total = Number(countResult.rows[0]?.cnt ?? 0);
+  const data = result.rows.map(r => JSON.parse(r.data as string));
+  return { data, total, limit, offset, hasMore: offset + data.length < total };
 }
 
 export async function dbGetMediaAsset(id: string, userId: string): Promise<MediaAsset | null> {
-  const db = await ensureSchema();
+  const db = getDb();
   const result = await db.execute({ sql: 'SELECT data FROM media_assets WHERE id = ? AND user_id = ?', args: [id, userId] });
   if (result.rows.length === 0) return null;
   return JSON.parse(result.rows[0].data as string);
 }
 
 export async function dbSaveMediaAsset(asset: MediaAsset, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   const now = new Date().toISOString();
   const data = JSON.stringify(asset);
   await db.execute({
@@ -605,7 +545,7 @@ export async function dbSaveMediaAsset(asset: MediaAsset, userId: string): Promi
 }
 
 export async function dbDeleteMediaAsset(id: string, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   await db.execute({ sql: 'DELETE FROM media_assets WHERE id = ? AND user_id = ?', args: [id, userId] });
 }
 
@@ -619,18 +559,17 @@ export async function dbGetPlatformStats(): Promise<{
   totalMediaAssets: number;
   uniqueUserIds: string[];
 }> {
-  const db = await ensureSchema();
-  const [events, leads, posts, plans, media] = await Promise.all([
-    db.execute('SELECT COUNT(*) as cnt, COUNT(DISTINCT user_id) as users FROM events'),
+  const db = getDb();
+  const [events, leads, posts, plans, media, users] = await Promise.all([
+    db.execute('SELECT COUNT(*) as cnt FROM events'),
     db.execute('SELECT COUNT(*) as cnt FROM leads'),
     db.execute('SELECT COUNT(*) as cnt FROM social_posts'),
     db.execute('SELECT COUNT(*) as cnt FROM content_plans'),
     db.execute('SELECT COUNT(*) as cnt FROM media_assets'),
+    db.execute('SELECT DISTINCT user_id FROM leads WHERE user_id IS NOT NULL AND user_id != \'\''),
   ]);
 
-  // Gather unique user IDs
-  const userRows = await db.execute('SELECT DISTINCT user_id FROM events UNION SELECT DISTINCT user_id FROM leads UNION SELECT DISTINCT user_id FROM social_posts UNION SELECT DISTINCT user_id FROM brand_profiles');
-  const uniqueUserIds = userRows.rows.map(r => r.user_id as string).filter(Boolean);
+  const uniqueUserIds = users.rows.map(r => r.user_id as string).filter(Boolean);
 
   return {
     totalEvents: Number(events.rows[0]?.cnt || 0),
@@ -650,7 +589,7 @@ export async function dbGetUserStats(userId: string): Promise<{
   mediaAssets: number;
   hasBrand: boolean;
 }> {
-  const db = await ensureSchema();
+  const db = getDb();
   const [events, leads, posts, plans, media, brand] = await Promise.all([
     db.execute({ sql: 'SELECT COUNT(*) as cnt FROM events WHERE user_id = ?', args: [userId] }),
     db.execute({ sql: 'SELECT COUNT(*) as cnt FROM leads WHERE user_id = ?', args: [userId] }),
@@ -672,13 +611,13 @@ export async function dbGetUserStats(userId: string): Promise<{
 // ── EPK Configs ──────────────────────────────────────────
 
 export async function dbGetEPKConfig(userId: string): Promise<EPKConfig | null> {
-  const db = await ensureSchema();
+  const db = getDb();
   const result = await db.execute({ sql: 'SELECT data FROM epk_configs WHERE user_id = ?', args: [userId] });
   return result.rows.length > 0 ? JSON.parse(result.rows[0].data as string) : null;
 }
 
 export async function dbSaveEPKConfig(config: EPKConfig, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   const now = new Date().toISOString();
   const data = JSON.stringify({ ...config, updatedAt: now });
   await db.execute({
@@ -691,7 +630,7 @@ export async function dbSaveEPKConfig(config: EPKConfig, userId: string): Promis
 // ---- Sent Emails ----
 
 export async function dbSaveSentEmail(email: SentEmail, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   await db.execute({
     sql: `INSERT INTO sent_emails (id, user_id, event_id, to_email, subject, body, status, resend_id, sent_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -699,10 +638,17 @@ export async function dbSaveSentEmail(email: SentEmail, userId: string): Promise
   });
 }
 
-export async function dbGetSentEmails(userId: string): Promise<SentEmail[]> {
-  const db = await ensureSchema();
-  const result = await db.execute({ sql: `SELECT * FROM sent_emails WHERE user_id = ? ORDER BY sent_at DESC`, args: [userId] });
-  return result.rows.map(r => ({
+export async function dbGetSentEmails(userId: string, pagination?: PaginationOptions): Promise<PaginatedResult<SentEmail>> {
+  const db = getDb();
+  const limit = clampPageSize(pagination?.limit);
+  const offset = pagination?.offset ?? 0;
+
+  const [countResult, result] = await Promise.all([
+    db.execute({ sql: 'SELECT COUNT(*) as cnt FROM sent_emails WHERE user_id = ?', args: [userId] }),
+    db.execute({ sql: `SELECT * FROM sent_emails WHERE user_id = ? ORDER BY sent_at DESC LIMIT ? OFFSET ?`, args: [userId, limit, offset] }),
+  ]);
+  const total = Number(countResult.rows[0]?.cnt ?? 0);
+  const data = result.rows.map(r => ({
     id: r.id as string,
     eventId: r.event_id as string,
     toEmail: r.to_email as string,
@@ -712,10 +658,11 @@ export async function dbGetSentEmails(userId: string): Promise<SentEmail[]> {
     resendId: r.resend_id as string,
     sentAt: r.sent_at as string,
   }));
+  return { data, total, limit, offset, hasMore: offset + data.length < total };
 }
 
 export async function dbGetSentEmail(id: string, userId: string): Promise<SentEmail | null> {
-  const db = await ensureSchema();
+  const db = getDb();
   const result = await db.execute({ sql: `SELECT * FROM sent_emails WHERE id = ? AND user_id = ?`, args: [id, userId] });
   if (result.rows.length === 0) return null;
   const r = result.rows[0];
@@ -793,7 +740,7 @@ Best,
 ];
 
 export async function dbGetEmailTemplates(userId: string): Promise<EmailTemplate[]> {
-  const db = await ensureSchema();
+  const db = getDb();
   const result = await db.execute({ sql: `SELECT * FROM email_templates WHERE user_id = ? ORDER BY created_at ASC`, args: [userId] });
 
   // Seed defaults on first access
@@ -813,7 +760,7 @@ export async function dbGetEmailTemplates(userId: string): Promise<EmailTemplate
 }
 
 export async function dbSaveEmailTemplate(userId: string, template: { id?: string; name: string; subject: string; bodyTemplate: string }): Promise<EmailTemplate> {
-  const db = await ensureSchema();
+  const db = getDb();
   const id = template.id || `tpl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   if (template.id) {
@@ -833,7 +780,7 @@ export async function dbSaveEmailTemplate(userId: string, template: { id?: strin
 }
 
 export async function dbDeleteEmailTemplate(id: string, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   await db.execute({ sql: `DELETE FROM email_templates WHERE id = ? AND user_id = ?`, args: [id, userId] });
 }
 
@@ -878,17 +825,25 @@ export interface FlyerConfig {
   updatedAt: string;
 }
 
-export async function dbGetFlyers(userId: string): Promise<FlyerConfig[]> {
-  const db = await ensureSchema();
-  const result = await db.execute({ sql: `SELECT * FROM flyer_configs WHERE user_id = ? ORDER BY updated_at DESC`, args: [userId] });
-  return result.rows.map(r => {
-    const data = JSON.parse(r.data as string);
-    return { ...data, id: r.id as string, userId: r.user_id as string, eventId: r.event_id as string || '', createdAt: r.created_at as string, updatedAt: r.updated_at as string };
+export async function dbGetFlyers(userId: string, pagination?: PaginationOptions): Promise<PaginatedResult<FlyerConfig>> {
+  const db = getDb();
+  const limit = clampPageSize(pagination?.limit);
+  const offset = pagination?.offset ?? 0;
+
+  const [countResult, result] = await Promise.all([
+    db.execute({ sql: 'SELECT COUNT(*) as cnt FROM flyer_configs WHERE user_id = ?', args: [userId] }),
+    db.execute({ sql: `SELECT * FROM flyer_configs WHERE user_id = ? ORDER BY updated_at DESC LIMIT ? OFFSET ?`, args: [userId, limit, offset] }),
+  ]);
+  const total = Number(countResult.rows[0]?.cnt ?? 0);
+  const data = result.rows.map(r => {
+    const d = JSON.parse(r.data as string);
+    return { ...d, id: r.id as string, userId: r.user_id as string, eventId: r.event_id as string || '', createdAt: r.created_at as string, updatedAt: r.updated_at as string };
   });
+  return { data, total, limit, offset, hasMore: offset + data.length < total };
 }
 
 export async function dbGetFlyer(id: string, userId: string): Promise<FlyerConfig | null> {
-  const db = await ensureSchema();
+  const db = getDb();
   const result = await db.execute({ sql: `SELECT * FROM flyer_configs WHERE id = ? AND user_id = ?`, args: [id, userId] });
   if (result.rows.length === 0) return null;
   const r = result.rows[0];
@@ -897,7 +852,7 @@ export async function dbGetFlyer(id: string, userId: string): Promise<FlyerConfi
 }
 
 export async function dbSaveFlyer(userId: string, flyer: Partial<FlyerConfig> & { id?: string }): Promise<FlyerConfig> {
-  const db = await ensureSchema();
+  const db = getDb();
   const id = flyer.id || `flyer_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const data = JSON.stringify(flyer);
 
@@ -917,6 +872,6 @@ export async function dbSaveFlyer(userId: string, flyer: Partial<FlyerConfig> & 
 }
 
 export async function dbDeleteFlyer(id: string, userId: string): Promise<void> {
-  const db = await ensureSchema();
+  const db = getDb();
   await db.execute({ sql: `DELETE FROM flyer_configs WHERE id = ? AND user_id = ?`, args: [id, userId] });
 }

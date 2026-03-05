@@ -17,10 +17,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ success: true, ...report });
     } catch (error) {
         console.error('[ig-agent-cron] Failed:', error);
-        return NextResponse.json({
-            error: 'Instagram agent failed',
-            details: error instanceof Error ? error.message : 'Unknown error',
-        }, { status: 500 });
+        return NextResponse.json({ error: 'Instagram agent run failed' }, { status: 500 });
     }
 }
 
@@ -59,9 +56,6 @@ export async function POST(request: NextRequest) {
         }
     } catch (error) {
         console.error('[ig-agent-api] Failed:', error);
-        return NextResponse.json({
-            error: 'Action failed',
-            details: error instanceof Error ? error.message : 'Unknown error',
-        }, { status: 500 });
+        return NextResponse.json({ error: 'Action failed' }, { status: 500 });
     }
 }

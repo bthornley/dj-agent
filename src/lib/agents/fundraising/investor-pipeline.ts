@@ -1,4 +1,5 @@
-import { createClient, Client } from '@libsql/client';
+import { getDb } from '@/lib/db';
+import { Client } from '@libsql/client';
 import { getRecentSnapshots, DailyMetrics, generateWeeklyInvestorUpdate } from '@/lib/agents/analytics/analytics-agent';
 import { randomUUID as uuid } from 'crypto';
 
@@ -6,18 +7,6 @@ import { randomUUID as uuid } from 'crypto';
 // Investor Pipeline Agent — CRM, Scoring & Outreach
 // Manages the fundraising pipeline: discover → score → draft → track
 // ============================================================
-
-// Reuse Turso connection
-let _db: Client | null = null;
-function getDb(): Client {
-    if (!_db) {
-        _db = createClient({
-            url: process.env.TURSO_DATABASE_URL || 'file:data/giglift.db',
-            authToken: process.env.TURSO_AUTH_TOKEN,
-        });
-    }
-    return _db;
-}
 
 let _migrated = false;
 async function ensureInvestorSchema(): Promise<Client> {

@@ -9,8 +9,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     try {
         const [brand, events, media, stats, epkConfig] = await Promise.all([
             dbGetBrandProfile(userId).catch(() => null),
-            dbGetAllEvents(userId).catch(() => []),
-            dbGetAllMediaAssets(userId).catch(() => []),
+            dbGetAllEvents(userId).then(r => r.data).catch(() => [] as import('@/lib/types').Event[]),
+            dbGetAllMediaAssets(userId).then(r => r.data).catch(() => [] as import('@/lib/types').MediaAsset[]),
             dbGetUserStats(userId).catch(() => ({ events: 0, leads: 0, posts: 0, plans: 0, mediaAssets: 0, hasBrand: false })),
             dbGetEPKConfig(userId).catch(() => null),
         ]);

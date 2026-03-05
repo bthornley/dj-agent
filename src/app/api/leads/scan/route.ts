@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     // Rate limit: 10 scans per minute per user
-    const rl = rateLimit(`scan:${userId}`, 10, 60_000);
+    const rl = await rateLimit(`scan:${userId}`, 10, 60_000);
     if (!rl.allowed) {
         return NextResponse.json(
             { error: 'Too many requests. Please wait before scanning again.' },

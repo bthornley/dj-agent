@@ -12,8 +12,8 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || undefined;
-    const tasks = await dbGetEngagementTasks(userId, status);
-    return NextResponse.json(tasks);
+    const result = await dbGetEngagementTasks(userId, status);
+    return NextResponse.json(result);
 }
 
 // POST /api/social/engagement — Generate new engagement tasks
@@ -22,7 +22,7 @@ export async function POST() {
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const brand = await dbGetBrandProfile(userId);
-    const leads = await dbGetAllLeads(userId);
+    const leads = (await dbGetAllLeads(userId)).data;
     const tasks = generateDailyEngagement(brand, leads);
 
     // Save all tasks
@@ -42,8 +42,8 @@ export async function PATCH(request: NextRequest) {
     if (!id) return NextResponse.json({ error: 'Task id is required' }, { status: 400 });
 
     // Find the task
-    const tasks = await dbGetEngagementTasks(userId);
-    const task = tasks.find(t => t.id === id);
+    const tasksResult = await dbGetEngagementTasks(userId);
+    const task = tasksResult.data.find(t => t.id === id);
     if (!task) return NextResponse.json({ error: 'Task not found' }, { status: 404 });
 
     if (status) task.status = status;

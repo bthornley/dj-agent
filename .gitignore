@@ -40,8 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# database
-/data/
+# database (but allow docs)
+/data/*.db
+/data/*.db-shm
+/data/*.db-wal
+!/data/docs/
 
 # clerk configuration (can include secrets)
 /.clerk/

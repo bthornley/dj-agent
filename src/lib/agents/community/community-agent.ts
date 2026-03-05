@@ -1,21 +1,11 @@
-import { createClient, Client } from '@libsql/client';
+import { getDb } from '@/lib/db';
+import { Client } from '@libsql/client';
 import { randomUUID as uuid } from 'crypto';
 
 // ============================================================
 // Community Agent — Feedback, Power Users & Engagement
 // Surfaces insights from user activity and manages community health.
 // ============================================================
-
-let _db: Client | null = null;
-function getDb(): Client {
-    if (!_db) {
-        _db = createClient({
-            url: process.env.TURSO_DATABASE_URL || 'file:data/giglift.db',
-            authToken: process.env.TURSO_AUTH_TOKEN,
-        });
-    }
-    return _db;
-}
 
 let _migrated = false;
 async function ensureCommunitySchema(): Promise<Client> {

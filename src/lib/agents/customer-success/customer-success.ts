@@ -1,21 +1,11 @@
-import { createClient, Client } from '@libsql/client';
+import { getDb } from '@/lib/db';
+import { Client } from '@libsql/client';
 import { randomUUID as uuid } from 'crypto';
 
 // ============================================================
 // Customer Success Agent — Health Scoring, Churn Prevention & Upgrades
 // Proactively monitors user health and drives retention + expansion.
 // ============================================================
-
-let _db: Client | null = null;
-function getDb(): Client {
-    if (!_db) {
-        _db = createClient({
-            url: process.env.TURSO_DATABASE_URL || 'file:data/giglift.db',
-            authToken: process.env.TURSO_AUTH_TOKEN,
-        });
-    }
-    return _db;
-}
 
 let _migrated = false;
 async function ensureCSSchema(): Promise<Client> {
@@ -133,16 +123,32 @@ export function computeHealthScore(data: {
 export async function evaluateAllUsers(): Promise<UserHealth[]> {
     const db = await ensureCSSchema();
 
-    // Get all distinct users with their activity data
+    const monthKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+
+    // Single batched query: get all user activity data with JOINs instead of N+1
     const users = await db.execute({
         sql: `SELECT
-                user_id,
-                COUNT(*) as lead_count,
-                MAX(created_at) as last_lead_at,
-                MIN(created_at) as first_lead_at
-              FROM leads
-              GROUP BY user_id`,
-        args: [],
+                l.user_id,
+                l.lead_count,
+                l.last_lead_at,
+                l.first_lead_at,
+                COALESCE(sq.count, 0) as scan_count,
+                COALESCE(qs.seed_count, 0) as seed_count,
+                COALESCE(ep.epk_count, 0) as epk_count,
+                COALESCE(sp.social_count, 0) as social_count,
+                uh.milestones_hit as existing_milestones
+              FROM (
+                SELECT user_id, COUNT(*) as lead_count,
+                       MAX(created_at) as last_lead_at,
+                       MIN(created_at) as first_lead_at
+                FROM leads GROUP BY user_id
+              ) l
+              LEFT JOIN search_quota sq ON sq.quota_key = l.user_id || ':' || ?
+              LEFT JOIN (SELECT user_id, COUNT(*) as seed_count FROM query_seeds GROUP BY user_id) qs ON qs.user_id = l.user_id
+              LEFT JOIN (SELECT user_id, COUNT(*) as epk_count FROM epk_configs GROUP BY user_id) ep ON ep.user_id = l.user_id
+              LEFT JOIN (SELECT user_id, COUNT(*) as social_count FROM social_posts GROUP BY user_id) sp ON sp.user_id = l.user_id
+              LEFT JOIN user_health uh ON uh.user_id = l.user_id`,
+        args: [monthKey],
     });
 
     const results: UserHealth[] = [];
@@ -152,35 +158,10 @@ export async function evaluateAllUsers(): Promise<UserHealth[]> {
         if (!userId) continue;
 
         const leadCount = Number(row.lead_count ?? 0);
-
-        // Get scan count for this month
-        const monthKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-        const scans = await db.execute({
-            sql: `SELECT count FROM search_quota WHERE quota_key = ?`,
-            args: [`${userId}:${monthKey}`],
-        });
-        const scanCount = Number(scans.rows[0]?.count ?? 0);
-
-        // Get seed count
-        const seeds = await db.execute({
-            sql: `SELECT COUNT(*) as c FROM query_seeds WHERE user_id = ?`,
-            args: [userId],
-        });
-        const seedCount = Number(seeds.rows[0]?.c ?? 0);
-
-        // Check EPK
-        const epk = await db.execute({
-            sql: `SELECT COUNT(*) as c FROM epk_configs WHERE user_id = ?`,
-            args: [userId],
-        });
-        const hasEpk = Number(epk.rows[0]?.c ?? 0) > 0;
-
-        // Check social posts
-        const social = await db.execute({
-            sql: `SELECT COUNT(*) as c FROM social_posts WHERE user_id = ?`,
-            args: [userId],
-        });
-        const hasSocial = Number(social.rows[0]?.c ?? 0) > 0;
+        const scanCount = Number(row.scan_count ?? 0);
+        const seedCount = Number(row.seed_count ?? 0);
+        const hasEpk = Number(row.epk_count ?? 0) > 0;
+        const hasSocial = Number(row.social_count ?? 0) > 0;
 
         // Compute timing
         const lastActivity = String(row.last_lead_at || '');
@@ -203,13 +184,9 @@ export async function evaluateAllUsers(): Promise<UserHealth[]> {
             days_since_signup: daysSinceSignup,
         });
 
-        // Get existing milestones
-        const existing = await db.execute({
-            sql: `SELECT milestones_hit FROM user_health WHERE user_id = ?`,
-            args: [userId],
-        });
-        const existingMilestones: string[] = existing.rows.length > 0
-            ? JSON.parse(String(existing.rows[0].milestones_hit || '[]'))
+        // Parse existing milestones from the JOINed user_health row
+        const existingMilestones: string[] = row.existing_milestones
+            ? JSON.parse(String(row.existing_milestones))
             : [];
 
         // Check for new milestones

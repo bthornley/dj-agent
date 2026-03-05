@@ -13,10 +13,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get('mode') || undefined;
 
-    let seeds = await dbGetAllSeeds(userId, mode);
+    let seedResult = await dbGetAllSeeds(userId, mode);
 
     // Auto-populate defaults for new users based on artist types + regions
-    if (seeds.length === 0) {
+    if (seedResult.data.length === 0) {
         const client = await clerkClient();
         const user = await client.users.getUser(userId);
         const meta = user.publicMetadata as Record<string, unknown>;
@@ -54,10 +54,10 @@ export async function GET(request: NextRequest) {
         for (const seed of allSeeds) {
             await dbSaveSeed(seed, userId, seedMode);
         }
-        seeds = await dbGetAllSeeds(userId, mode);
+        seedResult = await dbGetAllSeeds(userId, mode);
     }
 
-    return NextResponse.json(seeds);
+    return NextResponse.json(seedResult);
 }
 
 // POST /api/leads/seeds — Create a seed
@@ -79,9 +79,8 @@ export async function POST(request: NextRequest) {
 
     const plan = getPlanById(planId);
     if (plan.maxRegions !== -1 && body.region) {
-        const existingSeeds = await dbGetAllSeeds(userId, seedMode);
-        const existingRegions = new Set(existingSeeds.map(s => s.region));
-        if (!existingRegions.has(body.region) && existingRegions.size >= plan.maxRegions) {
+        const existingSeedResult = await dbGetAllSeeds(userId, seedMode);
+        const existingRegions = new Set(existingSeedResult.data.map(s => s.region)); if (!existingRegions.has(body.region) && existingRegions.size >= plan.maxRegions) {
             return NextResponse.json({
                 error: `Region limit reached (${existingRegions.size}/${plan.maxRegions}). Upgrade for more regions.`,
                 upgradeUrl: '/pricing',

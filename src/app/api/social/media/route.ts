@@ -59,8 +59,8 @@ export async function GET() {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const assets = await dbGetAllMediaAssets(userId);
-    return NextResponse.json(assets);
+    const result = await dbGetAllMediaAssets(userId);
+    return NextResponse.json(result);
 }
 
 // POST /api/social/media — Upload media files
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const rl = rateLimit(`media:${userId}`, 10, 60_000);
+    const rl = await rateLimit(`media:${userId}`, 10, 60_000);
     if (!rl.allowed) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
 
     const formData = await request.formData();
@@ -146,7 +146,7 @@ export async function DELETE(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const rl = rateLimit(`media-del:${userId}`, 5, 60_000);
+    const rl = await rateLimit(`media-del:${userId}`, 5, 60_000);
     if (!rl.allowed) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
 
     const { id, url } = await request.json();

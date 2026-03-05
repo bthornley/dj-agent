@@ -30,8 +30,11 @@ export async function GET(request: NextRequest) {
         mode,
     };
 
-    const leads = await dbGetAllLeads(userId, filters);
-    return NextResponse.json(leads);
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
+    const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : undefined;
+
+    const result = await dbGetAllLeads(userId, filters, { limit, offset });
+    return NextResponse.json(result);
 }
 
 // POST /api/leads — Create a lead manually
@@ -39,7 +42,7 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const rl = rateLimit(`leads:${userId}`, 15, 60_000);
+    const rl = await rateLimit(`leads:${userId}`, 15, 60_000);
     if (!rl.allowed) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
 
     try {
@@ -126,7 +129,7 @@ export async function DELETE(request: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const rl = rateLimit(`leads-del:${userId}`, 3, 60_000);
+    const rl = await rateLimit(`leads-del:${userId}`, 3, 60_000);
     if (!rl.allowed) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
 
     const { searchParams } = new URL(request.url);

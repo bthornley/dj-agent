@@ -29,7 +29,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const rl = rateLimit(`events:${userId}`, 20, 60_000);
+    const rl = await rateLimit(`events:${userId}`, 20, 60_000);
     if (!rl.allowed) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
 
     const { id } = await params;
@@ -48,7 +48,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const rl = rateLimit(`events-del:${userId}`, 10, 60_000);
+    const rl = await rateLimit(`events-del:${userId}`, 10, 60_000);
     if (!rl.allowed) return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
 
     const { id } = await params;

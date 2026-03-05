@@ -1,23 +1,11 @@
-import { createClient, Client } from '@libsql/client';
+import { Client } from '@libsql/client';
 import { getStripe } from '@/lib/stripe';
-import { dbGetPlatformStats } from '@/lib/db';
+import { dbGetPlatformStats, getDb } from '@/lib/db';
 
 // ============================================================
 // Analytics Agent — KPI Compiler & Metrics Store
 // Runs daily via Vercel Cron to snapshot business metrics.
 // ============================================================
-
-// Reuse the app's Turso connection
-let _db: Client | null = null;
-function getDb(): Client {
-    if (!_db) {
-        _db = createClient({
-            url: process.env.TURSO_DATABASE_URL || 'file:data/giglift.db',
-            authToken: process.env.TURSO_AUTH_TOKEN,
-        });
-    }
-    return _db;
-}
 
 // ---- Schema Migration ----
 

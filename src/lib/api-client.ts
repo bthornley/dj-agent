@@ -1,4 +1,5 @@
 import { Event, Lead, QuerySeed, LeadHandoff, SentEmail } from './types';
+import { PaginatedResult } from './db';
 
 // ============================================================
 // API Client — Fetch wrapper for event + lead CRUD
@@ -7,21 +8,63 @@ import { Event, Lead, QuerySeed, LeadHandoff, SentEmail } from './types';
 const BASE = '/api/events';
 const LEADS_BASE = '/api/leads';
 
-export async function fetchEvents(): Promise<Event[]> {
-    const res = await fetch(BASE);
+// ---- Resilient Fetch Wrapper ----
+
+const DEFAULT_TIMEOUT_MS = 15_000;
+const MAX_RETRIES = 3;
+const RETRY_DELAYS = [500, 1000, 2000]; // Exponential backoff
+
+async function fetchWithRetry(
+    input: RequestInfo | URL,
+    init?: RequestInit & { retries?: number; timeoutMs?: number }
+): Promise<Response> {
+    const maxRetries = init?.retries ?? MAX_RETRIES;
+    const timeoutMs = init?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+        try {
+            const res = await fetchWithRetry(input, {
+                ...init,
+                signal: controller.signal,
+            });
+            clearTimeout(timeoutId);
+
+            // Only retry on 5xx server errors, not 4xx client errors
+            if (res.status >= 500 && attempt < maxRetries) {
+                await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt] ?? 2000));
+                continue;
+            }
+            return res;
+        } catch (err) {
+            clearTimeout(timeoutId);
+            if (attempt >= maxRetries) throw err;
+            // Retry on network errors and timeouts
+            await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt] ?? 2000));
+        }
+    }
+
+    // Should not reach here, but satisfy TypeScript
+    throw new Error('fetchWithRetry: exhausted retries');
+}
+
+export async function fetchEvents(): Promise<PaginatedResult<Event>> {
+    const res = await fetchWithRetry(BASE);
     if (!res.ok) throw new Error('Failed to fetch events');
     return res.json();
 }
 
 export async function fetchEvent(id: string): Promise<Event | null> {
-    const res = await fetch(`${BASE}/${id}`);
+    const res = await fetchWithRetry(`${BASE}/${id}`);
     if (res.status === 404) return null;
     if (!res.ok) throw new Error('Failed to fetch event');
     return res.json();
 }
 
 export async function createEvent(event: Event): Promise<{ success: boolean; id: string }> {
-    const res = await fetch(BASE, {
+    const res = await fetchWithRetry(BASE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(event),
@@ -31,7 +74,7 @@ export async function createEvent(event: Event): Promise<{ success: boolean; id:
 }
 
 export async function updateEvent(id: string, updates: Partial<Event>): Promise<Event> {
-    const res = await fetch(`${BASE}/${id}`, {
+    const res = await fetchWithRetry(`${BASE}/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -41,7 +84,7 @@ export async function updateEvent(id: string, updates: Partial<Event>): Promise<
 }
 
 export async function deleteEvent(id: string): Promise<void> {
-    const res = await fetch(`${BASE}/${id}`, { method: 'DELETE' });
+    const res = await fetchWithRetry(`${BASE}/${id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error('Failed to delete event');
 }
 
@@ -64,20 +107,20 @@ export async function fetchLeads(filters?: {
     if (filters?.mode) params.set('mode', filters.mode);
 
     const url = params.toString() ? `${LEADS_BASE}?${params}` : LEADS_BASE;
-    const res = await fetch(url);
+    const res = await fetchWithRetry(url);
     if (!res.ok) throw new Error('Failed to fetch leads');
     return res.json();
 }
 
 export async function fetchLead(id: string): Promise<Lead | null> {
-    const res = await fetch(`${LEADS_BASE}/${id}`);
+    const res = await fetchWithRetry(`${LEADS_BASE}/${id}`);
     if (res.status === 404) return null;
     if (!res.ok) throw new Error('Failed to fetch lead');
     return res.json();
 }
 
 export async function createLead(lead: Partial<Lead>): Promise<{ success: boolean; lead: Lead }> {
-    const res = await fetch(LEADS_BASE, {
+    const res = await fetchWithRetry(LEADS_BASE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(lead),
@@ -87,7 +130,7 @@ export async function createLead(lead: Partial<Lead>): Promise<{ success: boolea
 }
 
 export async function updateLead(id: string, updates: Partial<Lead>): Promise<Lead> {
-    const res = await fetch(`${LEADS_BASE}/${id}`, {
+    const res = await fetchWithRetry(`${LEADS_BASE}/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -97,14 +140,14 @@ export async function updateLead(id: string, updates: Partial<Lead>): Promise<Le
 }
 
 export async function deleteLead(id: string): Promise<void> {
-    const res = await fetch(`${LEADS_BASE}/${id}`, { method: 'DELETE' });
+    const res = await fetchWithRetry(`${LEADS_BASE}/${id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error('Failed to delete lead');
 }
 
 export async function deleteAllLeads(mode?: string): Promise<{ deleted: number }> {
     const params = new URLSearchParams({ all: 'true' });
     if (mode) params.set('mode', mode);
-    const res = await fetch(`${LEADS_BASE}?${params}`, { method: 'DELETE' });
+    const res = await fetchWithRetry(`${LEADS_BASE}?${params}`, { method: 'DELETE' });
     if (!res.ok) throw new Error('Failed to delete leads');
     return res.json();
 }
@@ -124,7 +167,7 @@ export async function scanUrl(input: {
     qcIssues: string[];
     qcWarnings: string[];
 }> {
-    const res = await fetch(`${LEADS_BASE}/scan`, {
+    const res = await fetchWithRetry(`${LEADS_BASE}/scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
@@ -144,7 +187,7 @@ export async function fetchLeadStats(mode?: string): Promise<{
 }> {
     const params = new URLSearchParams({ stats: 'true' });
     if (mode) params.set('mode', mode);
-    const res = await fetch(`${LEADS_BASE}?${params}`);
+    const res = await fetchWithRetry(`${LEADS_BASE}?${params}`);
     if (!res.ok) throw new Error('Failed to fetch lead stats');
     return res.json();
 }
@@ -153,13 +196,13 @@ export async function fetchSeeds(mode?: string): Promise<QuerySeed[]> {
     const params = new URLSearchParams();
     if (mode) params.set('mode', mode);
     const url = params.toString() ? `${LEADS_BASE}/seeds?${params}` : `${LEADS_BASE}/seeds`;
-    const res = await fetch(url);
+    const res = await fetchWithRetry(url);
     if (!res.ok) throw new Error('Failed to fetch seeds');
     return res.json();
 }
 
 export async function createSeed(seed: Partial<QuerySeed>): Promise<{ success: boolean; seed: QuerySeed }> {
-    const res = await fetch(`${LEADS_BASE}/seeds`, {
+    const res = await fetchWithRetry(`${LEADS_BASE}/seeds`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(seed),
@@ -169,7 +212,7 @@ export async function createSeed(seed: Partial<QuerySeed>): Promise<{ success: b
 }
 
 export async function deleteSeed(id: string): Promise<void> {
-    const res = await fetch(`${LEADS_BASE}/seeds?id=${encodeURIComponent(id)}`, {
+    const res = await fetchWithRetry(`${LEADS_BASE}/seeds?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete seed');
@@ -178,7 +221,7 @@ export async function deleteSeed(id: string): Promise<void> {
 export async function deleteAllSeeds(mode?: string): Promise<{ deleted: number }> {
     const params = new URLSearchParams({ all: 'true' });
     if (mode) params.set('mode', mode);
-    const res = await fetch(`${LEADS_BASE}/seeds?${params}`, {
+    const res = await fetchWithRetry(`${LEADS_BASE}/seeds?${params}`, {
         method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete seeds');
@@ -191,7 +234,7 @@ export async function handoffLeads(leadIds: string[]): Promise<{
     failed: number;
     results: { lead_id: string; success: boolean; error?: string; handoff?: LeadHandoff }[];
 }> {
-    const res = await fetch(`${LEADS_BASE}/handoff`, {
+    const res = await fetchWithRetry(`${LEADS_BASE}/handoff`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lead_ids: leadIds }),
@@ -221,7 +264,7 @@ export async function autoScan(options: {
         errors: string[];
     }[];
 }> {
-    const res = await fetch(`${LEADS_BASE}/auto-scan`, {
+    const res = await fetchWithRetry(`${LEADS_BASE}/auto-scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(options),
@@ -242,7 +285,7 @@ export async function batchScanUrls(urls: { url: string; entity_name?: string; c
     results: { lead: Lead; isNew: boolean; qcPassed: boolean }[];
     errors: string[];
 }> {
-    const res = await fetch(`${LEADS_BASE}/auto-scan`, {
+    const res = await fetchWithRetry(`${LEADS_BASE}/auto-scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ urls }),
@@ -265,7 +308,7 @@ export async function sendEmail(params: {
     emailBody: string;
     replyTo?: string;
 }): Promise<{ success: boolean; emailId?: string; resendId?: string; error?: string }> {
-    const res = await fetch('/api/emails/send', {
+    const res = await fetchWithRetry('/api/emails/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
@@ -274,7 +317,7 @@ export async function sendEmail(params: {
 }
 
 export async function fetchSentEmails(): Promise<SentEmail[]> {
-    const res = await fetch('/api/emails');
+    const res = await fetchWithRetry('/api/emails');
     if (!res.ok) throw new Error('Failed to fetch sent emails');
     return res.json();
 }

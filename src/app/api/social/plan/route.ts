@@ -13,8 +13,8 @@ export async function GET() {
     if (!plan) return NextResponse.json(null);
 
     // Also fetch the posts for this plan
-    const posts = await dbGetAllSocialPosts(userId, { planId: plan.id });
-    return NextResponse.json({ plan, posts });
+    const postsResult = await dbGetAllSocialPosts(userId, { planId: plan.id });
+    return NextResponse.json({ plan, posts: postsResult.data });
 }
 
 // POST /api/social/plan — Generate a new weekly plan
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const weekOf = body.weekOf; // optional override
 
     // Step 0: Delete all existing draft posts so queue only has current plan
-    const existingPosts = await dbGetAllSocialPosts(userId);
+    const existingPosts = (await dbGetAllSocialPosts(userId)).data;
     for (const p of existingPosts) {
         if (p.status === 'draft' || p.status === 'rejected') {
             await dbDeleteSocialPost(p.id, userId);
@@ -34,11 +34,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Gather inputs
-    const events = await dbGetAllEvents(userId);
+    const events = (await dbGetAllEvents(userId)).data;
     const brand = await dbGetBrandProfile(userId);
 
     // Gather media sources — sorted newest first
-    const mediaAssets = (await dbGetAllMediaAssets(userId))
+    const mediaAssets = (await dbGetAllMediaAssets(userId)).data
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     const allMedia = mediaAssets.filter(a => a.mediaType === 'image' || a.mediaType === 'video');
 

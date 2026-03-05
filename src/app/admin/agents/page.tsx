@@ -123,6 +123,7 @@ export default function AdminAgentsDashboard() {
                 <nav className="topbar-nav" style={{ gap: '8px', alignItems: 'center' }}>
                     <Link href="/admin" className="btn btn-ghost btn-sm">🛡️ Admin</Link>
                     <Link href="/admin/agents" className="btn btn-secondary btn-sm">🤖 Agents</Link>
+                    <Link href="/admin/docs" className="btn btn-ghost btn-sm">📄 Docs</Link>
                     <Link href="/admin/instagram" className="btn btn-ghost btn-sm">📸 Instagram</Link>
                     <UserButton />
                 </nav>

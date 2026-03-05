@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Run guardrails one final time
-    const events = await dbGetAllEvents(userId);
+    const events = (await dbGetAllEvents(userId)).data;
     const guardrails = checkPostGuardrails(post, brand, events);
     if (!guardrails.passed) {
         return NextResponse.json({

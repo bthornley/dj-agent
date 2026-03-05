@@ -19,9 +19,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
         const stats = await dbGetUserStats(userId).catch(() => ({
             events: 0, leads: 0, posts: 0, plans: 0, mediaAssets: 0, hasBrand: false,
         }));
-        const events = await dbGetAllEvents(userId).catch(() => []);
-        const leads = await dbGetAllLeads(userId).catch(() => []);
-        const posts = await dbGetAllSocialPosts(userId).catch(() => []);
+        const events = await dbGetAllEvents(userId).then(r => r.data).catch(() => []);
+        const leads = await dbGetAllLeads(userId).then(r => r.data).catch(() => []);
+        const posts = await dbGetAllSocialPosts(userId).then(r => r.data).catch(() => []);
         const brand = await dbGetBrandProfile(userId).catch(() => null);
 
         // Ambassador application data (from privateMetadata — only visible to admins)

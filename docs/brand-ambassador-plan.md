@@ -208,21 +208,31 @@ gantt
 
 ## 9. Risk Mitigation
 
-| Risk | Mitigation |
-|---|---|
-| **Low ambassador engagement** | Minimum activity thresholds per tier; inactive ambassadors downgraded after 30 days |
-| **Brand misrepresentation** | Ambassador agreement with brand guidelines; content review for Elite tier |
-| **Gaming referrals** | Require verified email; 14-day hold before counting referral; flag suspicious patterns |
-| **High payout costs** | Cap monthly payouts at $500/ambassador; adjust rates quarterly based on LTV data |
-| **Legal/compliance** | FTC disclosure requirements in ambassador agreement; #ad or #partner tags required |
+| Risk | Severity | Mitigation |
+|---|---|---|
+| **Low ambassador engagement** | 🟡 | Minimum activity thresholds per tier; inactive ambassadors downgraded after 30 days |
+| **Brand misrepresentation** | 🟡 | Ambassador agreement with brand guidelines; content review for Elite tier |
+| **Gaming referrals** | 🟡 | Require verified email; 14-day hold before counting referral; flag suspicious patterns |
+| **High payout costs** | 🟡 | Cap monthly payouts at $500/ambassador; adjust rates quarterly based on LTV data |
+| **Legal/compliance** | 🟡 | FTC disclosure requirements in ambassador agreement; #ad or #partner tags required |
+| **Unproven product-market fit** | 🔴 | Ambassadors amplify signal — positive OR negative. If product retention is poor, ambassadors will churn and generate negative word-of-mouth. **Do NOT scale ambassador program until organic retention is proven (>60% 90-day retention).** |
+| **Unrealistic referral rate assumptions** | 🟡 | Industry avg is 3-5 referrals per advocate per year, not 15-25. Budget and ROI models should use conservative 5 referrals/ambassador baseline. |
+| **Single-founder capacity** | 🔴 | Managing 100+ ambassadors requires dedicated community management. Founder cannot simultaneously build product, manage ambassadors, and handle support. Hire community manager before Phase 2. |
+| **No mobile app** | 🟡 | Ambassadors will demo the product on mobile (where musicians live). Poor mobile experience destroys ambassador credibility. Prioritize mobile UX before ambassador recruiting. |
+| **LLM cost scaling** | 🟡 | Each referred user adds $2-5/month in API costs. At 2,500 free users, that's $5K-$12.5K/month before revenue. Ambassador-driven growth can outpace monetization. |
+
+> [!CAUTION]
+> **Prerequisite: Run a 10-person pilot program ($5K budget) for 90 days before launching the full program.** Validate that ambassador-referred users convert and retain at rates sufficient to justify the $70K annual budget. The realistic ROI analysis shows the program is likely cash-negative in Year 1 at realistic referral rates (3-5 per ambassador vs. the 15-25 assumed in the plan).
 
 ---
 
 ## 10. Next Steps
 
-1. **Build referral tracking** — Add `?ref=` param handling to sign-up flow, store in user metadata
-2. **Create ambassador landing page** — `/ambassadors` with application form and program details
-3. **Draft ambassador agreement** — Terms, brand guidelines, FTC compliance, payout schedule
-4. **Design first content kit** — March 2026 social templates, demo video script
-5. **Identify seed candidates** — Pull top 50 users by activity from admin dashboard
-6. **Set up Stripe Connect** — For automated ambassador payouts
+1. **Prove organic retention first** — Verify >60% 90-day retention with existing users before investing in ambassador-driven growth
+2. **Run 10-person pilot** — Recruit 10 seed ambassadors, measure actual referral rates and conversion for 90 days
+3. **Build referral tracking** — Add `?ref=` param handling to sign-up flow, store in user metadata
+4. **Build outcome tracking** — Add booking confirmation feature so ambassadors (and all users) can report "I booked a gig from this lead"
+5. **Create ambassador landing page** — `/ambassadors` with application form and program details
+6. **Draft ambassador agreement** — Terms, brand guidelines, FTC compliance, payout schedule
+7. **Design first content kit** — March 2026 social templates, demo video script
+8. **Set up Stripe Connect** — For automated ambassador payouts
