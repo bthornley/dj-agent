@@ -1,6 +1,10 @@
 {
     "crons": [
         {
+            "path": "/api/agents/cost-guardian",
+            "schedule": "0 5 * * *"
+        },
+        {
             "path": "/api/agents/analytics",
             "schedule": "0 6 * * *"
         },
