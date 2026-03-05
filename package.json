@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "migrate": "tsx scripts/migrate.ts",
-    "build": "tsx scripts/migrate.ts && next build",
+    "migrate": "npx tsx scripts/migrate.ts",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
