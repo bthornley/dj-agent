@@ -135,6 +135,14 @@ const DOCS: Doc[] = [
         description: 'Security architecture, threat model, auth flows, and compliance posture.',
         format: 'PPTX',
     },
+    {
+        title: 'Coding Standards & OWASP',
+        fileName: 'GigLift_Coding_Standards.pptx',
+        category: 'tech',
+        icon: '📐',
+        description: 'Performance-at-scale coding standards, OWASP Top 10 compliance, and code review checklist.',
+        format: 'PPTX',
+    },
 ];
 
 export default function AdminDocsPage() {

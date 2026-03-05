@@ -23,6 +23,7 @@ const ALLOWED_FILES: Record<string, string> = {
     'GigLift_Database_Model.pptx': 'tech',
     'GigLift_Dataflow.pptx': 'tech',
     'GigLift_Security.pptx': 'tech',
+    'GigLift_Coding_Standards.pptx': 'tech',
 };
 
 const MIME_TYPES: Record<string, string> = {
