@@ -22,6 +22,20 @@ interface AnalyticsData {
     churnRate: number;
 }
 
+interface AgentRunLog {
+    id: number;
+    agent_id: string;
+    agent_name: string;
+    status: 'running' | 'success' | 'failed' | 'warning';
+    started_at: string;
+    finished_at: string | null;
+    duration_ms: number | null;
+    summary: string | null;
+    alerts_count: number;
+    actions_count: number;
+    error: string | null;
+}
+
 interface AgentDashboardData {
     analytics: AnalyticsData | null;
     history: Array<{ date: string; mrr: number; users: number }>;
@@ -29,6 +43,8 @@ interface AgentDashboardData {
     investors: Array<{ name: string; firm: string; fit_score: number; status: string }>;
     contentQueue: Array<{ title: string; content_type: string; platform: string; status: string }>;
     weeklyUpdate: string | null;
+    agentRuns: AgentRunLog[];
+    agentStats: Record<string, { runs: number; lastRun: string | null; lastStatus: string }>;
 }
 
 const PIPELINE_STAGES = [
@@ -135,7 +151,7 @@ export default function AdminAgentsDashboard() {
                 <div className="section-header">
                     <div>
                         <h2 className="section-title">🤖 Agent Control Center</h2>
-                        <p className="section-subtitle">Monitor and trigger your 7 autonomous agents</p>
+                        <p className="section-subtitle">Monitor and trigger your 9 autonomous agents</p>
                     </div>
                 </div>
 
@@ -320,30 +336,41 @@ export default function AdminAgentsDashboard() {
                             display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
                             gap: '12px', marginBottom: '28px',
                         }}>
-                            {AGENT_INFO.map(agent => (
-                                <div key={agent.id} style={{
-                                    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-                                    borderRadius: '12px', padding: '16px',
-                                }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                                        <div>
-                                            <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                                                {agent.emoji} {agent.name}
+                            {AGENT_INFO.map(agent => {
+                                const stats = data?.agentStats?.[agent.id];
+                                const statusColor = stats?.lastStatus === 'success' ? '#10b981' : stats?.lastStatus === 'warning' ? '#f97316' : stats?.lastStatus === 'failed' ? '#ef4444' : 'var(--text-muted)';
+                                return (
+                                    <div key={agent.id} style={{
+                                        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                                        borderRadius: '12px', padding: '16px',
+                                    }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                                            <div>
+                                                <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                                                    {agent.emoji} {agent.name}
+                                                </div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{agent.desc}</div>
                                             </div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{agent.desc}</div>
+                                            <span className="badge badge-draft" style={{ fontSize: '10px', flexShrink: 0 }}>{agent.schedule}</span>
                                         </div>
-                                        <span className="badge badge-draft" style={{ fontSize: '10px', flexShrink: 0 }}>{agent.schedule}</span>
+                                        {stats && (
+                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px', fontSize: '11px' }}>
+                                                <span style={{ color: statusColor, fontWeight: 600 }}>● {stats.lastStatus}</span>
+                                                <span style={{ color: 'var(--text-muted)' }}>{stats.runs} runs (7d)</span>
+                                                {stats.lastRun && <span style={{ color: 'var(--text-muted)' }}>Last: {new Date(stats.lastRun + 'Z').toLocaleDateString()}</span>}
+                                            </div>
+                                        )}
+                                        <button
+                                            className="btn btn-ghost btn-sm"
+                                            style={{ fontSize: '12px', width: '100%', marginTop: '8px' }}
+                                            onClick={() => triggerAgent(agent.id)}
+                                            disabled={runningAgent === agent.id}
+                                        >
+                                            {runningAgent === agent.id ? '⏳ Running...' : '▶ Run Now'}
+                                        </button>
                                     </div>
-                                    <button
-                                        className="btn btn-ghost btn-sm"
-                                        style={{ fontSize: '12px', width: '100%', marginTop: '8px' }}
-                                        onClick={() => triggerAgent(agent.id)}
-                                        disabled={runningAgent === agent.id}
-                                    >
-                                        {runningAgent === agent.id ? '⏳ Running...' : '▶ Run Now'}
-                                    </button>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         {/* Agent Result Output */}
@@ -358,6 +385,63 @@ export default function AdminAgentsDashboard() {
                                 }}>
                                     {agentResult}
                                 </pre>
+                            </>
+                        )}
+
+                        {/* Agent Activity Log */}
+                        {data?.agentRuns && data.agentRuns.length > 0 && (
+                            <>
+                                <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>📜 Agent Activity Log</h3>
+                                <div className="admin-table-wrap" style={{ marginBottom: '28px' }}>
+                                    <table className="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Agent</th>
+                                                <th>Status</th>
+                                                <th>Summary</th>
+                                                <th>Alerts</th>
+                                                <th>Duration</th>
+                                                <th>Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {data.agentRuns.map((run) => {
+                                                const statusEmoji = run.status === 'success' ? '🟢' : run.status === 'warning' ? '🟡' : run.status === 'failed' ? '🔴' : '⏳';
+                                                const statusColor = run.status === 'success' ? '#10b981' : run.status === 'warning' ? '#f97316' : run.status === 'failed' ? '#ef4444' : '#6b7280';
+                                                return (
+                                                    <tr key={run.id}>
+                                                        <td style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
+                                                            {run.agent_name}
+                                                        </td>
+                                                        <td>
+                                                            <span style={{ color: statusColor, fontWeight: 600, fontSize: '12px' }}>
+                                                                {statusEmoji} {run.status}
+                                                            </span>
+                                                        </td>
+                                                        <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                                                            {run.error || run.summary || '—'}
+                                                        </td>
+                                                        <td style={{ textAlign: 'center' }}>
+                                                            {run.alerts_count > 0 ? (
+                                                                <span className="badge" style={{ background: 'rgba(249,115,22,0.15)', color: '#f97316', fontSize: '11px' }}>
+                                                                    {run.alerts_count} ⚠️
+                                                                </span>
+                                                            ) : (
+                                                                <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>—</span>
+                                                            )}
+                                                        </td>
+                                                        <td style={{ color: 'var(--text-muted)', fontSize: '12px', whiteSpace: 'nowrap' }}>
+                                                            {run.duration_ms ? `${(run.duration_ms / 1000).toFixed(1)}s` : '...'}
+                                                        </td>
+                                                        <td style={{ color: 'var(--text-muted)', fontSize: '12px', whiteSpace: 'nowrap' }}>
+                                                            {run.started_at ? new Date(run.started_at + 'Z').toLocaleString() : '—'}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </>
                         )}
 

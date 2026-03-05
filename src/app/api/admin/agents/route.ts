@@ -7,10 +7,13 @@ import { runGrowthOpsAgent } from '@/lib/agents/growth/growth-ops';
 import { runCustomerSuccessAgent } from '@/lib/agents/customer-success/customer-success';
 import { runCommunityAgent } from '@/lib/agents/community/community-agent';
 import { runInstagramAgent } from '@/lib/agents/instagram/instagram-agent';
+import { runCostGuardianAgent } from '@/lib/agents/cost-guardian/cost-guardian-agent';
+import { runQAAgent } from '@/lib/agents/qa/qa-agent';
+import { getRecentAgentRuns, getAgentRunStats, logAgentStart, logAgentComplete } from '@/lib/agents/run-logger';
 
 export const maxDuration = 120;
 
-// GET /api/admin/agents — Aggregated agent dashboard data
+// GET /api/admin/agents — Aggregated agent dashboard data + run history
 export async function GET() {
     const guard = await requireAdmin();
     if (guard instanceof NextResponse) return guard;
@@ -22,7 +25,6 @@ export async function GET() {
     let history: Array<{ date: string; mrr: number; users: number }> = [];
     try {
         analytics = await getSnapshot(today);
-        // If no snapshot today, try yesterday
         if (!analytics) {
             const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
             analytics = await getSnapshot(yesterday);
@@ -58,6 +60,14 @@ export async function GET() {
         if (snaps.length > 0) weeklyUpdate = generateWeeklyInvestorUpdate(snaps);
     } catch (e) { console.error('[admin/agents] weekly:', e); }
 
+    // Agent run history (last 50 runs)
+    let agentRuns: Awaited<ReturnType<typeof getRecentAgentRuns>> = [];
+    let agentStats: Awaited<ReturnType<typeof getAgentRunStats>> = {};
+    try {
+        agentRuns = await getRecentAgentRuns(50);
+        agentStats = await getAgentRunStats();
+    } catch (e) { console.error('[admin/agents] run history:', e); }
+
     return NextResponse.json({
         analytics,
         history,
@@ -65,10 +75,12 @@ export async function GET() {
         investors,
         contentQueue,
         weeklyUpdate,
+        agentRuns,
+        agentStats,
     });
 }
 
-// POST /api/admin/agents — Trigger an agent run (admin auth, no CRON_SECRET needed)
+// POST /api/admin/agents — Trigger an agent run with logging
 export async function POST(request: NextRequest) {
     const guard = await requireAdmin();
     if (guard instanceof NextResponse) return guard;
@@ -76,28 +88,97 @@ export async function POST(request: NextRequest) {
     try {
         const { agentId } = await request.json();
 
-        const runners: Record<string, () => Promise<unknown>> = {
-            'analytics': runAnalyticsAgent,
-            'growth-ops': runGrowthOpsAgent,
-            'customer-success': runCustomerSuccessAgent,
-            'investor-pipeline': runInvestorPipelineAgent,
-            'content-marketing': runContentMarketingAgent,
-            'community': runCommunityAgent,
-            'instagram': runInstagramAgent,
+        const agentMap: Record<string, { name: string; run: () => Promise<unknown> }> = {
+            'qa': { name: 'QA Agent', run: runQAAgent },
+            'cost-guardian': { name: 'Cost Guardian', run: runCostGuardianAgent },
+            'analytics': { name: 'Analytics', run: runAnalyticsAgent },
+            'growth-ops': { name: 'Growth Ops', run: runGrowthOpsAgent },
+            'customer-success': { name: 'Customer Success', run: runCustomerSuccessAgent },
+            'investor-pipeline': { name: 'Investor Pipeline', run: runInvestorPipelineAgent },
+            'content-marketing': { name: 'Content Marketing', run: runContentMarketingAgent },
+            'community': { name: 'Community', run: runCommunityAgent },
+            'instagram': { name: 'Instagram', run: runInstagramAgent },
         };
 
-        const runner = runners[agentId];
-        if (!runner) {
+        const agent = agentMap[agentId];
+        if (!agent) {
             return NextResponse.json({ error: `Unknown agent: ${agentId}` }, { status: 400 });
         }
 
-        const result = await runner();
-        return NextResponse.json({ success: true, agentId, result });
+        // Log the run
+        const runId = await logAgentStart(agentId, agent.name);
+
+        try {
+            const result = await agent.run();
+            const summary = extractSummary(agentId, result);
+            await logAgentComplete(runId, {
+                status: summary.hasAlerts ? 'warning' : 'success',
+                summary: summary.text,
+                alertsCount: summary.alertsCount,
+                actionsCount: summary.actionsCount,
+            });
+            return NextResponse.json({ success: true, agentId, result });
+        } catch (error) {
+            await logAgentComplete(runId, {
+                status: 'failed',
+                summary: 'Agent run failed',
+                error: error instanceof Error ? error.message : String(error),
+            });
+            throw error;
+        }
     } catch (error) {
         console.error('[admin/agents] run failed:', error);
         return NextResponse.json({
             error: 'Agent run failed',
             details: error instanceof Error ? error.message : 'Unknown error',
         }, { status: 500 });
+    }
+}
+
+function extractSummary(agentId: string, result: unknown): {
+    text: string; hasAlerts: boolean; alertsCount: number; actionsCount: number;
+} {
+    const r = result as Record<string, unknown>;
+
+    switch (agentId) {
+        case 'qa': {
+            const report = r?.report as Record<string, unknown> | undefined;
+            return {
+                text: `QA: ${report?.passCount ?? 0} passed, ${report?.failCount ?? 0} failed, ${report?.warnCount ?? 0} warnings`,
+                hasAlerts: (Number(report?.failCount) || 0) > 0,
+                alertsCount: (Number(report?.failCount) || 0) + (Number(report?.warnCount) || 0),
+                actionsCount: Number(report?.passCount) || 0,
+            };
+        }
+        case 'cost-guardian': {
+            const snapshot = r?.snapshot as Record<string, unknown> | undefined;
+            const alerts = (snapshot?.alerts as Array<unknown>) ?? [];
+            const actions = (snapshot?.guardrailActions as Array<unknown>) ?? [];
+            return {
+                text: `Cost: $${snapshot?.totalEstimatedMonthlyCost ?? 0}/mo, ${alerts.length} alerts, ${actions.length} guardrail actions`,
+                hasAlerts: alerts.length > 0,
+                alertsCount: alerts.length,
+                actionsCount: actions.length,
+            };
+        }
+        case 'analytics': {
+            const metrics = r?.metrics as Record<string, unknown> | undefined;
+            const alerts = (r?.alerts as Array<unknown>) ?? [];
+            return {
+                text: `KPIs: ${metrics?.totalUsers ?? 0} users, $${metrics?.mrr ?? 0} MRR, ${alerts.length} anomalies`,
+                hasAlerts: alerts.length > 0,
+                alertsCount: alerts.length,
+                actionsCount: 1,
+            };
+        }
+        default: {
+            const alerts = (r?.alerts as Array<unknown>) ?? [];
+            return {
+                text: `Completed successfully`,
+                hasAlerts: alerts.length > 0,
+                alertsCount: alerts.length,
+                actionsCount: 1,
+            };
+        }
     }
 }
