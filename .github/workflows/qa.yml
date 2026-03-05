@@ -35,19 +35,18 @@ jobs:
       # ── Gate 2: ESLint ─────────────────────────────────
       - name: '🔍 Gate 2: ESLint — code quality'
         run: npm run lint
-        continue-on-error: true
 
       # ── Gate 3: Next.js Production Build ───────────────
       - name: '🔍 Gate 3: Production build — no build errors'
         run: npm run build
         env:
-          # Provide dummy env vars so the build doesn't fail on missing secrets
-          CLERK_SECRET_KEY: sk_test_dummy
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_dummy
-          TURSO_DATABASE_URL: libsql://dummy.turso.io
-          TURSO_AUTH_TOKEN: dummy
+          # Use real Clerk keys from GitHub Secrets (Clerk validates key format at build time)
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           OPENAI_API_KEY: sk-dummy
-          STRIPE_SECRET_KEY: sk_test_dummy
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
 
       # ── Gate 4: Route Integrity ────────────────────────
       - name: '🔍 Gate 4: Route integrity — all API routes valid'

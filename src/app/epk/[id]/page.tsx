@@ -366,7 +366,7 @@ export default function EPKPage({ params }: { params: Promise<{ id: string }> })
                 }}>
                     <p>Electronic Press Kit — {brand.djName}</p>
                     <p style={{ marginTop: '4px' }}>
-                        Powered by <a href="/" style={{ color: accentColor, textDecoration: 'none' }}>GigLift</a>
+                        Powered by <Link href="/" style={{ color: accentColor, textDecoration: 'none' }}>GigLift</Link>
                     </p>
                 </footer>
             </div>

@@ -57,9 +57,6 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
     const [ambassadorUpdating, setAmbassadorUpdating] = useState(false);
     const [activeTab, setActiveTab] = useState<'events' | 'leads' | 'posts'>('events');
 
-    useEffect(() => {
-        if (userId) fetchUser(userId);
-    }, [userId]);
 
     async function fetchUser(id: string) {
         setLoading(true);
@@ -91,6 +88,10 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
         }
         setLoading(false);
     }
+
+    useEffect(() => {
+        if (userId) fetchUser(userId);
+    }, [userId]);
 
     async function toggleRole() {
         if (!data || !userId) return;

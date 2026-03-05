@@ -18,9 +18,6 @@ export default function MediaLibraryPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const folderInputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        fetchAssets();
-    }, []);
 
     async function fetchAssets() {
         setLoading(true);
@@ -31,6 +28,10 @@ export default function MediaLibraryPage() {
         } catch (e) { console.error(e); }
         setLoading(false);
     }
+
+    useEffect(() => {
+        fetchAssets();
+    }, []);
 
     async function uploadFiles(files: FileList | File[]) {
         const mediaFiles = Array.from(files).filter(f =>

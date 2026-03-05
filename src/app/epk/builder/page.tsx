@@ -159,6 +159,8 @@ export default function EPKBuilderPage() {
         });
     };
 
+    const { isInstructor, headerStyle, logoFilter } = useAppMode();
+
     if (loading) return (
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
             <div className="spinner" />
@@ -168,7 +170,6 @@ export default function EPKBuilderPage() {
     if (!config) return null;
 
     const accent = config.accentColor || '#a855f7';
-    const { isInstructor, headerStyle, logoFilter } = useAppMode();
 
     return (
         <>

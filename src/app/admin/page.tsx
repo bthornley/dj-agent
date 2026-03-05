@@ -43,11 +43,6 @@ export default function AdminDashboard() {
     const [searchTimer, setSearchTimer] = useState<NodeJS.Timeout | null>(null);
     const [error, setError] = useState('');
 
-    useEffect(() => {
-        fetchStats();
-        fetchUsers('');
-    }, []);
-
     async function fetchStats() {
         try {
             const res = await fetch('/api/admin/stats');
@@ -72,6 +67,11 @@ export default function AdminDashboard() {
         } catch (e) { console.error(e); }
         setLoading(false);
     }
+
+    useEffect(() => {
+        fetchStats();
+        fetchUsers('');
+    }, []);
 
     function handleSearch(value: string) {
         setSearch(value);

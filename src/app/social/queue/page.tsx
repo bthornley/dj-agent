@@ -19,9 +19,6 @@ export default function ContentQueuePage() {
     const [mediaLibrary, setMediaLibrary] = useState<MediaAsset[]>([]);
     const [showMediaPicker, setShowMediaPicker] = useState(false);
 
-    useEffect(() => {
-        fetchPosts();
-    }, []);
 
     async function fetchPosts() {
         setLoading(true);
@@ -30,6 +27,10 @@ export default function ContentQueuePage() {
         if (Array.isArray(data)) setPosts(data);
         setLoading(false);
     }
+
+    useEffect(() => {
+        fetchPosts();
+    }, []);
 
     async function handleAction(postId: string, status: 'approved' | 'rejected' | 'posted') {
         setActionLoading(postId);

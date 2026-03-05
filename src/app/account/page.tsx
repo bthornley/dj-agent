@@ -84,9 +84,8 @@ export default function AccountPage() {
 
     const isInstructor = activeMode === 'instructor';
 
-    useEffect(() => {
-        if (user?.imageUrl) setAvatarUrl(user.imageUrl);
-    }, [user?.imageUrl]);
+    // Sync avatar from Clerk user object (derived, not an effect)
+    const displayAvatar = avatarUrl ?? user?.imageUrl ?? null;
 
     useEffect(() => {
         fetch('/api/leads/auto-scan', {
@@ -406,7 +405,7 @@ export default function AccountPage() {
                         <div style={{ position: 'relative', flexShrink: 0 }}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                                src={avatarUrl || user?.imageUrl || ''}
+                                src={displayAvatar || ''}
                                 alt="Profile"
                                 onClick={() => fileInputRef.current?.click()}
                                 style={{

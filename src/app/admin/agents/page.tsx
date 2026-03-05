@@ -78,7 +78,6 @@ export default function AdminAgentsDashboard() {
     const [agentResult, setAgentResult] = useState<string | null>(null);
     const [showUpdate, setShowUpdate] = useState(false);
 
-    useEffect(() => { fetchData(); }, []);
 
     async function fetchData() {
         try {
@@ -89,6 +88,8 @@ export default function AdminAgentsDashboard() {
         } catch (e) { console.error(e); setError('Failed to load agent data'); }
         setLoading(false);
     }
+
+    useEffect(() => { fetchData(); }, []);
 
     async function triggerAgent(agentId: string) {
         setRunningAgent(agentId);
