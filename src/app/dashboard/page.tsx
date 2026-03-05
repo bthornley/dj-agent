@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import Topbar from '@/components/Topbar';
+import StatCard from '@/components/StatCard';
+import ModeCard from '@/components/ModeCard';
+import WelcomeBanner from '@/components/WelcomeBanner';
 import { Event } from '@/lib/types';
 import { fetchLeadStats } from '@/lib/api-client';
 import { MODE_CONFIGS } from '@/hooks/useAppMode';
@@ -146,32 +149,7 @@ export default function DashboardPage() {
 
             <main className="main-content fade-in">
                 {/* Welcome banner for new users */}
-                {isNewUser && (
-                    <div className="slide-up" style={{
-                        padding: '24px 28px',
-                        borderRadius: '16px',
-                        marginBottom: '24px',
-                        background: 'linear-gradient(135deg, rgba(139,92,246,0.15), rgba(34,211,238,0.08))',
-                        border: '1px solid rgba(139,92,246,0.3)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '20px',
-                        flexWrap: 'wrap',
-                    }}>
-                        <div>
-                            <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '4px' }}>
-                                👋 Welcome to GigLift!
-                            </h2>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: 0 }}>
-                                Set up your profile in 30 seconds to start finding leads.
-                            </p>
-                        </div>
-                        <Link href="/onboarding" className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
-                            🚀 Get Started
-                        </Link>
-                    </div>
-                )}
+                {isNewUser && <WelcomeBanner />}
 
                 {/* Hero Mode Section */}
                 <div style={{
@@ -212,89 +190,22 @@ export default function DashboardPage() {
 
                     {/* Quick Stats */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px', marginBottom: '20px' }}>
-                        <div style={{
-                            padding: '14px 16px', borderRadius: '12px',
-                            background: 'rgba(255,255,255,0.03)',
-                            border: `1px solid ${isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'}`,
-                        }}>
-                            <div style={{ fontSize: '24px', fontWeight: 700, color: accentColor }}>
-                                {leadStats?.total ?? '—'}
-                            </div>
-                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                {mi.leadsLabel}
-                            </div>
-                        </div>
-                        <div style={{
-                            padding: '14px 16px', borderRadius: '12px',
-                            background: 'rgba(255,255,255,0.03)',
-                            border: `1px solid ${isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'}`,
-                        }}>
-                            <div style={{ fontSize: '24px', fontWeight: 700, color: accentColor }}>
-                                {leadStats?.byStatus?.['new'] ?? '—'}
-                            </div>
-                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                New Leads
-                            </div>
-                        </div>
-                        <div style={{
-                            padding: '14px 16px', borderRadius: '12px',
-                            background: 'rgba(255,255,255,0.03)',
-                            border: `1px solid ${isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'}`,
-                        }}>
-                            <div style={{ fontSize: '24px', fontWeight: 700, color: accentColor }}>
-                                {leadStats?.byStatus?.['contacted'] ?? '—'}
-                            </div>
-                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                Contacted
-                            </div>
-                        </div>
-                        <div style={{
-                            padding: '14px 16px', borderRadius: '12px',
-                            background: 'rgba(255,255,255,0.03)',
-                            border: `1px solid ${isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'}`,
-                        }}>
-                            <div style={{ fontSize: '24px', fontWeight: 700, color: accentColor }}>
-                                {events.length}
-                            </div>
-                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                Events
-                            </div>
-                        </div>
+                        <StatCard value={leadStats?.total ?? '—'} label={mi.leadsLabel} accentColor={accentColor} borderColor={isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'} />
+                        <StatCard value={leadStats?.byStatus?.['new'] ?? '—'} label="New Leads" accentColor={accentColor} borderColor={isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'} />
+                        <StatCard value={leadStats?.byStatus?.['contacted'] ?? '—'} label="Contacted" accentColor={accentColor} borderColor={isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'} />
+                        <StatCard value={events.length} label="Events" accentColor={accentColor} borderColor={isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'} />
                         {emailCount !== null && (
-                            <div style={{
-                                padding: '14px 16px', borderRadius: '12px',
-                                background: 'rgba(255,255,255,0.03)',
-                                border: `1px solid ${isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'}`,
-                            }}>
-                                <div style={{ fontSize: '24px', fontWeight: 700, color: accentColor }}>
-                                    {emailCount}
-                                </div>
-                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                    Emails Sent
-                                </div>
-                            </div>
+                            <StatCard value={emailCount} label="Emails Sent" accentColor={accentColor} borderColor={isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'} />
                         )}
                         {scanQuota && (
-                            <div style={{
-                                padding: '14px 16px', borderRadius: '12px',
-                                background: 'rgba(255,255,255,0.03)',
-                                border: `1px solid ${isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'}`,
-                            }}>
-                                <div style={{ fontSize: '24px', fontWeight: 700, color: scanQuota.remaining <= 5 ? 'var(--accent-red)' : scanQuota.remaining <= 20 ? 'var(--accent-amber)' : accentColor }}>
-                                    {scanQuota.used} / {scanQuota.limit}
-                                </div>
-                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                    Scans Used
-                                </div>
-                                <div style={{ marginTop: '6px', height: '3px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)' }}>
-                                    <div style={{
-                                        height: '100%', borderRadius: '2px',
-                                        width: `${Math.min(100, (scanQuota.used / scanQuota.limit) * 100)}%`,
-                                        background: scanQuota.remaining <= 5 ? 'var(--accent-red)' : scanQuota.remaining <= 20 ? 'var(--accent-amber)' : accentColor,
-                                        transition: 'width 0.5s ease',
-                                    }} />
-                                </div>
-                            </div>
+                            <StatCard
+                                value={`${scanQuota.used} / ${scanQuota.limit}`}
+                                label="Scans Used"
+                                accentColor={scanQuota.remaining <= 5 ? 'var(--accent-red)' : scanQuota.remaining <= 20 ? 'var(--accent-amber)' : accentColor}
+                                borderColor={isInstructor ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)'}
+                                progress={scanQuota.used / scanQuota.limit}
+                                progressColor={scanQuota.remaining <= 5 ? 'var(--accent-red)' : scanQuota.remaining <= 20 ? 'var(--accent-amber)' : accentColor}
+                            />
                         )}
                     </div>
 
@@ -325,36 +236,13 @@ export default function DashboardPage() {
                     marginBottom: '28px',
                 }}>
                     {(['performer', 'instructor', 'studio', 'touring'] as const).map(m => {
-                        const mc = MODE_CONFIGS[m];
-                        const active = activeMode === m;
-                        const bullets: Record<string, string[]> = {
+                        const modeBullets: Record<string, string[]> = {
                             performer: ['Find venues, clubs, and lounges', 'Discover DJ/band/artist gigs', 'Scan event platforms & marketplaces', 'Score & qualify booking opportunities'],
                             instructor: ['Find music schools & academies', 'Discover instruction positions', 'Scan for after-school programs', 'Community centers & church programs'],
                             studio: ['Find recording studios', 'Session musician opportunities', 'Sync licensing & film scoring', 'Producer collaboration leads'],
                             touring: ['Find touring band openings', 'Booking agents & promoters', 'Festival lineup submissions', 'Regional tour circuit venues'],
                         };
-                        return (
-                            <div key={m} style={{
-                                padding: '16px', borderRadius: '14px',
-                                background: active ? `linear-gradient(135deg, ${mc.color}1a, ${mc.color}0d)` : 'rgba(255,255,255,0.02)',
-                                border: `1px solid ${active ? mc.borderColor : 'rgba(255,255,255,0.06)'}`,
-                                opacity: active ? 1 : 0.5,
-                                transition: 'all 0.3s ease',
-                            }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                                    <span style={{ fontSize: '20px' }}>{mc.icon}</span>
-                                    <div>
-                                        <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: active ? mc.color : 'var(--text-muted)' }}>
-                                            {mc.label} Mode
-                                        </h3>
-                                        {active && <span className="badge badge-confirmed" style={{ fontSize: '9px', background: `${mc.color}22`, color: mc.color, borderColor: mc.borderColor }}>ACTIVE</span>}
-                                    </div>
-                                </div>
-                                <ul style={{ margin: 0, padding: '0 0 0 18px', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.8 }}>
-                                    {bullets[m].map(b => <li key={b}>{b}</li>)}
-                                </ul>
-                            </div>
-                        );
+                        return <ModeCard key={m} mode={m} config={MODE_CONFIGS[m]} active={activeMode === m} bullets={modeBullets[m]} />;
                     })}
                 </div>
 
