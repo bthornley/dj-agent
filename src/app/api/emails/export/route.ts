@@ -7,7 +7,8 @@ export async function GET() {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const emails = await dbGetSentEmails(userId);
+    const result = await dbGetSentEmails(userId);
+    const emails = result.data;
 
     const headers = ['sent_at', 'to', 'subject', 'status', 'resend_id', 'event_id'];
     const rows = emails.map(email => {

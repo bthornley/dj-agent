@@ -10,7 +10,8 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const mode = url.searchParams.get('mode') || 'performer';
 
-    const leads = await dbGetAllLeads(userId, { mode });
+    const result = await dbGetAllLeads(userId, { mode });
+    const leads = result.data;
 
     const headers = ['entity_name', 'entity_type', 'city', 'state', 'email', 'phone', 'website', 'lead_score', 'priority', 'status', 'contact_name', 'notes'];
     const rows = leads.map(lead => {
