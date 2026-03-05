@@ -143,6 +143,14 @@ const DOCS: Doc[] = [
         description: 'Performance-at-scale coding standards, OWASP Top 10 compliance, and code review checklist.',
         format: 'PPTX',
     },
+    {
+        title: 'Style Guide & Design System',
+        fileName: 'GigLift_Style_Guide.pptx',
+        category: 'tech',
+        icon: '🎨',
+        description: 'M3 dark theme design system: colors, typography, spacing, components, responsive patterns, and accessibility.',
+        format: 'PPTX',
+    },
 ];
 
 export default function AdminDocsPage() {
