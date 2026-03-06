@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runInstagramAgent, getPostQueue, updatePost, deletePost, generatePosts } from '@/lib/agents/instagram/instagram-agent';
+import { logAgentStart, logAgentComplete } from '@/lib/agents/run-logger';
+import { logAgentError } from '@/lib/agents/error-log';
+import { getAgentEnabled } from '@/lib/agents/schedule';
 
 export const maxDuration = 60;
 
@@ -12,10 +15,20 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const enabled = await getAgentEnabled('instagram');
+    if (!enabled) {
+        return NextResponse.json({ success: true, skipped: true, reason: 'Agent disabled via admin' });
+    }
+
+    const runId = await logAgentStart('instagram', 'Instagram');
+
     try {
         const report = await runInstagramAgent();
+        await logAgentComplete(runId, { status: 'success', summary: 'Instagram content queued', actionsCount: 1 });
         return NextResponse.json({ success: true, ...report });
     } catch (error) {
+        await logAgentComplete(runId, { status: 'failed', summary: 'Instagram agent failed', error: error instanceof Error ? error.message : String(error) });
+        await logAgentError({ agentName: 'instagram', error: error instanceof Error ? error : String(error), context: 'Vercel Cron' });
         console.error('[ig-agent-cron] Failed:', error);
         return NextResponse.json({ error: 'Instagram agent run failed' }, { status: 500 });
     }

@@ -95,6 +95,11 @@ export default function AdminAgentsDashboard() {
     const [sentEmails, setSentEmails] = useState<Set<string>>(new Set());
     const [launchingAction, setLaunchingAction] = useState<string | null>(null);
     const [completedActions, setCompletedActions] = useState<Set<string>>(new Set());
+    const [schedule, setSchedule] = useState<Array<{
+        id: string; name: string; emoji: string; cron: string; cronHuman: string;
+        description: string; category: string; enabled: boolean; lastRun?: string; lastStatus?: string;
+    }>>([]);
+    const [togglingAgent, setTogglingAgent] = useState<string | null>(null);
 
     function mapTaskToActionId(task: { title: string; category: string; description: string }): string {
         const t = (task.title + ' ' + task.description).toLowerCase();
@@ -178,7 +183,32 @@ export default function AdminAgentsDashboard() {
         setLoading(false);
     }
 
-    useEffect(() => { fetchData(); }, []);
+    useEffect(() => { fetchData(); fetchSchedule(); }, []);
+
+    async function fetchSchedule() {
+        try {
+            const res = await fetch('/api/admin/schedule');
+            if (res.ok) {
+                const json = await res.json();
+                setSchedule(json.schedule || []);
+            }
+        } catch { /* silent */ }
+    }
+
+    async function handleToggleAgent(agentId: string, currentEnabled: boolean) {
+        setTogglingAgent(agentId);
+        try {
+            const res = await fetch('/api/admin/schedule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ agentId, enabled: !currentEnabled }),
+            });
+            if (res.ok) {
+                setSchedule(prev => prev.map(s => s.id === agentId ? { ...s, enabled: !currentEnabled } : s));
+            }
+        } catch { /* silent */ }
+        setTogglingAgent(null);
+    }
 
     async function triggerAgent(agentId: string) {
         setRunningAgent(agentId);
@@ -855,6 +885,62 @@ export default function AdminAgentsDashboard() {
                                     {agentResult}
                                 </pre>
                             </>
+                        )}
+
+                        {/* ── Agent Schedule ── */}
+                        {schedule.length > 0 && (
+                            <div style={{ marginBottom: '32px' }}>
+                                <h3 style={{ color: 'var(--text-primary)', marginBottom: '16px', fontSize: '16px' }}>
+                                    ⏰ Agent Schedule
+                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 400, marginLeft: '8px' }}>
+                                        {schedule.filter(s => s.enabled).length}/{schedule.length} active
+                                    </span>
+                                </h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' }}>
+                                    {schedule.map(agent => (
+                                        <div key={agent.id} style={{
+                                            background: agent.enabled ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)',
+                                            border: `1px solid ${agent.enabled ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)'}`,
+                                            borderRadius: '10px', padding: '14px 16px',
+                                            opacity: agent.enabled ? 1 : 0.5,
+                                            transition: 'all 0.2s ease',
+                                        }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ fontSize: '18px' }}>{agent.emoji}</span>
+                                                    <span style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 600 }}>{agent.name}</span>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleToggleAgent(agent.id, agent.enabled)}
+                                                    disabled={togglingAgent === agent.id}
+                                                    style={{
+                                                        width: '40px', height: '22px', borderRadius: '11px', border: 'none', cursor: 'pointer',
+                                                        background: agent.enabled ? '#10b981' : 'rgba(255,255,255,0.1)',
+                                                        position: 'relative', transition: 'background 0.2s ease',
+                                                    }}
+                                                >
+                                                    <div style={{
+                                                        width: '16px', height: '16px', borderRadius: '50%', background: '#fff',
+                                                        position: 'absolute', top: '3px',
+                                                        left: agent.enabled ? '21px' : '3px',
+                                                        transition: 'left 0.2s ease',
+                                                    }} />
+                                                </button>
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{agent.description}</div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                                                <span style={{ fontSize: '11px', color: 'var(--accent-cyan)', fontFamily: 'monospace' }}>{agent.cronHuman}</span>
+                                                {agent.lastRun && (
+                                                    <span className={`badge ${agent.lastStatus === 'success' ? 'badge-approved' : agent.lastStatus === 'failed' ? 'badge-rejected' : 'badge-warning'}`}
+                                                        style={{ fontSize: '10px' }}>
+                                                        {agent.lastStatus === 'success' ? '✅' : agent.lastStatus === 'failed' ? '❌' : '⚠️'} {new Date(agent.lastRun).toLocaleDateString()}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         )}
 
                         {/* Agent Activity Log — always visible */}

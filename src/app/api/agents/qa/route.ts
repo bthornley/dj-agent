@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runQAAgent } from '@/lib/agents/qa/qa-agent';
+import { logAgentStart, logAgentComplete } from '@/lib/agents/run-logger';
+import { logAgentError } from '@/lib/agents/error-log';
+import { getAgentEnabled } from '@/lib/agents/schedule';
 
 export const maxDuration = 60;
 
@@ -12,8 +15,20 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const enabled = await getAgentEnabled('qa');
+    if (!enabled) {
+        return NextResponse.json({ success: true, skipped: true, reason: 'Agent disabled via admin' });
+    }
+
+    const runId = await logAgentStart('qa', 'QA Agent');
+
     try {
         const { report, formatted } = await runQAAgent();
+        await logAgentComplete(runId, {
+            status: report.failCount > 0 ? 'warning' : 'success',
+            summary: `${report.passCount} pass, ${report.failCount} fail, ${report.warnCount} warn`,
+            alertsCount: report.failCount + report.warnCount,
+        });
 
         return NextResponse.json({
             success: true,
@@ -27,6 +42,12 @@ export async function GET(request: NextRequest) {
             report: formatted,
         });
     } catch (error) {
+        await logAgentComplete(runId, {
+            status: 'failed',
+            summary: 'QA agent failed',
+            error: error instanceof Error ? error.message : String(error),
+        });
+        await logAgentError({ agentName: 'qa', error: error instanceof Error ? error : String(error), context: 'Vercel Cron' });
         console.error('[qa-cron] Failed:', error);
         return NextResponse.json({
             error: 'QA agent failed',

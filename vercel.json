@@ -35,6 +35,10 @@
         {
             "path": "/api/agents/instagram",
             "schedule": "0 12 * * *"
+        },
+        {
+            "path": "/api/agents/education-outreach",
+            "schedule": "0 13 * * 1-5"
         }
     ]
 }

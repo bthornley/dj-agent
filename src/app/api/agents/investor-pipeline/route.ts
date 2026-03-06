@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runInvestorPipelineAgent, getInvestors, addInvestor, updateInvestorStatus, getPipelineSummary, InvestorStatus } from '@/lib/agents/fundraising/investor-pipeline';
+import { logAgentStart, logAgentComplete } from '@/lib/agents/run-logger';
+import { logAgentError } from '@/lib/agents/error-log';
+import { getAgentEnabled } from '@/lib/agents/schedule';
 
 export const maxDuration = 120; // Allow up to 2 min for scoring + drafting
 
@@ -12,15 +15,26 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const enabled = await getAgentEnabled('investor-pipeline');
+    if (!enabled) {
+        return NextResponse.json({ success: true, skipped: true, reason: 'Agent disabled via admin' });
+    }
+
+    const runId = await logAgentStart('investor-pipeline', 'Investor Outreach');
+
     try {
         const result = await runInvestorPipelineAgent();
+        await logAgentComplete(runId, {
+            status: 'success',
+            summary: `Pipeline updated`,
+            actionsCount: 1,
+        });
         return NextResponse.json({ success: true, ...result });
     } catch (error) {
+        await logAgentComplete(runId, { status: 'failed', summary: 'Investor pipeline failed', error: error instanceof Error ? error.message : String(error) });
+        await logAgentError({ agentName: 'investor-pipeline', error: error instanceof Error ? error : String(error), context: 'Vercel Cron' });
         console.error('[investor-pipeline-cron] Failed:', error);
-        return NextResponse.json({
-            error: 'Investor outreach failed',
-            details: error instanceof Error ? error.message : 'Unknown error',
-        }, { status: 500 });
+        return NextResponse.json({ error: 'Investor outreach failed', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
     }
 }
 

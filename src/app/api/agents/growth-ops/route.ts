@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runGrowthOpsAgent, getFunnelMetrics } from '@/lib/agents/growth/growth-ops';
+import { logAgentStart, logAgentComplete } from '@/lib/agents/run-logger';
+import { logAgentError } from '@/lib/agents/error-log';
+import { getAgentEnabled } from '@/lib/agents/schedule';
 
 export const maxDuration = 60;
 
@@ -12,15 +15,26 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const enabled = await getAgentEnabled('growth-ops');
+    if (!enabled) {
+        return NextResponse.json({ success: true, skipped: true, reason: 'Agent disabled via admin' });
+    }
+
+    const runId = await logAgentStart('growth-ops', 'Growth Ops');
+
     try {
         const result = await runGrowthOpsAgent();
+        await logAgentComplete(runId, {
+            status: 'success',
+            summary: `${result.newUsers} new users, ${result.growthTasks} tasks generated`,
+            actionsCount: result.growthTasks,
+        });
         return NextResponse.json({ success: true, ...result });
     } catch (error) {
+        await logAgentComplete(runId, { status: 'failed', summary: 'Growth ops failed', error: error instanceof Error ? error.message : String(error) });
+        await logAgentError({ agentName: 'growth-ops', error: error instanceof Error ? error : String(error), context: 'Vercel Cron' });
         console.error('[growth-ops-cron] Failed:', error);
-        return NextResponse.json({
-            error: 'Growth ops agent failed',
-            details: error instanceof Error ? error.message : 'Unknown error',
-        }, { status: 500 });
+        return NextResponse.json({ error: 'Growth ops agent failed', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
     }
 }
 
