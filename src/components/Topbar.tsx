@@ -22,6 +22,7 @@ const NAV_ITEMS = [
     { href: '/dashboard', label: 'Dashboard', emoji: '📋' },
     { href: '/leads', label: 'Leads', emoji: '🔍' },
     { href: '/leads/scan', label: 'Scan', emoji: '📡' },
+    { href: '/leads/seeds', label: 'Seeds', emoji: '⚙️' },
     { href: '/social', label: 'Social', emoji: '👥' },
     { href: '/epk/builder', label: 'EPK', emoji: '📋' },
     { href: '/flyer/create', label: 'Flyer', emoji: '🎨' },
