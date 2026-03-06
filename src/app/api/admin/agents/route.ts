@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-guard';
-import { getSnapshot, getRecentSnapshots, generateWeeklyInvestorUpdate, runAnalyticsAgent } from '@/lib/agents/analytics/analytics-agent';
+import { getSnapshot, getRecentSnapshots, generateWeeklyInvestorUpdate, getCFOInsights, runAnalyticsAgent } from '@/lib/agents/analytics/analytics-agent';
 import { getInvestors, getPipelineSummary, getOutreachDrafts, runInvestorPipelineAgent } from '@/lib/agents/fundraising/investor-pipeline';
 import { getContentQueue, runContentMarketingAgent } from '@/lib/agents/content/content-marketing';
 import { runGrowthOpsAgent, getGrowthTasks } from '@/lib/agents/growth/growth-ops';
@@ -62,6 +62,12 @@ export async function GET() {
         growthTasks = await getGrowthTasks(20);
     } catch (e) { console.error('[admin/agents] growth:', e); }
 
+    // CFO Insights
+    let cfoInsights: Awaited<ReturnType<typeof getCFOInsights>> = [];
+    try {
+        cfoInsights = await getCFOInsights(3);
+    } catch (e) { console.error('[admin/agents] cfo:', e); }
+
     // Weekly investor update
     let weeklyUpdate = null;
     try {
@@ -85,6 +91,7 @@ export async function GET() {
         outreachDrafts,
         contentQueue,
         growthTasks,
+        cfoInsights,
         weeklyUpdate,
         agentRuns,
         agentStats,

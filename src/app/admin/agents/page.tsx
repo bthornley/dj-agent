@@ -44,6 +44,7 @@ interface AgentDashboardData {
     outreachDrafts: Array<{ id: string; investor_name: string; investor_firm: string; investor_email: string; subject: string; body: string; status: string; created_at: string }>;
     contentQueue: Array<{ title: string; content_type: string; platform: string; status: string }>;
     growthTasks: Array<{ id: string; type: string; priority: string; title: string; description: string; category: string; status: string; created_at: string }>;
+    cfoInsights: Array<{ id: string; date: string; revenue_health: string; unit_economics: string; risk_flags: string[]; recommended_actions: string[]; runway_assessment: string; summary: string; created_at: string }>;
     weeklyUpdate: string | null;
     agentRuns: AgentRunLog[];
     agentStats: Record<string, { runs: number; lastRun: string | null; lastStatus: string }>;
@@ -342,6 +343,8 @@ export default function AdminAgentsDashboard() {
                                 </>
                             )}
 
+                            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.07)', margin: '8px 0 20px' }} />
+
                             {/* Content Queue */}
                             {data?.contentQueue && data.contentQueue.length > 0 && (
                                 <>
@@ -376,6 +379,8 @@ export default function AdminAgentsDashboard() {
                                     </div>
                                 </>
                             )}
+
+                            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.07)', margin: '8px 0 20px' }} />
 
                             {/* Growth Recommendations */}
                             {data?.growthTasks && data.growthTasks.length > 0 && (
@@ -424,6 +429,86 @@ export default function AdminAgentsDashboard() {
                                             );
                                         })}
                                     </div>
+                                </>
+                            )}
+
+                            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.07)', margin: '8px 0 20px' }} />
+
+                            {/* CFO Insights */}
+                            {data?.cfoInsights && data.cfoInsights.length > 0 && (
+                                <>
+                                    <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>
+                                        📊 CFO Insights
+                                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 400, marginLeft: '8px' }}>
+                                            as of {data.cfoInsights[0].date}
+                                        </span>
+                                    </h3>
+                                    {(() => {
+                                        const insight = data.cfoInsights[0];
+                                        return (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px' }}>
+                                                {/* Summary banner */}
+                                                <div style={{
+                                                    background: 'linear-gradient(135deg, rgba(168,85,247,0.1), rgba(56,189,248,0.1))',
+                                                    border: '1px solid rgba(168,85,247,0.2)', borderRadius: '12px', padding: '16px',
+                                                }}>
+                                                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>🎯 Executive Summary</div>
+                                                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.5' }}>{insight.summary}</p>
+                                                </div>
+
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '12px' }}>
+                                                    {/* Revenue Health */}
+                                                    <div style={{
+                                                        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                                                        borderRadius: '10px', padding: '14px 16px', borderLeft: '3px solid #10b981',
+                                                    }}>
+                                                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>💵 Revenue Health</div>
+                                                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.5' }}>{insight.revenue_health}</p>
+                                                    </div>
+
+                                                    {/* Unit Economics */}
+                                                    <div style={{
+                                                        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                                                        borderRadius: '10px', padding: '14px 16px', borderLeft: '3px solid #38bdf8',
+                                                    }}>
+                                                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>📈 Unit Economics</div>
+                                                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.5' }}>{insight.unit_economics}</p>
+                                                    </div>
+
+                                                    {/* Risk Flags */}
+                                                    <div style={{
+                                                        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                                                        borderRadius: '10px', padding: '14px 16px', borderLeft: '3px solid #ef4444',
+                                                    }}>
+                                                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>⚠️ Risk Flags</div>
+                                                        <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                                                            {insight.risk_flags.map((flag: string, i: number) => <li key={i}>{flag}</li>)}
+                                                        </ul>
+                                                    </div>
+
+                                                    {/* Recommended Actions */}
+                                                    <div style={{
+                                                        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                                                        borderRadius: '10px', padding: '14px 16px', borderLeft: '3px solid #a855f7',
+                                                    }}>
+                                                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>✅ Recommended Actions</div>
+                                                        <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                                                            {insight.recommended_actions.map((action: string, i: number) => <li key={i}>{action}</li>)}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+
+                                                {/* Runway */}
+                                                <div style={{
+                                                    background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)',
+                                                    borderRadius: '10px', padding: '12px 16px',
+                                                }}>
+                                                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#f97316' }}>⏱️ Runway: </span>
+                                                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{insight.runway_assessment}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </>
                             )}
 

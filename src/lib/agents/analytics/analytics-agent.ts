@@ -324,10 +324,126 @@ export function generateWeeklyInvestorUpdate(snapshots: DailyMetrics[]): string 
 
 // ---- Main Agent Entrypoint ----
 
+// ---- CFO Analysis ----
+
+export interface CFOInsight {
+    id: string;
+    date: string;
+    revenue_health: string;
+    unit_economics: string;
+    risk_flags: string[];
+    recommended_actions: string[];
+    runway_assessment: string;
+    summary: string;
+    created_at: string;
+}
+
+async function ensureCFOSchema(): Promise<Client> {
+    const db = await ensureAnalyticsSchema();
+    await db.executeMultiple(`
+        CREATE TABLE IF NOT EXISTS cfo_insights (
+            id TEXT PRIMARY KEY,
+            date TEXT NOT NULL,
+            revenue_health TEXT DEFAULT '',
+            unit_economics TEXT DEFAULT '',
+            risk_flags TEXT DEFAULT '[]',
+            recommended_actions TEXT DEFAULT '[]',
+            runway_assessment TEXT DEFAULT '',
+            summary TEXT DEFAULT '',
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+    `);
+    return db;
+}
+
+export async function getCFOInsights(limit: number = 5): Promise<CFOInsight[]> {
+    const db = await ensureCFOSchema();
+    const result = await db.execute({
+        sql: `SELECT * FROM cfo_insights ORDER BY created_at DESC LIMIT ?`,
+        args: [limit],
+    });
+    return result.rows.map(row => ({
+        id: String(row.id),
+        date: String(row.date),
+        revenue_health: String(row.revenue_health),
+        unit_economics: String(row.unit_economics),
+        risk_flags: JSON.parse(String(row.risk_flags || '[]')),
+        recommended_actions: JSON.parse(String(row.recommended_actions || '[]')),
+        runway_assessment: String(row.runway_assessment),
+        summary: String(row.summary),
+        created_at: String(row.created_at),
+    }));
+}
+
+async function generateCFOAnalysis(metrics: DailyMetrics, alerts: string[], history: DailyMetrics[]): Promise<void> {
+    const { aiJSON } = await import('@/lib/ai');
+    const { randomUUID: uuid } = await import('crypto');
+
+    const historyContext = history.map(h =>
+        `${h.date}: MRR=$${h.mrr}, ARR=$${h.arr}, Users=${h.totalUsers}, Paid=${h.paidSubscribers}, Leads=${h.totalLeads}`
+    ).join('\n');
+
+    const result = await aiJSON<{
+        revenue_health: string;
+        unit_economics: string;
+        risk_flags: string[];
+        recommended_actions: string[];
+        runway_assessment: string;
+        summary: string;
+    }>(
+        `You are an expert CFO analyzing a SaaS startup called GigLift (AI agents for musicians). Provide a concise financial analysis from a CFO perspective.`,
+        `Analyze these metrics for GigLift:
+
+TODAY's Metrics:
+- MRR: $${metrics.mrr} | ARR: $${metrics.arr}
+- Total Users: ${metrics.totalUsers} | New Today: ${metrics.newUsersToday}
+- Active (7d): ${metrics.activeUsersLast7d}
+- Paid Subscribers: ${metrics.paidSubscribers}
+- Plan Breakdown: ${JSON.stringify(metrics.planBreakdown)}
+- Trial-to-Paid Rate: ${metrics.trialToPaidRate}%
+- Churn Rate: ${metrics.churnRate}%
+- Total Leads: ${metrics.totalLeads} | Scans This Month: ${metrics.totalScansThisMonth}
+- Avg Lead Score: ${metrics.avgLeadScore}/100
+
+7-Day History:
+${historyContext}
+
+Current Anomaly Alerts:
+${alerts.length > 0 ? alerts.join('\n') : 'None'}
+
+Return JSON with:
+- revenue_health: 2-3 sentence assessment of revenue trajectory and health
+- unit_economics: 2-3 sentence analysis of CAC, LTV indicators, and margins
+- risk_flags: array of 2-4 specific financial risk concerns
+- recommended_actions: array of 3-5 specific CFO-level actions to take
+- runway_assessment: 1-2 sentence assessment of burn rate and runway  
+- summary: 1 sentence executive summary`,
+        { maxTokens: 1500, temperature: 0.5 }
+    );
+
+    if (!result) return;
+
+    const db = await ensureCFOSchema();
+    await db.execute({
+        sql: `INSERT INTO cfo_insights (id, date, revenue_health, unit_economics, risk_flags, recommended_actions, runway_assessment, summary)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [
+            uuid(), metrics.date,
+            result.revenue_health || '',
+            result.unit_economics || '',
+            JSON.stringify(result.risk_flags || []),
+            JSON.stringify(result.recommended_actions || []),
+            result.runway_assessment || '',
+            result.summary || '',
+        ],
+    });
+}
+
 export async function runAnalyticsAgent(): Promise<{
     metrics: DailyMetrics;
     alerts: string[];
     report: string;
+    cfoInsights: boolean;
 }> {
     console.log('[analytics-agent] Starting daily KPI compilation...');
 
@@ -337,10 +453,22 @@ export async function runAnalyticsAgent(): Promise<{
     const alerts = await detectAnomalies(metrics);
     const report = generateDailyReport(metrics, alerts);
 
+    // Generate CFO analysis
+    let cfoInsights = false;
+    try {
+        const history = await getRecentSnapshots(7);
+        await generateCFOAnalysis(metrics, alerts, history);
+        cfoInsights = true;
+        console.log('[analytics-agent] CFO analysis generated');
+    } catch (err) {
+        console.error('[analytics-agent] CFO analysis failed:', err);
+    }
+
     console.log('[analytics-agent] Snapshot saved for', metrics.date);
     if (alerts.length > 0) {
         console.log('[analytics-agent] Alerts:', alerts);
     }
 
-    return { metrics, alerts, report };
+    return { metrics, alerts, report, cfoInsights };
 }
+
