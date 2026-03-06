@@ -249,10 +249,10 @@ export default function DashboardPage() {
                 <div className="section-header">
                     <div>
                         <h2 className="section-title" style={isInstructor ? { color: '#38bdf8' } : undefined}>
-                            {isInstructor ? '📅 Instruction Assignments' : '🎧 Your Events'}
+                            {isInstructor ? '📅 Instruction Assignments' : '👔 Booking Agent Dashboard'}
                         </h2>
                         <p className="section-subtitle">
-                            {isInstructor ? 'Instruction gigs from your lead pipeline' : 'Gigs from your lead pipeline'}
+                            {isInstructor ? 'Instruction gigs from your lead pipeline' : 'Manage inquiries, draft proposals, and bookings'}
                         </p>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>

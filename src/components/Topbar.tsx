@@ -14,7 +14,7 @@ import { useAppMode } from '@/hooks/useAppMode';
 // ============================================================
 
 const NAV_ITEMS = [
-    { href: '/dashboard', label: 'Dashboard', emoji: '📋' },
+    { href: '/dashboard', label: 'Booking Agent', emoji: '👔' },
     { href: '/leads', label: 'Leads', emoji: '🔍' },
     { href: '/leads/scan', label: 'Scan', emoji: '📡' },
     { href: '/leads/seeds', label: 'Seeds', emoji: '⚙️' },
