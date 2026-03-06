@@ -92,6 +92,46 @@ export default function AdminAgentsDashboard() {
     const [expandedDraft, setExpandedDraft] = useState<string | null>(null);
     const [sendingEmail, setSendingEmail] = useState<string | null>(null);
     const [sentEmails, setSentEmails] = useState<Set<string>>(new Set());
+    const [launchingAction, setLaunchingAction] = useState<string | null>(null);
+    const [completedActions, setCompletedActions] = useState<Set<string>>(new Set());
+
+    function mapTaskToActionId(task: { title: string; category: string; description: string }): string {
+        const t = (task.title + ' ' + task.description).toLowerCase();
+        if (t.includes('stall') || t.includes('onboard') || t.includes('re-engag') || t.includes('drip') || t.includes('nudge')) return 'stalled_user_drip';
+        if (t.includes('upgrade') || t.includes('trial') || t.includes('convert') || t.includes('paid') || t.includes('pro')) return 'trial_upgrade_campaign';
+        if (t.includes('referral') || t.includes('refer') || t.includes('invite') || t.includes('share')) return 'referral_activation';
+        if (t.includes('win') || t.includes('churn') || t.includes('inactive') || t.includes('lapsed') || t.includes('re-activ')) return 'win_back_campaign';
+        // Default based on category
+        if (task.category === 'activation') return 'stalled_user_drip';
+        if (task.category === 'monetization') return 'trial_upgrade_campaign';
+        if (task.category === 'referral') return 'referral_activation';
+        if (task.category === 'retention') return 'win_back_campaign';
+        return 'stalled_user_drip';
+    }
+
+    async function handleLaunchAction(e: React.MouseEvent, task: { id: string; title: string; category: string; description: string }) {
+        e.stopPropagation();
+        if (!confirm(`Launch automated action for: "${task.title}"?`)) return;
+        setLaunchingAction(task.id);
+        try {
+            const actionId = mapTaskToActionId(task);
+            const res = await fetch('/api/admin/growth-action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ actionId, taskId: task.id }),
+            });
+            const json = await res.json();
+            if (json.success) {
+                setCompletedActions(prev => new Set(prev).add(task.id));
+                alert(`✅ ${json.details}`);
+            } else {
+                alert(`❌ Failed: ${json.error}`);
+            }
+        } catch (err) {
+            alert(`❌ Launch failed: ${err}`);
+        }
+        setLaunchingAction(null);
+    }
 
     async function handleSendEmail(e: React.MouseEvent, params: { type: 'investor' | 'education'; id: string; to: string; subject: string; body: string }) {
         e.stopPropagation();
@@ -469,13 +509,30 @@ export default function AdminAgentsDashboard() {
                                                     <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 8px' }}>
                                                         {task.description}
                                                     </p>
-                                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
                                                         <span className="badge badge-draft" style={{ fontSize: '10px' }}>
                                                             {catBadge} {task.category}
                                                         </span>
                                                         <span className="badge" style={{ fontSize: '10px', background: task.type === 'automated' ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)', color: task.type === 'automated' ? '#38bdf8' : '#c4b5fd' }}>
                                                             {typeEmoji} {task.type}
                                                         </span>
+                                                        <div style={{ flex: 1 }} />
+                                                        {task.type === 'automated' && task.status !== 'completed' && !completedActions.has(task.id) && (
+                                                            <button
+                                                                onClick={(e) => handleLaunchAction(e, task)}
+                                                                disabled={launchingAction === task.id}
+                                                                style={{
+                                                                    background: launchingAction === task.id ? 'rgba(56,189,248,0.2)' : 'linear-gradient(135deg, #38bdf8, #6366f1)',
+                                                                    color: '#fff', border: 'none', borderRadius: '8px', padding: '5px 14px',
+                                                                    fontSize: '11px', fontWeight: 600, cursor: launchingAction === task.id ? 'wait' : 'pointer',
+                                                                }}
+                                                            >
+                                                                {launchingAction === task.id ? '⏳ Running...' : '🚀 Launch'}
+                                                            </button>
+                                                        )}
+                                                        {(task.status === 'completed' || completedActions.has(task.id)) && (
+                                                            <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600 }}>✅ Done</span>
+                                                        )}
                                                     </div>
                                                 </div>
                                             );
