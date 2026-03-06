@@ -202,7 +202,8 @@ export async function fetchSeeds(mode?: string): Promise<QuerySeed[]> {
     const url = params.toString() ? `${LEADS_BASE}/seeds?${params}` : `${LEADS_BASE}/seeds`;
     const res = await fetchWithRetry(url);
     if (!res.ok) throw new Error('Failed to fetch seeds');
-    return res.json();
+    const json = await res.json();
+    return json.data || [];
 }
 
 export async function createSeed(seed: Partial<QuerySeed>): Promise<{ success: boolean; seed: QuerySeed }> {
@@ -323,5 +324,6 @@ export async function sendEmail(params: {
 export async function fetchSentEmails(): Promise<SentEmail[]> {
     const res = await fetchWithRetry('/api/emails');
     if (!res.ok) throw new Error('Failed to fetch sent emails');
-    return res.json();
+    const json = await res.json();
+    return json.data || [];
 }
