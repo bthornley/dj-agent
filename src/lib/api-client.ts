@@ -26,7 +26,7 @@ async function fetchWithRetry(
         const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
         try {
-            const res = await fetchWithRetry(input, {
+            const res = await fetch(input, {
                 ...init,
                 signal: controller.signal,
             });
