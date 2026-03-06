@@ -16,7 +16,7 @@ export default function GuidePage() {
                     <span>GigLift</span>
                 </Link>
                 <nav className="topbar-nav" style={{ gap: '8px' }}>
-                    <Link href="/dashboard" className="btn btn-ghost btn-sm">Dashboard</Link>
+                    <Link href="/dashboard" className="btn btn-ghost btn-sm">Booking Agent</Link>
                     <Link href="/pricing" className="btn btn-ghost btn-sm">Pricing</Link>
                     <Link href="/sign-up" className="btn btn-primary btn-sm">Get Started Free</Link>
                 </nav>
@@ -46,7 +46,7 @@ export default function GuidePage() {
                             ['#getting-started', '1. Getting Started'],
                             ['#modes', '2. Four Discovery Modes'],
                             ['#agents', '3. Your 7 AI Agents'],
-                            ['#dashboard', '4. The Dashboard'],
+                            ['#dashboard', '4. Booking Agent Dashboard'],
                             ['#scanning', '5. Scanning for Leads'],
                             ['#seeds', '6. Query Seeds'],
                             ['#leads', '7. Managing Leads'],
@@ -132,9 +132,9 @@ export default function GuidePage() {
                 </Section>
 
                 {/* ── Dashboard ── */}
-                <Section id="dashboard" icon="📊" title="The Dashboard" num={4}>
+                <Section id="dashboard" icon="👔" title="Booking Agent Dashboard" num={4}>
                     <p style={p}>
-                        Your command center. The dashboard shows your upcoming events, lead stats, scan quota, and quick actions.
+                        Your central hub for managing inquiries, draft proposals, and bookings. It also shows your lead stats, scan quota, and quick actions.
                     </p>
                     <h3 style={h3}>Key Dashboard Elements</h3>
                     <ul style={ul}>
@@ -218,7 +218,7 @@ export default function GuidePage() {
                     </p>
                     <ul style={ul}>
                         <li>Generate a personalized outreach email with one click</li>
-                        <li>Hand off the lead to create a booking/event</li>
+                        <li>Queue the lead for the Booking Agent to generate a draft proposal and manage the booking</li>
                         <li>Update the lead status</li>
                         <li>View the venue on a map</li>
                     </ul>
@@ -273,7 +273,7 @@ export default function GuidePage() {
                     </ul>
                     <p style={p}>
                         Each post includes a caption, suggested media, optimal posting time, and hashtags.
-                        Mark posts as scheduled, published, or dismissed.
+                        Drafts appear in your <strong>Content Queue</strong> where you can click them to edit, append media from your library, approve, and push the draft to publish automatically to your connected platforms.
                     </p>
                     <h3 style={h3}>Media Library</h3>
                     <p style={p}>
