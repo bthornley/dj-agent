@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Topbar from '@/components/Topbar';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
+import { useAppMode } from '@/hooks/useAppMode';
 
 type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
 
@@ -79,7 +80,7 @@ export default function AccountPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [specialties, setSpecialties] = useState<string[]>([]);
     const [savingSpecialty, setSavingSpecialty] = useState(false);
-    const [activeMode, setActiveMode] = useState<AppMode | null>(null);
+    const { activeMode } = useAppMode();
 
     const isInstructor = activeMode === 'instructor';
 

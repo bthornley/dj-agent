@@ -20,8 +20,9 @@ export async function PUT(request: NextRequest) {
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { mode } = await request.json();
-    if (mode !== 'performer' && mode !== 'instructor') {
-        return NextResponse.json({ error: 'Mode must be "performer" or "instructor"' }, { status: 400 });
+    const validModes = ['performer', 'instructor', 'studio', 'touring'];
+    if (!validModes.includes(mode)) {
+        return NextResponse.json({ error: 'Mode must be one of: performer, instructor, studio, touring' }, { status: 400 });
     }
 
     const client = await clerkClient();
