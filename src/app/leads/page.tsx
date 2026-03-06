@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Topbar from '@/components/Topbar';
 import Link from 'next/link';
 import { Lead, LeadStatus, Priority } from '@/lib/types';
@@ -50,16 +50,18 @@ export default function LeadsDashboard() {
 
     const isInstructor = activeMode === 'instructor';
 
-    const loadData = useCallback(async (targetPage?: number) => {
+    const searchRef = useRef(search);
+    searchRef.current = search;
+
+    const loadData = useCallback(async (targetPage: number) => {
         if (!activeMode) return;
-        const currentPage = targetPage ?? page;
-        const offset = (currentPage - 1) * PAGE_SIZE;
+        const offset = (targetPage - 1) * PAGE_SIZE;
         try {
             const [leadsResult, statsData] = await Promise.all([
                 fetchLeads({
                     status: filterStatus || undefined,
                     priority: filterPriority || undefined,
-                    search: search || undefined,
+                    search: searchRef.current || undefined,
                     mode: activeMode,
                     limit: PAGE_SIZE,
                     offset,
@@ -74,7 +76,8 @@ export default function LeadsDashboard() {
         } finally {
             setLoading(false);
         }
-    }, [filterStatus, filterPriority, search, activeMode, page]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filterStatus, filterPriority, activeMode]);
 
     useEffect(() => {
         if (!activeMode) return;
@@ -90,18 +93,18 @@ export default function LeadsDashboard() {
 
     const handleReject = async (id: string) => {
         await updateLead(id, { status: 'rejected' });
-        loadData();
+        loadData(page);
     };
 
     const handleQueue = async (ids: string[]) => {
         await handoffLeads(ids);
         setSelected(new Set());
-        loadData();
+        loadData(page);
     };
 
     const handleDelete = async (id: string) => {
         await deleteLead(id);
-        loadData();
+        loadData(page);
     };
 
     const toggleSelect = (id: string) => {
@@ -122,7 +125,7 @@ export default function LeadsDashboard() {
         setDeletingAll(true);
         try {
             await deleteAllLeads(activeMode || undefined);
-            loadData();
+            loadData(1);
         } catch {
             console.error('Failed to delete all leads');
         }
@@ -154,7 +157,7 @@ export default function LeadsDashboard() {
                 toast('✉️ Email sent successfully!', 'success');
                 await updateLead(emailLead.lead_id, { status: 'contacted' });
                 setEmailLead(null);
-                loadData();
+                loadData(page);
             } else {
                 toast(result.error || 'Failed to send email', 'error');
             }
