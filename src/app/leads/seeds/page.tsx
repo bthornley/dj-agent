@@ -129,7 +129,8 @@ export default function SeedsPage() {
     useEffect(() => {
         setLoading(true);
         loadSeeds();
-    }, [activeMode, loadSeeds]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeMode]);
 
     const handleAdd = async () => {
         if (!keywords.trim()) {

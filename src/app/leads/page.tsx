@@ -69,9 +69,9 @@ export default function LeadsDashboard() {
                 }),
                 fetchLeadStats(mode),
             ]);
-            setLeads(leadsResult.data);
-            setTotalLeads(leadsResult.total);
-            setStats(statsData);
+            setLeads(leadsResult?.data || []);
+            setTotalLeads(leadsResult?.total || 0);
+            setStats(statsData || null);
         } catch (err) {
             console.error('Failed to load leads:', err);
         } finally {
@@ -83,7 +83,8 @@ export default function LeadsDashboard() {
     useEffect(() => {
         setLoading(true);
         loadData(page);
-    }, [filterStatus, filterPriority, activeMode, page, loadData]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filterStatus, filterPriority, activeMode, page]);
 
     const handleSearch = () => {
         setLoading(true);
