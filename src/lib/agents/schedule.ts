@@ -165,7 +165,7 @@ export async function getScheduleStatus(): Promise<Array<AgentScheduleConfig & {
     }
 
     // Get last run times from agent_runs table
-    let lastRuns = new Map<string, { time: string; status: string }>();
+    const lastRuns = new Map<string, { time: string; status: string }>();
     try {
         const runs = await db.execute({
             sql: `SELECT agent_id, MAX(started_at) as last_run, status

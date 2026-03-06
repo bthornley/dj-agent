@@ -33,7 +33,6 @@ export default function DashboardPage() {
 
     const cfg = MODE_CONFIGS[activeMode || 'performer'];
     const accentColor = cfg.color;
-    const accentGlow = cfg.glow;
 
     const MODE_INFO: Record<string, { title: string; subtitle: string; leadsLabel: string; viewLabel: string; scanLabel: string; seedsLabel: string }> = {
         performer: { title: 'Performer Mode', subtitle: 'Finding venues, events, and booking opportunities', leadsLabel: 'Gig Leads', viewLabel: '🎵 View Gig Leads', scanLabel: '🔍 Scan for Venues', seedsLabel: '⚙ Query Seeds' },

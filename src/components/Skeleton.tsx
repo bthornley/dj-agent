@@ -33,7 +33,7 @@ export function SkeletonCard({ lines = 3, style }: { lines?: number; style?: Rea
                 {Array.from({ length: lines }).map((_, i) => (
                     <SkeletonLine
                         key={i}
-                        width={`${70 + Math.random() * 30}%`}
+                        width={`${70 + ((i * 17 + 7) % 30)}%`}
                         height="12px"
                         style={{ marginBottom: i < lines - 1 ? '8px' : '0' }}
                     />
@@ -80,7 +80,7 @@ export function SkeletonTable({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
                 {Array.from({ length: rows }).map((_, ri) => (
                     <div key={ri} style={{ display: 'flex', gap: '16px', padding: '10px 16px', borderBottom: ri < rows - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
                         {Array.from({ length: cols }).map((_, ci) => (
-                            <SkeletonLine key={ci} width={`${60 + Math.random() * 40}%`} height="12px" />
+                            <SkeletonLine key={ci} width={`${60 + ((ci * 23 + ri * 13 + 11) % 40)}%`} height="12px" />
                         ))}
                     </div>
                 ))}
