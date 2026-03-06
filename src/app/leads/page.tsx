@@ -5,6 +5,7 @@ import Topbar from '@/components/Topbar';
 import Link from 'next/link';
 import { Lead, LeadStatus, Priority } from '@/lib/types';
 import { fetchLeads, fetchLeadStats, updateLead, deleteLead, deleteAllLeads, handoffLeads, sendEmail } from '@/lib/api-client';
+import { useAppMode } from '@/hooks/useAppMode';
 import { generateLeadOutreach } from '@/lib/agent/tools';
 import { useToast } from '@/components/ToastProvider';
 import { EmailTemplate } from '@/lib/db';
@@ -36,7 +37,7 @@ export default function LeadsDashboard() {
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<Set<string>>(new Set());
     const [page, setPage] = useState(1);
-    const [activeMode, setActiveMode] = useState<AppMode | null>(null);
+    const { activeMode } = useAppMode();
     const [deletingAll, setDeletingAll] = useState(false);
     const [emailLead, setEmailLead] = useState<Lead | null>(null);
     const [emailTo, setEmailTo] = useState('');
@@ -170,7 +171,7 @@ export default function LeadsDashboard() {
 
     return (
         <>
-            <Topbar onModeChange={(m) => setActiveMode(m)} />
+            <Topbar />
 
             <main className="main-content fade-in">
                 {/* Mode indicator banner */}

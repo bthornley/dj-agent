@@ -5,6 +5,7 @@ import Topbar from '@/components/Topbar';
 import Link from 'next/link';
 import { QuerySeed } from '@/lib/types';
 import { fetchSeeds, createSeed, deleteSeed, deleteAllSeeds } from '@/lib/api-client';
+import { useAppMode } from '@/hooks/useAppMode';
 
 type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
 
@@ -108,7 +109,7 @@ export default function SeedsPage() {
     const [source, setSource] = useState('web_search');
     const [message, setMessage] = useState('');
     const [addingPresets, setAddingPresets] = useState(false);
-    const [activeMode, setActiveMode] = useState<AppMode | null>(null);
+    const { activeMode } = useAppMode();
     const [deleting, setDeleting] = useState(false);
 
     const isInstructor = activeMode === 'instructor';
