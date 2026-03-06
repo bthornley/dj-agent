@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import ToastProvider from "@/components/ToastProvider";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -70,14 +71,50 @@ export default function RootLayout({
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
           <meta name="color-scheme" content="dark" />
+          <meta name="theme-color" content="#0f0f23" />
+          <link rel="canonical" href="https://giglift.com" />
+          {/* JSON-LD Structured Data */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'SoftwareApplication',
+                name: 'GigLift',
+                url: 'https://giglift.com',
+                applicationCategory: 'BusinessApplication',
+                operatingSystem: 'Web',
+                description: 'AI-powered platform that helps musicians find gigs, students, and studio work using 7 autonomous AI agents.',
+                offers: {
+                  '@type': 'AggregateOffer',
+                  priceCurrency: 'USD',
+                  lowPrice: '0',
+                  highPrice: '149',
+                  offerCount: '3',
+                },
+                creator: {
+                  '@type': 'Organization',
+                  name: 'GigLift',
+                  url: 'https://giglift.com',
+                  founder: {
+                    '@type': 'Person',
+                    name: 'Blake Thornley',
+                    jobTitle: 'Founder & CTO',
+                  },
+                },
+              }),
+            }}
+          />
           {/* Plausible Analytics — privacy-friendly, no cookies */}
           <script defer data-domain="giglift.com" src="https://plausible.io/js/script.js"></script>
         </head>
         <body>
           <ToastProvider>
-            <div className="app-shell">
-              {children}
-            </div>
+            <ErrorBoundary>
+              <div className="app-shell">
+                {children}
+              </div>
+            </ErrorBoundary>
           </ToastProvider>
           <script
             dangerouslySetInnerHTML={{

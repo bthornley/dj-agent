@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Topbar from '@/components/Topbar';
+import { SkeletonPage } from '@/components/Skeleton';
 import Link from 'next/link';
 
 interface AnalyticsData {
@@ -160,8 +161,17 @@ export default function AdminAgentsDashboard() {
 
     async function fetchData() {
         try {
-            const res = await fetch('/api/admin/agents');
-            if (res.status === 403) { setError('Access denied — admin role required'); return; }
+            let res: Response | undefined;
+            for (let attempt = 0; attempt < 3; attempt++) {
+                try {
+                    res = await fetch('/api/admin/agents');
+                    break;
+                } catch {
+                    if (attempt < 2) await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+                }
+            }
+            if (!res) { setError('Network error — could not reach server'); setLoading(false); return; }
+            if (res.status === 403) { setError('Access denied — admin role required'); setLoading(false); return; }
             const json = await res.json();
             setData(json);
         } catch (e) { console.error(e); setError('Failed to load agent data'); }
@@ -224,7 +234,7 @@ export default function AdminAgentsDashboard() {
                 </div>
 
                 {loading ? (
-                    <div className="empty-state"><div className="spinner" /></div>
+                    <SkeletonPage />
                 ) : (
                     <>
                         {/* Revenue & User KPIs */}

@@ -11,6 +11,7 @@ import { runInstagramAgent } from '@/lib/agents/instagram/instagram-agent';
 import { runCostGuardianAgent } from '@/lib/agents/cost-guardian/cost-guardian-agent';
 import { runQAAgent } from '@/lib/agents/qa/qa-agent';
 import { getRecentAgentRuns, getAgentRunStats, logAgentStart, logAgentComplete } from '@/lib/agents/run-logger';
+import { logAgentError, getRecentAgentErrors } from '@/lib/agents/error-log';
 
 export const maxDuration = 120;
 
@@ -103,6 +104,7 @@ export async function GET() {
         weeklyUpdate,
         agentRuns,
         agentStats,
+        agentErrors: await getRecentAgentErrors(10),
     });
 }
 
@@ -155,6 +157,12 @@ export async function POST(request: NextRequest) {
         }
     } catch (error) {
         console.error('[admin/agents] run failed:', error);
+        await logAgentError({
+            agentName: 'unknown',
+            error: error instanceof Error ? error : String(error),
+            context: 'POST /api/admin/agents',
+            severity: 'error',
+        });
         return NextResponse.json({
             error: 'Agent run failed',
             details: error instanceof Error ? error.message : 'Unknown error',

@@ -222,16 +222,50 @@ export async function sendOutreachEmail(params: {
     const htmlBody = body
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')  // bold
         .replace(/\*(.+?)\*/g, '<em>$1</em>')              // italic
-        .replace(/^---$/gm, '<hr/>')                        // horizontal rule
-        .replace(/^> (.+)$/gm, '<blockquote style="border-left: 3px solid #4a4a6a; padding-left: 12px; color: #94a3b8; margin: 8px 0;">$1</blockquote>')
-        .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')          // numbered lists
-        .replace(/\n/g, '<br/>');                           // newlines
+        .replace(/^---$/gm, '<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 16px 0;"/>')
+        .replace(/^> (.+)$/gm, '<blockquote style="border-left: 3px solid #a78bfa; padding-left: 12px; color: #64748b; margin: 8px 0;">$1</blockquote>')
+        .replace(/^\d+\. (.+)$/gm, '<li style="margin: 4px 0;">$1</li>')
+        .replace(/^• (.+)$/gm, '<li style="margin: 4px 0;">$1</li>')
+        .replace(/👉/g, '👉')
+        .replace(/\n/g, '<br/>');
 
     const html = `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1a1a2e; line-height: 1.6; font-size: 15px;">
-            ${htmlBody}
-        </div>
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+        <body style="margin: 0; padding: 0; background: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+            <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, #0f0f23, #1a1a3e); padding: 24px 32px; text-align: center;">
+                    <div style="height: 3px; background: linear-gradient(90deg, #a78bfa, #38bdf8, #10b981); border-radius: 2px; margin-bottom: 16px;"></div>
+                    <div style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
+                        🎵 GigLift
+                    </div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-top: 4px; letter-spacing: 1px; text-transform: uppercase;">
+                        AI-Powered Artist Growth
+                    </div>
+                </div>
+                <!-- Body -->
+                <div style="padding: 32px; color: #1e293b; line-height: 1.7; font-size: 15px;">
+                    ${htmlBody}
+                </div>
+                <!-- Footer -->
+                <div style="background: #f1f5f9; padding: 20px 32px; border-top: 1px solid #e2e8f0;">
+                    <div style="text-align: center; margin-bottom: 12px;">
+                        <a href="https://giglift.com" style="color: #a78bfa; text-decoration: none; font-size: 13px; font-weight: 600;">giglift.com</a>
+                        <span style="color: #cbd5e1; margin: 0 8px;">·</span>
+                        <a href="https://instagram.com/gigliftapp" style="color: #64748b; text-decoration: none; font-size: 13px;">Instagram</a>
+                    </div>
+                    <div style="text-align: center; font-size: 11px; color: #94a3b8; line-height: 1.6;">
+                        GigLift — Find gigs, grow your career, powered by AI.<br/>
+                        <a href="https://giglift.com/unsubscribe" style="color: #94a3b8; text-decoration: underline;">Unsubscribe</a>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
     `;
+
 
     try {
         const result = await resend.emails.send({

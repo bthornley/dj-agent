@@ -1,10 +1,10 @@
 'use client';
 
-import React, { Component, ReactNode } from 'react';
+import React from 'react';
 
 interface ErrorBoundaryProps {
-    children: ReactNode;
-    fallback?: ReactNode;
+    children: React.ReactNode;
+    fallbackTitle?: string;
 }
 
 interface ErrorBoundaryState {
@@ -12,11 +12,7 @@ interface ErrorBoundaryState {
     error: Error | null;
 }
 
-/**
- * Global error boundary — catches unhandled React errors and shows
- * a recovery UI instead of a white screen.
- */
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
     constructor(props: ErrorBoundaryProps) {
         super(props);
         this.state = { hasError: false, error: null };
@@ -27,61 +23,35 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     componentDidCatch(error: Error, info: React.ErrorInfo) {
-        console.error('[ErrorBoundary] Uncaught error:', error, info.componentStack);
+        console.error('[ErrorBoundary]', error, info.componentStack);
     }
-
-    handleReset = () => {
-        this.setState({ hasError: false, error: null });
-    };
 
     render() {
         if (this.state.hasError) {
-            if (this.props.fallback) return this.props.fallback;
-
             return (
                 <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minHeight: '50vh',
-                    padding: '2rem',
-                    textAlign: 'center',
-                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    minHeight: '300px', padding: '40px', textAlign: 'center',
                 }}>
-                    <h2 style={{ fontSize: '1.5rem', color: '#ef4444', marginBottom: '0.5rem' }}>
-                        Something went wrong
-                    </h2>
-                    <p style={{ color: '#6b7280', marginBottom: '1rem', maxWidth: '400px' }}>
-                        An unexpected error occurred. Try refreshing the page or clicking the button below.
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+                    <h3 style={{ color: 'var(--text-primary, #e2e8f0)', fontSize: '18px', marginBottom: '8px' }}>
+                        {this.props.fallbackTitle || 'Something went wrong'}
+                    </h3>
+                    <p style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '14px', maxWidth: '400px', lineHeight: '1.6', marginBottom: '20px' }}>
+                        {this.state.error?.message || 'An unexpected error occurred. Please try refreshing the page.'}
                     </p>
-                    {process.env.NODE_ENV === 'development' && this.state.error && (
-                        <pre style={{
-                            background: '#1f2937',
-                            color: '#f87171',
-                            padding: '1rem',
-                            borderRadius: '0.5rem',
-                            fontSize: '0.75rem',
-                            maxWidth: '600px',
-                            overflow: 'auto',
-                            marginBottom: '1rem',
-                        }}>
-                            {this.state.error.message}
-                        </pre>
-                    )}
                     <button
-                        onClick={this.handleReset}
+                        onClick={() => {
+                            this.setState({ hasError: false, error: null });
+                            window.location.reload();
+                        }}
                         style={{
-                            padding: '0.5rem 1.5rem',
-                            background: '#6366f1',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '0.5rem',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
+                            background: 'linear-gradient(135deg, #a78bfa, #6366f1)',
+                            color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 24px',
+                            fontSize: '14px', fontWeight: 600, cursor: 'pointer',
                         }}
                     >
-                        Try Again
+                        🔄 Reload Page
                     </button>
                 </div>
             );
