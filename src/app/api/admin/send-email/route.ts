@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { sendOutreachEmail } from '@/lib/email';
+import { dbSaveSentEmail } from '@/lib/db';
+import { SentEmail } from '@/lib/types';
 import { getDb } from '@/lib/db';
+import { v4 as uuid } from 'uuid';
 
 export async function POST(request: Request) {
+    const { userId } = await auth();
+
     try {
         const { type, id, to, subject, body } = await request.json();
 
@@ -22,7 +28,22 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: result.error || 'Send failed' }, { status: 500 });
         }
 
-        // Update status in the appropriate table
+        // Log to sent_emails so it appears on /emails page
+        if (userId) {
+            const sentEmail: SentEmail = {
+                id: uuid(),
+                eventId: '',
+                toEmail: to,
+                subject,
+                body,
+                status: 'sent',
+                resendId: result.resendId || '',
+                sentAt: new Date().toISOString(),
+            };
+            await dbSaveSentEmail(sentEmail, userId);
+        }
+
+        // Update status in the agent-specific table
         const db = getDb();
 
         if (type === 'investor' && id) {
