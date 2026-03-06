@@ -1,34 +1,15 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { MODE_CONFIGS } from '@/hooks/useAppMode';
-
-export type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
+import { useAppMode, MODE_CONFIGS, AppMode } from '@/hooks/useAppMode';
 
 const MODES: AppMode[] = ['performer', 'instructor', 'studio', 'touring'];
 
-interface ModeSwitchProps {
-    onChange?: (mode: AppMode) => void;
-}
-
-export default function ModeSwitch({ onChange }: ModeSwitchProps) {
-    const [mode, setMode] = useState<AppMode>('performer');
-    const [loading, setLoading] = useState(true);
+export default function ModeSwitch() {
+    const { activeMode, setActiveMode } = useAppMode();
     const [open, setOpen] = useState(false);
+    const [saving, setSaving] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        fetch('/api/profile/mode')
-            .then(r => r.json())
-            .then(data => {
-                const loaded = (data.mode as AppMode) || 'performer';
-                setMode(loaded);
-                onChange?.(loaded);
-                setLoading(false);
-            })
-            .catch(() => setLoading(false));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     // Close on outside click
     useEffect(() => {
@@ -40,10 +21,11 @@ export default function ModeSwitch({ onChange }: ModeSwitchProps) {
     }, []);
 
     const select = async (next: AppMode) => {
-        if (next === mode) { setOpen(false); return; }
-        setMode(next);
+        if (next === activeMode) { setOpen(false); return; }
+        const prev = activeMode;
+        setActiveMode(next); // Update shared context immediately
         setOpen(false);
-        onChange?.(next);
+        setSaving(true);
         try {
             await fetch('/api/profile/mode', {
                 method: 'PUT',
@@ -51,13 +33,14 @@ export default function ModeSwitch({ onChange }: ModeSwitchProps) {
                 body: JSON.stringify({ mode: next }),
             });
         } catch {
-            setMode(mode);
+            if (prev) setActiveMode(prev); // Revert on error
         }
+        setSaving(false);
     };
 
-    if (loading) return null;
+    if (!activeMode) return null;
 
-    const cfg = MODE_CONFIGS[mode];
+    const cfg = MODE_CONFIGS[activeMode];
 
     return (
         <div ref={ref} style={{ position: 'relative' }}>
@@ -79,6 +62,7 @@ export default function ModeSwitch({ onChange }: ModeSwitchProps) {
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                     whiteSpace: 'nowrap',
+                    opacity: saving ? 0.6 : 1,
                 }}
             >
                 <span style={{ fontSize: '14px' }}>{cfg.icon}</span>
@@ -102,7 +86,7 @@ export default function ModeSwitch({ onChange }: ModeSwitchProps) {
                 }}>
                     {MODES.map(m => {
                         const c = MODE_CONFIGS[m];
-                        const active = m === mode;
+                        const active = m === activeMode;
                         return (
                             <button
                                 key={m}

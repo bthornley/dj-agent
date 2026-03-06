@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 
 export type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
 
@@ -41,7 +41,7 @@ const MODE_CONFIGS: Record<AppMode, ModeConfig> = {
     },
     studio: {
         key: 'studio',
-        label: 'Studio',
+        label: 'Studio Musician',
         icon: '🎙️',
         color: '#f97316',
         glow: 'rgba(249,115,22,0.4)',
@@ -52,33 +52,36 @@ const MODE_CONFIGS: Record<AppMode, ModeConfig> = {
     },
     touring: {
         key: 'touring',
-        label: 'Touring',
+        label: 'Touring Musician',
         icon: '🚐',
-        color: '#10b981',
-        glow: 'rgba(16,185,129,0.4)',
-        borderColor: 'rgba(16,185,129,0.3)',
-        gradientBg: 'linear-gradient(135deg, rgba(16,185,129,0.12), rgba(5,150,105,0.06), rgba(15,15,35,0.95))',
+        color: '#22c55e',
+        glow: 'rgba(34,197,94,0.4)',
+        borderColor: 'rgba(34,197,94,0.3)',
+        gradientBg: 'linear-gradient(135deg, rgba(34,197,94,0.12), rgba(22,163,74,0.06), rgba(15,15,35,0.95))',
         headerBg: 'linear-gradient(135deg, rgba(15,15,35,0.98), rgba(10,30,20,0.98))',
-        headerBorder: '1px solid rgba(16,185,129,0.2)',
+        headerBorder: '1px solid rgba(34,197,94,0.2)',
     },
 };
 
-export interface AppModeState {
+// ---- Context ----
+
+interface AppModeContextValue {
     activeMode: AppMode | null;
     setActiveMode: (mode: AppMode) => void;
     isInstructor: boolean;
     modeLoaded: boolean;
     modeConfig: ModeConfig;
     allModes: ModeConfig[];
-    // Styling helpers
     accentColor: string;
     accentGlow: string;
     headerStyle: React.CSSProperties | undefined;
     logoFilter: string;
 }
 
-export function useAppMode(): AppModeState {
-    const [activeMode, setActiveMode] = useState<AppMode | null>(null);
+const AppModeContext = createContext<AppModeContextValue | null>(null);
+
+export function AppModeProvider({ children }: { children: ReactNode }) {
+    const [activeMode, setActiveModeState] = useState<AppMode | null>(null);
     const [modeLoaded, setModeLoaded] = useState(false);
 
     useEffect(() => {
@@ -86,17 +89,17 @@ export function useAppMode(): AppModeState {
             .then(r => r.json())
             .then(data => {
                 const mode = (data.mode as AppMode) || 'performer';
-                setActiveMode(mode);
+                setActiveModeState(mode);
                 setModeLoaded(true);
             })
             .catch(() => {
-                setActiveMode('performer');
+                setActiveModeState('performer');
                 setModeLoaded(true);
             });
     }, []);
 
-    const handleSetMode = useCallback((mode: AppMode) => {
-        setActiveMode(mode);
+    const setActiveMode = useCallback((mode: AppMode) => {
+        setActiveModeState(mode);
     }, []);
 
     const cfg = MODE_CONFIGS[activeMode || 'performer'];
@@ -109,9 +112,9 @@ export function useAppMode(): AppModeState {
 
     const allModes = useMemo(() => Object.values(MODE_CONFIGS), []);
 
-    return {
+    const value = useMemo<AppModeContextValue>(() => ({
         activeMode,
-        setActiveMode: handleSetMode,
+        setActiveMode,
         isInstructor,
         modeLoaded,
         modeConfig: cfg,
@@ -120,7 +123,24 @@ export function useAppMode(): AppModeState {
         accentGlow: cfg.glow,
         headerStyle,
         logoFilter: `drop-shadow(0 0 6px ${cfg.glow})`,
-    };
+    }), [activeMode, setActiveMode, isInstructor, modeLoaded, cfg, allModes, headerStyle]);
+
+    return (
+        <AppModeContext.Provider value= { value } >
+        { children }
+        </AppModeContext.Provider>
+    );
+}
+
+// ---- Hook (reads from context) ----
+
+export function useAppMode(): AppModeContextValue {
+    const ctx = useContext(AppModeContext);
+    if (!ctx) {
+        // Fallback for components rendered outside provider (shouldn't happen)
+        throw new Error('useAppMode must be used within AppModeProvider');
+    }
+    return ctx;
 }
 
 export { MODE_CONFIGS };

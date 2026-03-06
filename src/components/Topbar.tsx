@@ -5,18 +5,13 @@ import { usePathname } from 'next/navigation';
 import { UserButton } from '@clerk/nextjs';
 import AdminLink from '@/components/AdminLink';
 import ModeSwitch from '@/components/ModeSwitch';
-import { useAppMode, AppMode } from '@/hooks/useAppMode';
+import { useAppMode } from '@/hooks/useAppMode';
 
 // ============================================================
 // Shared Topbar — One nav component for all pages
 // Logo always links to '/', company name + tagline always visible
 // Admin/App switching via AdminLink toggle (next to user icon)
 // ============================================================
-
-interface TopbarProps {
-    /** Optional callback when mode changes (for pages that need to react to it) */
-    onModeChange?: (mode: AppMode) => void;
-}
 
 const NAV_ITEMS = [
     { href: '/dashboard', label: 'Dashboard', emoji: '📋' },
@@ -39,7 +34,7 @@ const ADMIN_NAV_ITEMS = [
     { href: '/admin/instagram', label: 'Instagram', emoji: '📸' },
 ];
 
-export default function Topbar({ onModeChange }: TopbarProps) {
+export default function Topbar() {
     const pathname = usePathname();
     const { headerStyle, logoFilter, accentColor, modeConfig } = useAppMode();
 
@@ -89,7 +84,7 @@ export default function Topbar({ onModeChange }: TopbarProps) {
                         {item.emoji} {item.label}
                     </Link>
                 ))}
-                <ModeSwitch onChange={onModeChange} />
+                <ModeSwitch />
                 <AdminLink />
                 <UserButton />
             </nav>

@@ -9,14 +9,14 @@ import ModeCard from '@/components/ModeCard';
 import WelcomeBanner from '@/components/WelcomeBanner';
 import { Event } from '@/lib/types';
 import { fetchLeadStats } from '@/lib/api-client';
-import { MODE_CONFIGS } from '@/hooks/useAppMode';
+import { useAppMode, MODE_CONFIGS } from '@/hooks/useAppMode';
 
 type AppMode = 'performer' | 'instructor' | 'studio' | 'touring';
 
 export default function DashboardPage() {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeMode, setActiveMode] = useState<AppMode | null>(null);
+    const { activeMode } = useAppMode();
     const [leadStats, setLeadStats] = useState<{ total: number; byStatus: Record<string, number> } | null>(null);
     const [isNewUser, setIsNewUser] = useState(false);
     const [scanQuota, setScanQuota] = useState<{ used: number; remaining: number; limit: number } | null>(null);
@@ -145,7 +145,7 @@ export default function DashboardPage() {
 
     return (
         <>
-            <Topbar onModeChange={(m) => setActiveMode(m)} />
+            <Topbar />
 
             <main className="main-content fade-in">
                 {/* Welcome banner for new users */}

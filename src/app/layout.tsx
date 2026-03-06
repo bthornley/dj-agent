@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import ToastProvider from "@/components/ToastProvider";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { AppModeProvider } from "@/hooks/useAppMode";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -111,9 +112,11 @@ export default function RootLayout({
         <body>
           <ToastProvider>
             <ErrorBoundary>
-              <div className="app-shell">
-                {children}
-              </div>
+              <AppModeProvider>
+                <div className="app-shell">
+                  {children}
+                </div>
+              </AppModeProvider>
             </ErrorBoundary>
           </ToastProvider>
           <script
