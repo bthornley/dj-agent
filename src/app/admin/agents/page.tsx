@@ -90,6 +90,32 @@ export default function AdminAgentsDashboard() {
     const [showUpdate, setShowUpdate] = useState(false);
     const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
     const [expandedDraft, setExpandedDraft] = useState<string | null>(null);
+    const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+    const [sentEmails, setSentEmails] = useState<Set<string>>(new Set());
+
+    async function handleSendEmail(e: React.MouseEvent, params: { type: 'investor' | 'education'; id: string; to: string; subject: string; body: string }) {
+        e.stopPropagation();
+        if (!params.to) { alert('No email address for this contact'); return; }
+        if (!confirm(`Send email to ${params.to}?`)) return;
+        setSendingEmail(params.id);
+        try {
+            const res = await fetch('/api/admin/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(params),
+            });
+            const json = await res.json();
+            if (json.success) {
+                setSentEmails(prev => new Set(prev).add(params.id));
+                alert(`✅ Email sent to ${params.to}`);
+            } else {
+                alert(`❌ Failed: ${json.error}`);
+            }
+        } catch (err) {
+            alert(`❌ Send failed: ${err}`);
+        }
+        setSendingEmail(null);
+    }
 
 
     async function fetchData() {
@@ -338,8 +364,26 @@ export default function AdminAgentsDashboard() {
                                                                 }}>
                                                                     {draft.body}
                                                                 </pre>
-                                                                <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '6px' }}>
-                                                                    Created: {new Date(draft.created_at).toLocaleString()}
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
+                                                                    <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                                                                        Created: {new Date(draft.created_at).toLocaleString()}
+                                                                    </div>
+                                                                    {draft.investor_email && draft.status !== 'sent' && !sentEmails.has(draft.id) && (
+                                                                        <button
+                                                                            onClick={(e) => handleSendEmail(e, { type: 'investor', id: draft.id, to: draft.investor_email, subject: draft.subject, body: draft.body })}
+                                                                            disabled={sendingEmail === draft.id}
+                                                                            style={{
+                                                                                background: sendingEmail === draft.id ? 'rgba(168,85,247,0.2)' : 'linear-gradient(135deg, #a855f7, #6366f1)',
+                                                                                color: '#fff', border: 'none', borderRadius: '8px', padding: '6px 16px',
+                                                                                fontSize: '12px', fontWeight: 600, cursor: sendingEmail === draft.id ? 'wait' : 'pointer',
+                                                                            }}
+                                                                        >
+                                                                            {sendingEmail === draft.id ? '⏳ Sending...' : '📤 Send Email'}
+                                                                        </button>
+                                                                    )}
+                                                                    {(draft.status === 'sent' || sentEmails.has(draft.id)) && (
+                                                                        <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600 }}>✅ Sent</span>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         )}
@@ -616,13 +660,36 @@ export default function AdminAgentsDashboard() {
                                                         <span className="badge badge-draft" style={{ fontSize: '10px' }}>{email.status}</span>
                                                     </div>
                                                     {expandedDraft === email.id && (
-                                                        <pre style={{
-                                                            fontSize: '11px', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap',
-                                                            marginTop: '8px', lineHeight: '1.5', background: 'rgba(0,0,0,0.2)',
-                                                            padding: '10px', borderRadius: '6px',
-                                                        }}>
-                                                            {email.body}
-                                                        </pre>
+                                                        <div>
+                                                            <pre style={{
+                                                                fontSize: '11px', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap',
+                                                                marginTop: '8px', lineHeight: '1.5', background: 'rgba(0,0,0,0.2)',
+                                                                padding: '10px', borderRadius: '6px',
+                                                            }}>
+                                                                {email.body}
+                                                            </pre>
+                                                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
+                                                                {email.status !== 'sent' && !sentEmails.has(email.id) ? (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            const school = data?.schoolPipeline?.schools.find(s => data?.schoolPipeline?.recentOutreach.find(o => o.id === email.id && o.school_id === s.id));
+                                                                            handleSendEmail(e, { type: 'education', id: email.id, to: school?.contact_email || '', subject: email.subject, body: email.body });
+                                                                        }}
+                                                                        disabled={sendingEmail === email.id}
+                                                                        style={{
+                                                                            background: sendingEmail === email.id ? 'rgba(168,85,247,0.2)' : 'linear-gradient(135deg, #a855f7, #6366f1)',
+                                                                            color: '#fff', border: 'none', borderRadius: '8px', padding: '6px 16px',
+                                                                            fontSize: '12px', fontWeight: 600, cursor: sendingEmail === email.id ? 'wait' : 'pointer',
+                                                                        }}
+                                                                    >
+                                                                        {sendingEmail === email.id ? '⏳ Sending...' : '📤 Send Email'}
+                                                                    </button>
+                                                                ) : (
+                                                                    <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600 }}>✅ Sent</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                     )}
                                                 </div>
                                             ))}
