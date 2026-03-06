@@ -4,6 +4,7 @@ import { getSnapshot, getRecentSnapshots, generateWeeklyInvestorUpdate, getCFOIn
 import { getInvestors, getPipelineSummary, getOutreachDrafts, runInvestorPipelineAgent } from '@/lib/agents/fundraising/investor-pipeline';
 import { getContentQueue, runContentMarketingAgent } from '@/lib/agents/content/content-marketing';
 import { runGrowthOpsAgent, getGrowthTasks } from '@/lib/agents/growth/growth-ops';
+import { runEducationOutreachAgent, getSchoolPipeline } from '@/lib/agents/education/education-outreach';
 import { runCustomerSuccessAgent } from '@/lib/agents/customer-success/customer-success';
 import { runCommunityAgent } from '@/lib/agents/community/community-agent';
 import { runInstagramAgent } from '@/lib/agents/instagram/instagram-agent';
@@ -68,6 +69,12 @@ export async function GET() {
         cfoInsights = await getCFOInsights(3);
     } catch (e) { console.error('[admin/agents] cfo:', e); }
 
+    // School pipeline
+    let schoolPipeline = null;
+    try {
+        schoolPipeline = await getSchoolPipeline();
+    } catch (e) { console.error('[admin/agents] education:', e); }
+
     // Weekly investor update
     let weeklyUpdate = null;
     try {
@@ -92,6 +99,7 @@ export async function GET() {
         contentQueue,
         growthTasks,
         cfoInsights,
+        schoolPipeline,
         weeklyUpdate,
         agentRuns,
         agentStats,
@@ -116,6 +124,7 @@ export async function POST(request: NextRequest) {
             'content-marketing': { name: 'Content Marketing', run: runContentMarketingAgent },
             'community': { name: 'Community', run: runCommunityAgent },
             'instagram': { name: 'Instagram', run: runInstagramAgent },
+            'education-outreach': { name: 'Education Outreach', run: runEducationOutreachAgent },
         };
 
         const agent = agentMap[agentId];
@@ -208,6 +217,17 @@ function extractSummary(agentId: string, result: unknown): {
                 hasAlerts: false,
                 alertsCount: 0,
                 actionsCount: discoveries + drafts,
+            };
+        }
+        case 'education-outreach': {
+            const newSchools = Number(r?.newSchools) || 0;
+            const out = r?.outreach as Record<string, number> | undefined;
+            const pipe = r?.pipeline as Record<string, number> | undefined;
+            return {
+                text: `Education: ${newSchools} new schools, ${out?.contacted ?? 0} contacted, ${pipe?.total ?? 0} in pipeline`,
+                hasAlerts: false,
+                alertsCount: 0,
+                actionsCount: newSchools + (out?.contacted ?? 0),
             };
         }
         default: {

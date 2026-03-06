@@ -45,6 +45,13 @@ interface AgentDashboardData {
     contentQueue: Array<{ title: string; content_type: string; platform: string; status: string }>;
     growthTasks: Array<{ id: string; type: string; priority: string; title: string; description: string; category: string; status: string; created_at: string }>;
     cfoInsights: Array<{ id: string; date: string; revenue_health: string; unit_economics: string; risk_flags: string[]; recommended_actions: string[]; runway_assessment: string; summary: string; created_at: string }>;
+    schoolPipeline: {
+        total: number;
+        byStatus: Record<string, number>;
+        byTier: Record<string, number>;
+        schools: Array<{ id: string; school_name: string; tier: string; contact_name: string; contact_email: string; location: string; status: string; outreach_step: number; signups: number; slug: string }>;
+        recentOutreach: Array<{ id: string; school_id: string; step: number; subject: string; body: string; status: string; sent_at: string }>;
+    } | null;
     weeklyUpdate: string | null;
     agentRuns: AgentRunLog[];
     agentStats: Record<string, { runs: number; lastRun: string | null; lastStatus: string }>;
@@ -71,6 +78,7 @@ const AGENT_INFO = [
     { id: 'content-marketing', name: 'Content Marketing', emoji: '📝', schedule: 'MWF 10am', desc: 'Blog, social, SEO' },
     { id: 'community', name: 'Community', emoji: '🤝', schedule: 'Daily 11am', desc: 'Feedback, power users, insights' },
     { id: 'instagram', name: 'Instagram @gigliftapp', emoji: '📸', schedule: 'Every 6h', desc: 'Brand posts, publishing, analytics' },
+    { id: 'education-outreach', name: 'Education Outreach', emoji: '🎓', schedule: 'MWF 8am', desc: 'Music school prospecting, outreach sequences' },
 ];
 
 export default function AdminAgentsDashboard() {
@@ -509,6 +517,117 @@ export default function AdminAgentsDashboard() {
                                             </div>
                                         );
                                     })()}
+                                </>
+                            )}
+
+                            <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.07)', margin: '8px 0 20px' }} />
+
+                            {/* Education Outreach */}
+                            {data?.schoolPipeline && data.schoolPipeline.total > 0 && (
+                                <>
+                                    <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>
+                                        🎓 Education Outreach
+                                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 400, marginLeft: '8px' }}>
+                                            {data.schoolPipeline.total} schools in pipeline
+                                        </span>
+                                    </h3>
+
+                                    {/* Pipeline funnel badges */}
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                                        {Object.entries(data.schoolPipeline.byStatus).map(([status, count]) => {
+                                            const colors: Record<string, string> = {
+                                                prospected: '#6b7280', contacted: '#f97316', responded: '#3b82f6',
+                                                partnered: '#10b981', active: '#a855f7',
+                                            };
+                                            return (
+                                                <span key={status} className="badge" style={{
+                                                    fontSize: '11px', background: `${colors[status] || '#6b7280'}22`,
+                                                    color: colors[status] || '#6b7280', border: `1px solid ${colors[status] || '#6b7280'}44`,
+                                                }}>
+                                                    {status}: {count as number}
+                                                </span>
+                                            );
+                                        })}
+                                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', padding: '4px 0' }}>|</span>
+                                        {Object.entries(data.schoolPipeline.byTier).map(([tier, count]) => (
+                                            <span key={tier} className="badge badge-draft" style={{ fontSize: '11px' }}>
+                                                {tier === 'conservatory' ? '🏛️' : tier === 'university' ? '🎓' : '🏫'} {tier}: {count as number}
+                                            </span>
+                                        ))}
+                                    </div>
+
+                                    {/* School list table */}
+                                    <div className="admin-table-wrap" style={{ marginBottom: '16px' }}>
+                                        <table className="admin-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>School</th>
+                                                    <th>Tier</th>
+                                                    <th>Location</th>
+                                                    <th>Status</th>
+                                                    <th>Step</th>
+                                                    <th>Signups</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {data.schoolPipeline.schools.slice(0, 15).map(school => {
+                                                    const statusColor: Record<string, string> = {
+                                                        prospected: '#6b7280', contacted: '#f97316', responded: '#3b82f6',
+                                                        partnered: '#10b981', active: '#a855f7',
+                                                    };
+                                                    return (
+                                                        <tr key={school.id}>
+                                                            <td style={{ fontWeight: 500 }}>{school.school_name}</td>
+                                                            <td><span className="badge badge-draft" style={{ fontSize: '10px' }}>
+                                                                {school.tier === 'conservatory' ? '🏛️' : '🎓'} {school.tier}
+                                                            </span></td>
+                                                            <td style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{school.location}</td>
+                                                            <td><span className="badge" style={{ fontSize: '10px', color: statusColor[school.status] || '#6b7280', background: `${statusColor[school.status] || '#6b7280'}22` }}>
+                                                                {school.status}
+                                                            </span></td>
+                                                            <td style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)' }}>
+                                                                {school.outreach_step}/4
+                                                            </td>
+                                                            <td style={{ textAlign: 'center', fontSize: '12px', fontWeight: school.signups > 0 ? 600 : 400, color: school.signups > 0 ? '#10b981' : 'var(--text-muted)' }}>
+                                                                {school.signups}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {/* Recent outreach emails */}
+                                    {data.schoolPipeline.recentOutreach.length > 0 && (
+                                        <div style={{ marginBottom: '28px' }}>
+                                            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>✉️ Recent Outreach Drafts</div>
+                                            {data.schoolPipeline.recentOutreach.slice(0, 5).map(email => (
+                                                <div key={email.id} style={{
+                                                    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                                                    borderRadius: '8px', padding: '10px 14px', marginBottom: '6px',
+                                                    cursor: 'pointer',
+                                                }}
+                                                    onClick={() => setExpandedDraft(expandedDraft === email.id ? null : email.id)}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-primary)' }}>
+                                                            Step {email.step}/4: {email.subject}
+                                                        </span>
+                                                        <span className="badge badge-draft" style={{ fontSize: '10px' }}>{email.status}</span>
+                                                    </div>
+                                                    {expandedDraft === email.id && (
+                                                        <pre style={{
+                                                            fontSize: '11px', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap',
+                                                            marginTop: '8px', lineHeight: '1.5', background: 'rgba(0,0,0,0.2)',
+                                                            padding: '10px', borderRadius: '6px',
+                                                        }}>
+                                                            {email.body}
+                                                        </pre>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </>
                             )}
 
