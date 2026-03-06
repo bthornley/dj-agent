@@ -50,11 +50,11 @@ export async function GET() {
     } catch (e) { console.error('[admin/agents] investor:', e); }
 
     // Content queue
-    let contentQueue: Array<{ title: string; content_type: string; platform: string; status: string }> = [];
+    let contentQueue: Array<{ id: string; title: string; content_type: string; platform: string; status: string; body: string }> = [];
     try {
         const queue = await getContentQueue();
         contentQueue = queue.slice(0, 10).map(c => ({
-            title: c.title, content_type: c.content_type, platform: c.platform, status: c.status,
+            id: c.id, title: c.title, content_type: c.content_type, platform: c.platform, status: c.status, body: c.body,
         }));
     } catch (e) { console.error('[admin/agents] content:', e); }
 

@@ -43,7 +43,7 @@ interface AgentDashboardData {
     pipeline: Record<string, number> | null;
     investors: Array<{ name: string; firm: string; email: string; linkedin: string; fit_score: number; status: string; last_contacted: string }>;
     outreachDrafts: Array<{ id: string; investor_name: string; investor_firm: string; investor_email: string; subject: string; body: string; status: string; created_at: string }>;
-    contentQueue: Array<{ title: string; content_type: string; platform: string; status: string }>;
+    contentQueue: Array<{ id: string; title: string; content_type: string; platform: string; status: string; body: string }>;
     growthTasks: Array<{ id: string; type: string; priority: string; title: string; description: string; category: string; status: string; created_at: string }>;
     cfoInsights: Array<{ id: string; date: string; revenue_health: string; unit_economics: string; risk_flags: string[]; recommended_actions: string[]; runway_assessment: string; summary: string; created_at: string }>;
     schoolPipeline: {
@@ -100,6 +100,7 @@ export default function AdminAgentsDashboard() {
         description: string; category: string; enabled: boolean; lastRun?: string; lastStatus?: string;
     }>>([]);
     const [togglingAgent, setTogglingAgent] = useState<string | null>(null);
+    const [expandedContentId, setExpandedContentId] = useState<string | null>(null);
 
     function mapTaskToActionId(task: { title: string; category: string; description: string }): string {
         const t = (task.title + ' ' + task.description).toLowerCase();
@@ -484,33 +485,57 @@ export default function AdminAgentsDashboard() {
                             {data?.contentQueue && data.contentQueue.length > 0 && (
                                 <>
                                     <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>📝 Content Queue</h3>
-                                    <div className="admin-table-wrap" style={{ marginBottom: '28px' }}>
-                                        <table className="admin-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Title</th>
-                                                    <th>Type</th>
-                                                    <th>Platform</th>
-                                                    <th>Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {data.contentQueue.map((item, i) => (
-                                                    <tr key={i}>
-                                                        <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                            {item.title}
-                                                        </td>
-                                                        <td>
-                                                            <span className="badge badge-draft" style={{ fontSize: '11px' }}>
-                                                                {item.content_type === 'twitter_thread' ? '🐦 Thread' : item.content_type === 'linkedin_post' ? '💼 LinkedIn' : item.content_type === 'blog' ? '📄 Blog' : item.content_type}
-                                                            </span>
-                                                        </td>
-                                                        <td style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{item.platform}</td>
-                                                        <td><span className={`badge ${item.status === 'published' ? 'badge-approved' : 'badge-draft'}`}>{item.status}</span></td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '28px' }}>
+                                        {data.contentQueue.map((item: { id: string; title: string; content_type: string; platform: string; status: string; body: string }) => {
+                                            const isExpanded = expandedContentId === item.id;
+                                            const typeLabel = item.content_type === 'twitter_thread' ? '🐦 Thread' : item.content_type === 'linkedin_post' ? '💼 LinkedIn' : item.content_type === 'blog' ? '📄 Blog' : item.content_type;
+                                            return (
+                                                <div key={item.id} style={{
+                                                    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                                                    borderRadius: '10px', overflow: 'hidden', cursor: 'pointer',
+                                                    transition: 'border-color 0.15s',
+                                                    borderColor: isExpanded ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.08)',
+                                                }} onClick={() => setExpandedContentId(isExpanded ? null : item.id)}>
+                                                    <div style={{
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                        padding: '12px 16px', gap: '12px',
+                                                    }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
+                                                            <span style={{ fontSize: '18px', flexShrink: 0 }}>{isExpanded ? '▼' : '▶'}</span>
+                                                            <span style={{
+                                                                fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)',
+                                                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                                            }}>{item.title}</span>
+                                                        </div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                                                            <span className="badge badge-draft" style={{ fontSize: '11px' }}>{typeLabel}</span>
+                                                            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{item.platform}</span>
+                                                            <span className={`badge ${item.status === 'published' ? 'badge-approved' : 'badge-draft'}`}>{item.status}</span>
+                                                        </div>
+                                                    </div>
+                                                    {isExpanded && (
+                                                        <div style={{
+                                                            padding: '0 16px 16px', borderTop: '1px solid rgba(255,255,255,0.06)',
+                                                        }} onClick={e => e.stopPropagation()}>
+                                                            <div style={{
+                                                                background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '16px',
+                                                                marginTop: '12px', fontSize: '13px', lineHeight: '1.7',
+                                                                color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', fontFamily: 'inherit',
+                                                                maxHeight: '400px', overflowY: 'auto',
+                                                            }}>
+                                                                {item.body}
+                                                            </div>
+                                                            <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                                                                <button className="btn btn-ghost btn-sm" style={{ fontSize: '12px' }}
+                                                                    onClick={() => { navigator.clipboard.writeText(item.body); }}>
+                                                                    📋 Copy to Clipboard
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </>
                             )}
