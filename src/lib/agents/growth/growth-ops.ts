@@ -285,11 +285,115 @@ export async function processAmbassadorApplications(): Promise<{ pending: number
 
 // ---- Main Agent Entrypoint ----
 
+export interface GrowthTask {
+    id: string;
+    type: 'manual' | 'automated';
+    priority: 'high' | 'medium' | 'low';
+    title: string;
+    description: string;
+    category: string;
+    status: string;
+    created_at: string;
+}
+
+async function ensureGrowthTasksTable(): Promise<Client> {
+    const db = await ensureGrowthSchema();
+    await db.executeMultiple(`
+        CREATE TABLE IF NOT EXISTS growth_tasks (
+            id TEXT PRIMARY KEY,
+            type TEXT NOT NULL DEFAULT 'manual',
+            priority TEXT NOT NULL DEFAULT 'medium',
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            category TEXT DEFAULT '',
+            status TEXT DEFAULT 'pending',
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+    `);
+    return db;
+}
+
+export async function getGrowthTasks(limit: number = 20): Promise<GrowthTask[]> {
+    const db = await ensureGrowthTasksTable();
+    const result = await db.execute({
+        sql: `SELECT * FROM growth_tasks ORDER BY
+              CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END,
+              created_at DESC
+              LIMIT ?`,
+        args: [limit],
+    });
+    return result.rows.map(row => ({
+        id: String(row.id),
+        type: String(row.type) as 'manual' | 'automated',
+        priority: String(row.priority) as 'high' | 'medium' | 'low',
+        title: String(row.title),
+        description: String(row.description),
+        category: String(row.category),
+        status: String(row.status),
+        created_at: String(row.created_at),
+    }));
+}
+
+async function generateGrowthRecommendations(funnel: FunnelMetrics, onboarding: { stalled: number; nudged: number; activated: number }): Promise<number> {
+    const { aiJSON } = await import('@/lib/ai');
+
+    const prompt = `You are an expert SaaS growth strategist specializing in user acquisition and activation for a music-tech platform called GigLift. GigLift helps musicians find gigs, students, and studio work using 7 AI agents.
+
+Current funnel metrics:
+- Total signups: ${funnel.total_signups}
+- Profile created: ${funnel.profile_created}
+- Seeds added: ${funnel.seeds_added}
+- First scan: ${funnel.first_scan}
+- First lead: ${funnel.first_lead}
+- Activated users: ${funnel.activated}
+- Conversion rate: ${funnel.conversion_rate}%
+
+Onboarding status:
+- Stalled users: ${onboarding.stalled}
+- Nudged users: ${onboarding.nudged}
+- Recently activated: ${onboarding.activated}
+
+Generate 6-8 specific, actionable growth tasks. Mix of manual tasks (partnerships, content, outreach) and automated tasks (email drips, in-app triggers, referral mechanisms). Each task should have:
+- type: "manual" or "automated"
+- priority: "high", "medium", or "low"
+- title: short actionable title (max 10 words)
+- description: 2-3 sentence specific recommendation with expected impact
+- category: one of "acquisition", "activation", "retention", "referral", "monetization"
+
+Return JSON: { "tasks": [...] }`;
+
+    const result = await aiJSON<{ tasks: Array<{ type: string; priority: string; title: string; description: string; category: string }> }>(
+        'You are a SaaS growth expert. Return only valid JSON.',
+        prompt,
+        { maxTokens: 2048, temperature: 0.7 }
+    );
+
+    if (!result?.tasks?.length) return 0;
+
+    const db = await ensureGrowthTasksTable();
+
+    // Clear old recommendations (keep only latest batch)
+    await db.execute({ sql: `DELETE FROM growth_tasks WHERE status = 'pending'`, args: [] });
+
+    let added = 0;
+    for (const task of result.tasks) {
+        await db.execute({
+            sql: `INSERT INTO growth_tasks (id, type, priority, title, description, category, status)
+                  VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
+            args: [uuid(), task.type || 'manual', task.priority || 'medium', task.title, task.description, task.category || ''],
+        });
+        added++;
+    }
+
+    return added;
+}
+
 export async function runGrowthOpsAgent(): Promise<{
     newUsers: number;
     onboarding: { stalled: number; nudged: number; activated: number };
     funnel: FunnelMetrics;
     ambassadors: { pending: number; auto_approved: number };
+    growthTasks: number;
 }> {
     console.log('[growth-ops] Starting growth ops run...');
 
@@ -309,10 +413,20 @@ export async function runGrowthOpsAgent(): Promise<{
     const ambassadors = await processAmbassadorApplications();
     console.log(`[growth-ops] Ambassadors: ${ambassadors.pending} pending, ${ambassadors.auto_approved} auto-approved`);
 
+    // 5. Generate AI-powered growth recommendations
+    let growthTasks = 0;
+    try {
+        growthTasks = await generateGrowthRecommendations(funnel, onboarding);
+        console.log(`[growth-ops] Generated ${growthTasks} growth task recommendations`);
+    } catch (err) {
+        console.error('[growth-ops] Growth recommendation failed:', err);
+    }
+
     return {
         newUsers: newUserActions.length,
         onboarding,
         funnel,
         ambassadors,
+        growthTasks,
     };
 }

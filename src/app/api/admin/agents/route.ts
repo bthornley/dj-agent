@@ -3,7 +3,7 @@ import { requireAdmin } from '@/lib/admin-guard';
 import { getSnapshot, getRecentSnapshots, generateWeeklyInvestorUpdate, runAnalyticsAgent } from '@/lib/agents/analytics/analytics-agent';
 import { getInvestors, getPipelineSummary, getOutreachDrafts, runInvestorPipelineAgent } from '@/lib/agents/fundraising/investor-pipeline';
 import { getContentQueue, runContentMarketingAgent } from '@/lib/agents/content/content-marketing';
-import { runGrowthOpsAgent } from '@/lib/agents/growth/growth-ops';
+import { runGrowthOpsAgent, getGrowthTasks } from '@/lib/agents/growth/growth-ops';
 import { runCustomerSuccessAgent } from '@/lib/agents/customer-success/customer-success';
 import { runCommunityAgent } from '@/lib/agents/community/community-agent';
 import { runInstagramAgent } from '@/lib/agents/instagram/instagram-agent';
@@ -56,6 +56,12 @@ export async function GET() {
         }));
     } catch (e) { console.error('[admin/agents] content:', e); }
 
+    // Growth tasks
+    let growthTasks: Awaited<ReturnType<typeof getGrowthTasks>> = [];
+    try {
+        growthTasks = await getGrowthTasks(20);
+    } catch (e) { console.error('[admin/agents] growth:', e); }
+
     // Weekly investor update
     let weeklyUpdate = null;
     try {
@@ -78,6 +84,7 @@ export async function GET() {
         investors,
         outreachDrafts,
         contentQueue,
+        growthTasks,
         weeklyUpdate,
         agentRuns,
         agentStats,
@@ -173,6 +180,17 @@ function extractSummary(agentId: string, result: unknown): {
                 hasAlerts: alerts.length > 0,
                 alertsCount: alerts.length,
                 actionsCount: 1,
+            };
+        }
+        case 'growth-ops': {
+            const tasks = Number(r?.growthTasks) || 0;
+            const newUsers = Number(r?.newUsers) || 0;
+            const onb = r?.onboarding as Record<string, number> | undefined;
+            return {
+                text: `Growth: ${newUsers} new users, ${onb?.activated ?? 0} activated, ${onb?.nudged ?? 0} nudged, ${tasks} tasks generated`,
+                hasAlerts: (onb?.stalled ?? 0) > 5,
+                alertsCount: onb?.stalled ?? 0,
+                actionsCount: tasks + newUsers,
             };
         }
         case 'investor-pipeline': {

@@ -43,6 +43,7 @@ interface AgentDashboardData {
     investors: Array<{ name: string; firm: string; email: string; linkedin: string; fit_score: number; status: string; last_contacted: string }>;
     outreachDrafts: Array<{ id: string; investor_name: string; investor_firm: string; investor_email: string; subject: string; body: string; status: string; created_at: string }>;
     contentQueue: Array<{ title: string; content_type: string; platform: string; status: string }>;
+    growthTasks: Array<{ id: string; type: string; priority: string; title: string; description: string; category: string; status: string; created_at: string }>;
     weeklyUpdate: string | null;
     agentRuns: AgentRunLog[];
     agentStats: Record<string, { runs: number; lastRun: string | null; lastStatus: string }>;
@@ -363,6 +364,56 @@ export default function AdminAgentsDashboard() {
                                             ))}
                                         </tbody>
                                     </table>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Growth Recommendations */}
+                        {data?.growthTasks && data.growthTasks.length > 0 && (
+                            <>
+                                <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>
+                                    🚀 Growth Recommendations
+                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 400, marginLeft: '8px' }}>
+                                        ({data.growthTasks.filter(t => t.type === 'manual').length} manual · {data.growthTasks.filter(t => t.type === 'automated').length} automated)
+                                    </span>
+                                </h3>
+                                <div style={{
+                                    display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                                    gap: '10px', marginBottom: '28px',
+                                }}>
+                                    {data.growthTasks.map(task => {
+                                        const priorityColor = task.priority === 'high' ? '#ef4444' : task.priority === 'medium' ? '#f97316' : '#6b7280';
+                                        const priorityEmoji = task.priority === 'high' ? '🔴' : task.priority === 'medium' ? '🟡' : '🟢';
+                                        const typeEmoji = task.type === 'automated' ? '⚙️' : '✋';
+                                        const catBadge = task.category === 'acquisition' ? '🎯' : task.category === 'activation' ? '⚡' : task.category === 'retention' ? '🔄' : task.category === 'referral' ? '📣' : task.category === 'monetization' ? '💰' : '📌';
+                                        return (
+                                            <div key={task.id} style={{
+                                                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                                                borderRadius: '10px', padding: '14px 16px',
+                                                borderLeft: `3px solid ${priorityColor}`,
+                                            }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                                                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', lineHeight: '1.3' }}>
+                                                        {typeEmoji} {task.title}
+                                                    </div>
+                                                    <span style={{ fontSize: '10px', color: priorityColor, whiteSpace: 'nowrap', marginLeft: '8px' }}>
+                                                        {priorityEmoji} {task.priority}
+                                                    </span>
+                                                </div>
+                                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 8px' }}>
+                                                    {task.description}
+                                                </p>
+                                                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                                    <span className="badge badge-draft" style={{ fontSize: '10px' }}>
+                                                        {catBadge} {task.category}
+                                                    </span>
+                                                    <span className="badge" style={{ fontSize: '10px', background: task.type === 'automated' ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)', color: task.type === 'automated' ? '#38bdf8' : '#c4b5fd' }}>
+                                                        {typeEmoji} {task.type}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </>
                         )}
