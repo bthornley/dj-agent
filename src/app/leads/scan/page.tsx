@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Topbar from '@/components/Topbar';
 import Link from 'next/link';
 import { Lead } from '@/lib/types';
-import { scanUrl, autoScan, batchScanUrls } from '@/lib/api-client';
+import { scanUrl, batchScanUrls } from '@/lib/api-client';
 
 type ScanMode = 'single' | 'batch' | 'auto';
 
@@ -119,21 +119,78 @@ export default function ScanPage() {
         } finally { setScanning(false); }
     };
 
+    const [scanJobId, setScanJobId] = useState<string | null>(null);
+
+    const pollForResults = useCallback(async (jobId: string) => {
+        const poll = async () => {
+            try {
+                const res = await fetch(`/api/leads/auto-scan?jobId=${jobId}`);
+                if (!res.ok) return;
+                const job = await res.json();
+                if (job.status === 'done') {
+                    setAutoResult({
+                        seedsProcessed: job.seedsCompleted,
+                        totalUrls: job.results.reduce((s: number, r: { urlsFound: number }) => s + r.urlsFound, 0),
+                        highValueLeads: job.leadsFound,
+                        filteredOut: job.leadsFiltered,
+                        errors: job.errors || [],
+                        results: job.results || [],
+                    });
+                    setScanning(false);
+                    setScanJobId(null);
+                    // Refresh quota
+                    fetch('/api/leads/auto-scan', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ quota_check: true }),
+                    }).then(r => r.json()).then(data => { if (data.quota) setQuota(data.quota); }).catch(() => { });
+                    return;
+                }
+                if (job.status === 'error') {
+                    setError(job.errors?.[0] || 'Scan failed');
+                    setScanning(false);
+                    setScanJobId(null);
+                    return;
+                }
+                // Still running — poll again
+                setTimeout(poll, 3000);
+            } catch {
+                setTimeout(poll, 5000);
+            }
+        };
+        poll();
+    }, []);
+
     const handleAutoScan = async () => {
         setScanning(true); clearResults();
         try {
-            const res = await autoScan({
-                auto: true,
-                region: autoRegion || undefined,
-                limit: autoLimit,
+            const res = await fetch('/api/leads/auto-scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    auto: true,
+                    region: autoRegion || undefined,
+                    limit: autoLimit,
+                }),
             });
-            setAutoResult(res);
-            if ((res as unknown as { quota?: typeof quota }).quota) {
-                setQuota((res as unknown as { quota: typeof quota }).quota);
+            const data = await res.json();
+            if (!res.ok) {
+                setError(data.error || 'Auto-scan failed');
+                setScanning(false);
+                return;
+            }
+            if (data.started && data.jobId) {
+                setScanJobId(data.jobId);
+                pollForResults(data.jobId);
+            } else {
+                // Fallback: synchronous result (shouldn't happen with new API)
+                setAutoResult(data);
+                setScanning(false);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Auto-scan failed');
-        } finally { setScanning(false); }
+            setScanning(false);
+        }
     };
 
     const scoreColor = (s: number) =>
@@ -213,7 +270,7 @@ export default function ScanPage() {
                             </div>
                         </div>
                         <button className="btn btn-primary btn-lg" onClick={handleAutoScan} disabled={scanning}>
-                            {scanning ? <><div className="spinner" style={{ width: 16, height: 16 }} /> Searching...</> : '🚀 Run Auto-Discovery'}
+                            {scanning ? <><div className="spinner" style={{ width: 16, height: 16 }} /> {scanJobId ? 'Scanning in background... Results will appear below' : 'Starting...'}</> : '🚀 Run Auto-Discovery'}
                         </button>
                     </div>
                 )}
