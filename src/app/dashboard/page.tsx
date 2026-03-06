@@ -89,9 +89,9 @@ export default function DashboardPage() {
     }, []);
 
     const loadStats = useCallback(async () => {
-        if (!activeMode) return;
+        const mode = activeMode || 'performer';
         try {
-            const stats = await fetchLeadStats(activeMode);
+            const stats = await fetchLeadStats(mode);
             setLeadStats(stats);
         } catch { /* ignore */ }
     }, [activeMode]);

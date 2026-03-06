@@ -55,7 +55,7 @@ export default function LeadsDashboard() {
     searchRef.current = search;
 
     const loadData = useCallback(async (targetPage: number) => {
-        if (!activeMode) return;
+        const mode = activeMode || 'performer';
         const offset = (targetPage - 1) * PAGE_SIZE;
         try {
             const [leadsResult, statsData] = await Promise.all([
@@ -63,11 +63,11 @@ export default function LeadsDashboard() {
                     status: filterStatus || undefined,
                     priority: filterPriority || undefined,
                     search: searchRef.current || undefined,
-                    mode: activeMode,
+                    mode: mode,
                     limit: PAGE_SIZE,
                     offset,
                 }),
-                fetchLeadStats(activeMode),
+                fetchLeadStats(mode),
             ]);
             setLeads(leadsResult.data);
             setTotalLeads(leadsResult.total);
@@ -81,7 +81,6 @@ export default function LeadsDashboard() {
     }, [filterStatus, filterPriority, activeMode]);
 
     useEffect(() => {
-        if (!activeMode) return;
         setLoading(true);
         loadData(page);
     }, [filterStatus, filterPriority, activeMode, page, loadData]);

@@ -115,9 +115,9 @@ export default function SeedsPage() {
     const isInstructor = activeMode === 'instructor';
 
     const loadSeeds = useCallback(async () => {
-        if (!activeMode) return; // Don't load until mode is known
+        const mode = activeMode || 'performer';
         try {
-            const data = await fetchSeeds(activeMode);
+            const data = await fetchSeeds(mode);
             setSeeds(data);
         } catch (err) {
             console.error('Failed to load seeds:', err);
@@ -127,7 +127,6 @@ export default function SeedsPage() {
     }, [activeMode]);
 
     useEffect(() => {
-        if (!activeMode) return; // Wait for ModeSwitch to provide the real mode
         setLoading(true);
         loadSeeds();
     }, [activeMode, loadSeeds]);
