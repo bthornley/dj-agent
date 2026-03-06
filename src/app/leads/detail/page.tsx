@@ -52,7 +52,7 @@ function LeadDetailContent() {
             await handoffLeads([lead.lead_id]);
             const updated = await fetchLead(lead.lead_id);
             setLead(updated);
-            setMessage('Lead queued for DJ Agent');
+            setMessage('Lead queued for Booking Agent');
             setTimeout(() => setMessage(''), 3000);
         } catch (err) {
             setMessage('Failed to queue lead');
@@ -102,7 +102,7 @@ function LeadDetailContent() {
                 </div>
                 <div className="lead-detail-actions">
                     {lead.status === 'new' && (
-                        <button className="btn btn-primary" onClick={handleQueue}>▶ Queue for DJ Agent</button>
+                        <button className="btn btn-primary" onClick={handleQueue}>▶ Queue for Booking Agent</button>
                     )}
                     <button className="btn btn-primary" onClick={async () => {
                         setOutreachLoading(true);

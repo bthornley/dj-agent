@@ -209,7 +209,7 @@ export default function LeadsDashboard() {
                         </div>
                         <div className="stat-card" style={isInstructor ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
                             <div className="stat-value" style={isInstructor ? { color: '#38bdf8' } : undefined}>{stats.byStatus['queued_for_dj_agent'] || 0}</div>
-                            <div className="stat-label">{isInstructor ? 'Queued' : 'Queued for DJ'}</div>
+                            <div className="stat-label">{isInstructor ? 'Queued' : 'Queued for Booking Agent'}</div>
                         </div>
                         <div className="stat-card" style={isInstructor ? { borderColor: 'rgba(56,189,248,0.15)' } : undefined}>
                             <div className="stat-value" style={isInstructor ? { color: '#38bdf8' } : undefined}>{stats.avgScore}</div>
@@ -359,7 +359,7 @@ export default function LeadsDashboard() {
                                                 <button
                                                     className="btn btn-success"
                                                     onClick={() => handleQueue([lead.lead_id])}
-                                                    title="Queue for DJ Agent"
+                                                    title="Queue for Booking Agent"
                                                     style={{ width: 30, height: 30, padding: 0, fontSize: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
                                                 >▶</button>
                                                 <button
