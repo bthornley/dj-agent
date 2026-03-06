@@ -33,6 +33,7 @@ const NAV_ITEMS = [
 const ADMIN_NAV_ITEMS = [
     { href: '/admin', label: 'Overview', emoji: '🛡️' },
     { href: '/admin/agents', label: 'Agents', emoji: '🤖' },
+    { href: '/admin/team', label: 'Team', emoji: '👤' },
     { href: '/admin/docs', label: 'Docs', emoji: '📄' },
     { href: '/admin/instagram', label: 'Instagram', emoji: '📸' },
 ];
