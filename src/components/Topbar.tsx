@@ -74,7 +74,7 @@ export default function Topbar() {
                 </div>
             </Link>
 
-            <nav className="topbar-nav" style={{ gap: '6px', alignItems: 'center' }}>
+            <nav className="topbar-nav" style={{ gap: '6px', alignItems: 'center', flex: 1 }}>
                 {navItems.map(item => (
                     <Link
                         key={item.href}
@@ -84,10 +84,12 @@ export default function Topbar() {
                         {item.emoji} {item.label}
                     </Link>
                 ))}
+            </nav>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '12px' }}>
                 <ModeSwitch />
                 <AdminLink />
                 <UserButton />
-            </nav>
+            </div>
         </header>
     );
 }
