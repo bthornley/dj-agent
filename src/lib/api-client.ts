@@ -98,13 +98,17 @@ export async function fetchLeads(filters?: {
     minScore?: number;
     search?: string;
     mode?: string;
-}): Promise<Lead[]> {
+    limit?: number;
+    offset?: number;
+}): Promise<{ data: Lead[]; total: number; hasMore: boolean }> {
     const params = new URLSearchParams();
     if (filters?.status) params.set('status', filters.status);
     if (filters?.priority) params.set('priority', filters.priority);
     if (filters?.minScore !== undefined) params.set('minScore', String(filters.minScore));
     if (filters?.search) params.set('search', filters.search);
     if (filters?.mode) params.set('mode', filters.mode);
+    if (filters?.limit !== undefined) params.set('limit', String(filters.limit));
+    if (filters?.offset !== undefined) params.set('offset', String(filters.offset));
 
     const url = params.toString() ? `${LEADS_BASE}?${params}` : LEADS_BASE;
     const res = await fetchWithRetry(url);

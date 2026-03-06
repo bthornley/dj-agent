@@ -28,6 +28,7 @@ const priorityLabels: Record<Priority, { label: string; cls: string }> = {
 
 export default function LeadsDashboard() {
     const [leads, setLeads] = useState<Lead[]>([]);
+    const [totalLeads, setTotalLeads] = useState(0);
     const [stats, setStats] = useState<{ total: number; byStatus: Record<string, number>; byPriority: Record<string, number>; avgScore: number } | null>(null);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState('');
@@ -49,38 +50,42 @@ export default function LeadsDashboard() {
 
     const isInstructor = activeMode === 'instructor';
 
-    const loadData = useCallback(async () => {
-        if (!activeMode) return; // Don't load until mode is known
+    const loadData = useCallback(async (targetPage?: number) => {
+        if (!activeMode) return;
+        const currentPage = targetPage ?? page;
+        const offset = (currentPage - 1) * PAGE_SIZE;
         try {
-            const [leadsData, statsData] = await Promise.all([
+            const [leadsResult, statsData] = await Promise.all([
                 fetchLeads({
                     status: filterStatus || undefined,
                     priority: filterPriority || undefined,
                     search: search || undefined,
                     mode: activeMode,
+                    limit: PAGE_SIZE,
+                    offset,
                 }),
                 fetchLeadStats(activeMode),
             ]);
-            setLeads(leadsData);
+            setLeads(leadsResult.data);
+            setTotalLeads(leadsResult.total);
             setStats(statsData);
         } catch (err) {
             console.error('Failed to load leads:', err);
         } finally {
             setLoading(false);
         }
-    }, [filterStatus, filterPriority, search, activeMode]);
+    }, [filterStatus, filterPriority, search, activeMode, page]);
 
     useEffect(() => {
-        if (!activeMode) return; // Wait for ModeSwitch to provide the real mode
+        if (!activeMode) return;
         setLoading(true);
-        setPage(1);
-        loadData();
-    }, [filterStatus, filterPriority, activeMode, loadData]);
+        loadData(page);
+    }, [filterStatus, filterPriority, activeMode, page, loadData]);
 
     const handleSearch = () => {
         setLoading(true);
         setPage(1);
-        loadData();
+        loadData(1);
     };
 
     const handleReject = async (id: string) => {
@@ -298,7 +303,7 @@ export default function LeadsDashboard() {
                             <div className="lead-col-actions">Actions</div>
                         </div>
 
-                        {leads.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map(lead => {
+                        {leads.map(lead => {
                             const status = statusLabels[lead.status] || statusLabels.new;
                             const priority = priorityLabels[lead.priority] || priorityLabels.P3;
                             return (
@@ -381,7 +386,7 @@ export default function LeadsDashboard() {
                         })}
 
                         {/* Pagination */}
-                        {leads.length > PAGE_SIZE && (
+                        {totalLeads > PAGE_SIZE && (
                             <div style={{
                                 display: 'flex', justifyContent: 'center', alignItems: 'center',
                                 gap: '12px', padding: '20px 0', marginTop: '8px',
@@ -392,11 +397,11 @@ export default function LeadsDashboard() {
                                     onClick={() => setPage(p => Math.max(1, p - 1))}
                                 >← Prev</button>
                                 <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
-                                    Page {page} of {Math.ceil(leads.length / PAGE_SIZE)} · {leads.length} leads
+                                    Page {page} of {Math.ceil(totalLeads / PAGE_SIZE)} · {totalLeads} leads
                                 </span>
                                 <button
                                     className="btn btn-ghost btn-sm"
-                                    disabled={page >= Math.ceil(leads.length / PAGE_SIZE)}
+                                    disabled={page >= Math.ceil(totalLeads / PAGE_SIZE)}
                                     onClick={() => setPage(p => p + 1)}
                                 >Next →</button>
                             </div>
