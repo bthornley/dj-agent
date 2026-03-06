@@ -170,7 +170,7 @@ export default function LeadsDashboard() {
 
     return (
         <>
-            <Topbar />
+            <Topbar onModeChange={(m) => setActiveMode(m)} />
 
             <main className="main-content fade-in">
                 {/* Mode indicator banner */}
