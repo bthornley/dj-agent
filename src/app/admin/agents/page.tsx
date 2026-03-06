@@ -61,7 +61,7 @@ const PIPELINE_STAGES = [
 ];
 
 const AGENT_INFO = [
-    { id: 'qa', name: 'QA Agent', emoji: '🧪', schedule: 'Daily 4:30am', desc: 'Build validation, health checks, integration tests' },
+    { id: 'qa', name: 'QA Agent', emoji: '🧪', schedule: 'On Deploy', desc: 'Build validation, health checks, integration tests' },
     { id: 'cost-guardian', name: 'Cost Guardian', emoji: '🛡️', schedule: 'Daily 5am', desc: 'Infra costs, guardrails, budget alerts' },
     { id: 'analytics', name: 'Analytics', emoji: '📊', schedule: 'Daily 6am', desc: 'KPIs, revenue, anomalies' },
     { id: 'growth-ops', name: 'Growth Ops', emoji: '🚀', schedule: 'Daily 7am', desc: 'Onboarding, funnel, ambassadors' },
@@ -112,6 +112,8 @@ export default function AdminAgentsDashboard() {
             setAgentResult(`Error: ${e}`);
         }
         setRunningAgent(null);
+        // Scroll to results area
+        setTimeout(() => document.getElementById('agent-results')?.scrollIntoView({ behavior: 'smooth' }), 300);
     }
 
     if (error) {
@@ -138,7 +140,11 @@ export default function AdminAgentsDashboard() {
                 <div className="section-header">
                     <div>
                         <h2 className="section-title">🤖 Agent Control Center</h2>
-                        <p className="section-subtitle">Monitor and trigger your 9 autonomous agents</p>
+                        <p className="section-subtitle">
+                            {runningAgent
+                                ? `⏳ Running ${AGENT_INFO.find(a => a.id === runningAgent)?.emoji} ${AGENT_INFO.find(a => a.id === runningAgent)?.name}...`
+                                : 'Monitor and trigger your 9 autonomous agents'}
+                        </p>
                     </div>
                 </div>
 
@@ -202,221 +208,226 @@ export default function AdminAgentsDashboard() {
                             </>
                         )}
 
-                        {/* Investor Outreach Funnel */}
-                        {data?.pipeline && (
-                            <>
-                                <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>💰 Investor Outreach</h3>
-                                <div style={{
-                                    display: 'flex', gap: '4px', marginBottom: '16px', overflowX: 'auto', padding: '4px 0',
-                                }}>
-                                    {PIPELINE_STAGES.map(stage => {
-                                        const count = data.pipeline?.[stage.key] || 0;
-                                        return (
-                                            <div key={stage.key} style={{
-                                                flex: '1', minWidth: '80px', textAlign: 'center', padding: '12px 6px',
-                                                background: count > 0 ? 'rgba(168,85,247,0.12)' : 'rgba(255,255,255,0.03)',
-                                                borderRadius: '8px', border: count > 0 ? '1px solid rgba(168,85,247,0.3)' : '1px solid rgba(255,255,255,0.06)',
-                                            }}>
-                                                <div style={{ fontSize: '20px' }}>{stage.emoji}</div>
-                                                <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{count}</div>
-                                                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{stage.label}</div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                        {/* ---- Agent Results Display Area ---- */}
+                        <div id="agent-results">
 
-                                {/* Investor Table */}
-                                {data.investors.length > 0 && (
-                                    <div className="admin-table-wrap" style={{ marginBottom: '16px' }}>
+                            {/* Investor Outreach Funnel */}
+                            {data?.pipeline && (
+                                <>
+                                    <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>💰 Investor Outreach</h3>
+                                    <div style={{
+                                        display: 'flex', gap: '4px', marginBottom: '16px', overflowX: 'auto', padding: '4px 0',
+                                    }}>
+                                        {PIPELINE_STAGES.map(stage => {
+                                            const count = data.pipeline?.[stage.key] || 0;
+                                            return (
+                                                <div key={stage.key} style={{
+                                                    flex: '1', minWidth: '80px', textAlign: 'center', padding: '12px 6px',
+                                                    background: count > 0 ? 'rgba(168,85,247,0.12)' : 'rgba(255,255,255,0.03)',
+                                                    borderRadius: '8px', border: count > 0 ? '1px solid rgba(168,85,247,0.3)' : '1px solid rgba(255,255,255,0.06)',
+                                                }}>
+                                                    <div style={{ fontSize: '20px' }}>{stage.emoji}</div>
+                                                    <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>{count}</div>
+                                                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{stage.label}</div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Investor Table */}
+                                    {data.investors.length > 0 && (
+                                        <div className="admin-table-wrap" style={{ marginBottom: '16px' }}>
+                                            <table className="admin-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Investor</th>
+                                                        <th>Firm</th>
+                                                        <th>Email</th>
+                                                        <th>Score</th>
+                                                        <th>Status</th>
+                                                        <th>Last Contact</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {data.investors.map((inv, i) => (
+                                                        <tr key={i}>
+                                                            <td style={{ fontWeight: 500 }}>
+                                                                {inv.linkedin ? (
+                                                                    <a href={inv.linkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-primary)', textDecoration: 'none' }}>
+                                                                        {inv.name} <span style={{ fontSize: '10px', color: 'var(--accent-cyan)' }}>🔗</span>
+                                                                    </a>
+                                                                ) : inv.name}
+                                                            </td>
+                                                            <td style={{ color: 'var(--text-muted)' }}>{inv.firm || '—'}</td>
+                                                            <td style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+                                                                {inv.email ? (
+                                                                    <a href={`mailto:${inv.email}`} style={{ color: 'var(--accent-cyan)', textDecoration: 'none' }}>{inv.email}</a>
+                                                                ) : '—'}
+                                                            </td>
+                                                            <td>
+                                                                <span style={{
+                                                                    color: inv.fit_score >= 70 ? '#10b981' : inv.fit_score >= 40 ? '#f97316' : 'var(--text-muted)',
+                                                                    fontWeight: 600,
+                                                                }}>{inv.fit_score}/100</span>
+                                                            </td>
+                                                            <td>
+                                                                <span className={`badge ${inv.status === 'closed' ? 'badge-approved' : inv.status === 'replied' || inv.status === 'intro_call' ? 'badge-scheduled' : inv.status === 'outreach_sent' ? 'badge-draft' : 'badge-draft'}`}>
+                                                                    {inv.status.replace(/_/g, ' ')}
+                                                                </span>
+                                                            </td>
+                                                            <td style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+                                                                {inv.last_contacted ? new Date(inv.last_contacted).toLocaleDateString() : '—'}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+
+                                    {/* Outreach Drafts */}
+                                    {data.outreachDrafts && data.outreachDrafts.length > 0 && (
+                                        <>
+                                            <h4 style={{ color: 'var(--text-primary)', marginBottom: '10px', fontSize: '14px', marginTop: '16px' }}>✉️ Outreach Drafts ({data.outreachDrafts.length})</h4>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '28px' }}>
+                                                {data.outreachDrafts.map(draft => (
+                                                    <div key={draft.id} style={{
+                                                        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                                                        borderRadius: '10px', overflow: 'hidden',
+                                                    }}>
+                                                        <div
+                                                            style={{ padding: '12px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                                                            onClick={() => setExpandedDraft(expandedDraft === draft.id ? null : draft.id)}
+                                                        >
+                                                            <div>
+                                                                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>
+                                                                    {draft.investor_name} {draft.investor_firm && <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>@ {draft.investor_firm}</span>}
+                                                                </div>
+                                                                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>📧 {draft.subject}</div>
+                                                            </div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                <span className={`badge ${draft.status === 'sent' ? 'badge-scheduled' : draft.status === 'replied' ? 'badge-approved' : 'badge-draft'}`}
+                                                                    style={{ fontSize: '10px' }}>
+                                                                    {draft.status}
+                                                                </span>
+                                                                <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{expandedDraft === draft.id ? '▼' : '▶'}</span>
+                                                            </div>
+                                                        </div>
+                                                        {expandedDraft === draft.id && (
+                                                            <div style={{
+                                                                padding: '0 16px 14px', borderTop: '1px solid rgba(255,255,255,0.06)',
+                                                            }}>
+                                                                {draft.investor_email && (
+                                                                    <div style={{ fontSize: '11px', color: 'var(--accent-cyan)', marginTop: '10px', marginBottom: '6px' }}>
+                                                                        To: {draft.investor_email}
+                                                                    </div>
+                                                                )}
+                                                                <pre style={{
+                                                                    fontSize: '12px', lineHeight: '1.5', color: 'var(--text-secondary)',
+                                                                    whiteSpace: 'pre-wrap', margin: 0, padding: '10px',
+                                                                    background: 'rgba(0,0,0,0.2)', borderRadius: '8px',
+                                                                }}>
+                                                                    {draft.body}
+                                                                </pre>
+                                                                <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                                                                    Created: {new Date(draft.created_at).toLocaleString()}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </>
+                            )}
+
+                            {/* Content Queue */}
+                            {data?.contentQueue && data.contentQueue.length > 0 && (
+                                <>
+                                    <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>📝 Content Queue</h3>
+                                    <div className="admin-table-wrap" style={{ marginBottom: '28px' }}>
                                         <table className="admin-table">
                                             <thead>
                                                 <tr>
-                                                    <th>Investor</th>
-                                                    <th>Firm</th>
-                                                    <th>Email</th>
-                                                    <th>Score</th>
+                                                    <th>Title</th>
+                                                    <th>Type</th>
+                                                    <th>Platform</th>
                                                     <th>Status</th>
-                                                    <th>Last Contact</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {data.investors.map((inv, i) => (
+                                                {data.contentQueue.map((item, i) => (
                                                     <tr key={i}>
-                                                        <td style={{ fontWeight: 500 }}>
-                                                            {inv.linkedin ? (
-                                                                <a href={inv.linkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-primary)', textDecoration: 'none' }}>
-                                                                    {inv.name} <span style={{ fontSize: '10px', color: 'var(--accent-cyan)' }}>🔗</span>
-                                                                </a>
-                                                            ) : inv.name}
-                                                        </td>
-                                                        <td style={{ color: 'var(--text-muted)' }}>{inv.firm || '—'}</td>
-                                                        <td style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
-                                                            {inv.email ? (
-                                                                <a href={`mailto:${inv.email}`} style={{ color: 'var(--accent-cyan)', textDecoration: 'none' }}>{inv.email}</a>
-                                                            ) : '—'}
+                                                        <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                            {item.title}
                                                         </td>
                                                         <td>
-                                                            <span style={{
-                                                                color: inv.fit_score >= 70 ? '#10b981' : inv.fit_score >= 40 ? '#f97316' : 'var(--text-muted)',
-                                                                fontWeight: 600,
-                                                            }}>{inv.fit_score}/100</span>
-                                                        </td>
-                                                        <td>
-                                                            <span className={`badge ${inv.status === 'closed' ? 'badge-approved' : inv.status === 'replied' || inv.status === 'intro_call' ? 'badge-scheduled' : inv.status === 'outreach_sent' ? 'badge-draft' : 'badge-draft'}`}>
-                                                                {inv.status.replace(/_/g, ' ')}
+                                                            <span className="badge badge-draft" style={{ fontSize: '11px' }}>
+                                                                {item.content_type === 'twitter_thread' ? '🐦 Thread' : item.content_type === 'linkedin_post' ? '💼 LinkedIn' : item.content_type === 'blog' ? '📄 Blog' : item.content_type}
                                                             </span>
                                                         </td>
-                                                        <td style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
-                                                            {inv.last_contacted ? new Date(inv.last_contacted).toLocaleDateString() : '—'}
-                                                        </td>
+                                                        <td style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{item.platform}</td>
+                                                        <td><span className={`badge ${item.status === 'published' ? 'badge-approved' : 'badge-draft'}`}>{item.status}</span></td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
                                     </div>
-                                )}
+                                </>
+                            )}
 
-                                {/* Outreach Drafts */}
-                                {data.outreachDrafts && data.outreachDrafts.length > 0 && (
-                                    <>
-                                        <h4 style={{ color: 'var(--text-primary)', marginBottom: '10px', fontSize: '14px', marginTop: '16px' }}>✉️ Outreach Drafts ({data.outreachDrafts.length})</h4>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '28px' }}>
-                                            {data.outreachDrafts.map(draft => (
-                                                <div key={draft.id} style={{
+                            {/* Growth Recommendations */}
+                            {data?.growthTasks && data.growthTasks.length > 0 && (
+                                <>
+                                    <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>
+                                        🚀 Growth Recommendations
+                                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 400, marginLeft: '8px' }}>
+                                            ({data.growthTasks.filter(t => t.type === 'manual').length} manual · {data.growthTasks.filter(t => t.type === 'automated').length} automated)
+                                        </span>
+                                    </h3>
+                                    <div style={{
+                                        display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                                        gap: '10px', marginBottom: '28px',
+                                    }}>
+                                        {data.growthTasks.map(task => {
+                                            const priorityColor = task.priority === 'high' ? '#ef4444' : task.priority === 'medium' ? '#f97316' : '#6b7280';
+                                            const priorityEmoji = task.priority === 'high' ? '🔴' : task.priority === 'medium' ? '🟡' : '🟢';
+                                            const typeEmoji = task.type === 'automated' ? '⚙️' : '✋';
+                                            const catBadge = task.category === 'acquisition' ? '🎯' : task.category === 'activation' ? '⚡' : task.category === 'retention' ? '🔄' : task.category === 'referral' ? '📣' : task.category === 'monetization' ? '💰' : '📌';
+                                            return (
+                                                <div key={task.id} style={{
                                                     background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-                                                    borderRadius: '10px', overflow: 'hidden',
+                                                    borderRadius: '10px', padding: '14px 16px',
+                                                    borderLeft: `3px solid ${priorityColor}`,
                                                 }}>
-                                                    <div
-                                                        style={{ padding: '12px 16px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                                                        onClick={() => setExpandedDraft(expandedDraft === draft.id ? null : draft.id)}
-                                                    >
-                                                        <div>
-                                                            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px' }}>
-                                                                {draft.investor_name} {draft.investor_firm && <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>@ {draft.investor_firm}</span>}
-                                                            </div>
-                                                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>📧 {draft.subject}</div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                                                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', lineHeight: '1.3' }}>
+                                                            {typeEmoji} {task.title}
                                                         </div>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                            <span className={`badge ${draft.status === 'sent' ? 'badge-scheduled' : draft.status === 'replied' ? 'badge-approved' : 'badge-draft'}`}
-                                                                style={{ fontSize: '10px' }}>
-                                                                {draft.status}
-                                                            </span>
-                                                            <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{expandedDraft === draft.id ? '▼' : '▶'}</span>
-                                                        </div>
-                                                    </div>
-                                                    {expandedDraft === draft.id && (
-                                                        <div style={{
-                                                            padding: '0 16px 14px', borderTop: '1px solid rgba(255,255,255,0.06)',
-                                                        }}>
-                                                            {draft.investor_email && (
-                                                                <div style={{ fontSize: '11px', color: 'var(--accent-cyan)', marginTop: '10px', marginBottom: '6px' }}>
-                                                                    To: {draft.investor_email}
-                                                                </div>
-                                                            )}
-                                                            <pre style={{
-                                                                fontSize: '12px', lineHeight: '1.5', color: 'var(--text-secondary)',
-                                                                whiteSpace: 'pre-wrap', margin: 0, padding: '10px',
-                                                                background: 'rgba(0,0,0,0.2)', borderRadius: '8px',
-                                                            }}>
-                                                                {draft.body}
-                                                            </pre>
-                                                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '6px' }}>
-                                                                Created: {new Date(draft.created_at).toLocaleString()}
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </>
-                                )}
-                            </>
-                        )}
-
-                        {/* Content Queue */}
-                        {data?.contentQueue && data.contentQueue.length > 0 && (
-                            <>
-                                <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>📝 Content Queue</h3>
-                                <div className="admin-table-wrap" style={{ marginBottom: '28px' }}>
-                                    <table className="admin-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Title</th>
-                                                <th>Type</th>
-                                                <th>Platform</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {data.contentQueue.map((item, i) => (
-                                                <tr key={i}>
-                                                    <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                        {item.title}
-                                                    </td>
-                                                    <td>
-                                                        <span className="badge badge-draft" style={{ fontSize: '11px' }}>
-                                                            {item.content_type === 'twitter_thread' ? '🐦 Thread' : item.content_type === 'linkedin_post' ? '💼 LinkedIn' : item.content_type === 'blog' ? '📄 Blog' : item.content_type}
+                                                        <span style={{ fontSize: '10px', color: priorityColor, whiteSpace: 'nowrap', marginLeft: '8px' }}>
+                                                            {priorityEmoji} {task.priority}
                                                         </span>
-                                                    </td>
-                                                    <td style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{item.platform}</td>
-                                                    <td><span className={`badge ${item.status === 'published' ? 'badge-approved' : 'badge-draft'}`}>{item.status}</span></td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </>
-                        )}
-
-                        {/* Growth Recommendations */}
-                        {data?.growthTasks && data.growthTasks.length > 0 && (
-                            <>
-                                <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>
-                                    🚀 Growth Recommendations
-                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 400, marginLeft: '8px' }}>
-                                        ({data.growthTasks.filter(t => t.type === 'manual').length} manual · {data.growthTasks.filter(t => t.type === 'automated').length} automated)
-                                    </span>
-                                </h3>
-                                <div style={{
-                                    display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                                    gap: '10px', marginBottom: '28px',
-                                }}>
-                                    {data.growthTasks.map(task => {
-                                        const priorityColor = task.priority === 'high' ? '#ef4444' : task.priority === 'medium' ? '#f97316' : '#6b7280';
-                                        const priorityEmoji = task.priority === 'high' ? '🔴' : task.priority === 'medium' ? '🟡' : '🟢';
-                                        const typeEmoji = task.type === 'automated' ? '⚙️' : '✋';
-                                        const catBadge = task.category === 'acquisition' ? '🎯' : task.category === 'activation' ? '⚡' : task.category === 'retention' ? '🔄' : task.category === 'referral' ? '📣' : task.category === 'monetization' ? '💰' : '📌';
-                                        return (
-                                            <div key={task.id} style={{
-                                                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-                                                borderRadius: '10px', padding: '14px 16px',
-                                                borderLeft: `3px solid ${priorityColor}`,
-                                            }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                                                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', lineHeight: '1.3' }}>
-                                                        {typeEmoji} {task.title}
                                                     </div>
-                                                    <span style={{ fontSize: '10px', color: priorityColor, whiteSpace: 'nowrap', marginLeft: '8px' }}>
-                                                        {priorityEmoji} {task.priority}
-                                                    </span>
+                                                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 8px' }}>
+                                                        {task.description}
+                                                    </p>
+                                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                                        <span className="badge badge-draft" style={{ fontSize: '10px' }}>
+                                                            {catBadge} {task.category}
+                                                        </span>
+                                                        <span className="badge" style={{ fontSize: '10px', background: task.type === 'automated' ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)', color: task.type === 'automated' ? '#38bdf8' : '#c4b5fd' }}>
+                                                            {typeEmoji} {task.type}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 8px' }}>
-                                                    {task.description}
-                                                </p>
-                                                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                                    <span className="badge badge-draft" style={{ fontSize: '10px' }}>
-                                                        {catBadge} {task.category}
-                                                    </span>
-                                                    <span className="badge" style={{ fontSize: '10px', background: task.type === 'automated' ? 'rgba(56,189,248,0.15)' : 'rgba(168,85,247,0.15)', color: task.type === 'automated' ? '#38bdf8' : '#c4b5fd' }}>
-                                                        {typeEmoji} {task.type}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </>
-                        )}
+                                            );
+                                        })}
+                                    </div>
+                                </>
+                            )}
+
+                        </div>{/* end agent-results */}
 
                         {/* Weekly Investor Update */}
                         {data?.weeklyUpdate && (
