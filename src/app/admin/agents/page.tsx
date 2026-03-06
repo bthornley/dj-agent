@@ -117,24 +117,27 @@ export default function AdminAgentsDashboard() {
 
     async function handleLaunchAction(e: React.MouseEvent, task: { id: string; title: string; category: string; description: string }) {
         e.stopPropagation();
-        if (!confirm(`Launch automated action for: "${task.title}"?`)) return;
+        e.preventDefault();
         setLaunchingAction(task.id);
         try {
             const actionId = mapTaskToActionId(task);
+            console.log(`[Launch] Starting action: ${actionId} for task: ${task.title}`);
             const res = await fetch('/api/admin/growth-action', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ actionId, taskId: task.id }),
             });
             const json = await res.json();
+            console.log('[Launch] Response:', json);
             if (json.success) {
                 setCompletedActions(prev => new Set(prev).add(task.id));
-                alert(`✅ ${json.details}`);
+                alert(`✅ Action completed!\n\n${json.details || json.action || 'Growth action executed successfully'}\n\n${json.metrics ? Object.entries(json.metrics).map(([k, v]) => `• ${k}: ${v}`).join('\n') : ''}`);
             } else {
-                alert(`❌ Failed: ${json.error}`);
+                alert(`❌ Action failed: ${json.error || 'Unknown error'}\n\nAvailable actions: ${(json.available || []).join(', ')}`);
             }
         } catch (err) {
-            alert(`❌ Launch failed: ${err}`);
+            console.error('[Launch] Error:', err);
+            alert(`❌ Launch failed: ${err instanceof Error ? err.message : String(err)}`);
         }
         setLaunchingAction(null);
     }
