@@ -139,10 +139,10 @@ export default function SocialDashboardPage() {
                                 {posts.filter(p => p.status === 'draft').length > 0 ? (
                                     <div className="queue-preview">
                                         {posts.filter(p => p.status === 'draft' && p.variant === 'A').slice(0, 5).map(post => (
-                                            <div key={post.id} className="queue-item">
+                                            <Link key={post.id} href={`/social/post?id=${post.id}`} className="queue-item" style={{ display: 'flex', textDecoration: 'none', color: 'inherit' }}>
                                                 <span className="queue-pillar">{pillarEmojis[post.pillar] || '📋'}</span>
                                                 <div className="queue-info">
-                                                    <div className="queue-hook">{post.hookText || post.notes || 'Untitled post'}</div>
+                                                    <div className="queue-hook" style={{ color: 'var(--text-primary)' }}>{post.hookText || post.notes || 'Untitled post'}</div>
                                                     <div className="queue-meta" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                                                         <span className={`badge badge-${post.postType}`}>{post.postType}</span>
                                                         <span className="badge badge-draft">{post.platform}</span>
@@ -160,7 +160,7 @@ export default function SocialDashboardPage() {
                                                         })}
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </Link>
                                         ))}
                                     </div>
                                 ) : (
