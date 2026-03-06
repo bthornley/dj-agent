@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
                 const trialQuota = await dbGetSearchQuota(userId, TRIAL_AUTO_SCANS, `trial_auto:${userId}`);
                 effectiveRemaining = Math.min(effectiveRemaining, trialQuota.remaining);
             }
-            const maxSeeds = Math.min(body.limit || 5, filteredSeeds.length, effectiveRemaining);
+            const maxSeeds = Math.min(body.limit || filteredSeeds.length, filteredSeeds.length, effectiveRemaining);
             const seedsToProcess = filteredSeeds.slice(0, maxSeeds);
 
             // Create a job and return immediately

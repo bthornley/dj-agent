@@ -22,7 +22,6 @@ export default function ScanPage() {
 
     // Auto scan state
     const [autoRegion, setAutoRegion] = useState('');
-    const [autoLimit, setAutoLimit] = useState(5);
     const [quota, setQuota] = useState<{ used: number; remaining: number; limit: number } | null>(null);
     const [regions, setRegions] = useState<string[]>([]);
 
@@ -170,7 +169,6 @@ export default function ScanPage() {
                 body: JSON.stringify({
                     auto: true,
                     region: autoRegion || undefined,
-                    limit: autoLimit,
                 }),
             });
             const data = await res.json();
@@ -262,11 +260,6 @@ export default function ScanPage() {
                                         <option key={r} value={r}>{r}</option>
                                     ))}
                                 </select>
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Max Seeds to Process</label>
-                                <input className="input" type="number" min={1} max={20} value={autoLimit}
-                                    onChange={e => setAutoLimit(parseInt(e.target.value) || 5)} style={{ maxWidth: '120px' }} />
                             </div>
                         </div>
                         <button className="btn btn-primary btn-lg" onClick={handleAutoScan} disabled={scanning}>
