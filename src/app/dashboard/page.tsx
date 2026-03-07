@@ -45,7 +45,7 @@ export default function DashboardPage() {
     useEffect(() => {
         fetch('/api/events')
             .then(r => r.json())
-            .then(data => { setEvents(Array.isArray(data) ? data : []); setLoading(false); })
+            .then(data => { setEvents(Array.isArray(data) ? data : (data.data || [])); setLoading(false); })
             .catch(() => setLoading(false));
 
         // Check if user has a brand profile (new user detection)

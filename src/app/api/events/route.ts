@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { dbGetAllEvents, dbSaveEvent } from '@/lib/db';
+import { dbGetAllEvents, dbSaveEvent, dbGetHandoffQueue } from '@/lib/db';
 import { rateLimit, safeError } from '@/lib/rate-limit';
 import { parseBody, EventCreateSchema } from '@/lib/validation';
 import type { Event as GigEvent } from '@/lib/types';
+import { generateHandoff, leadToEvent } from '@/lib/agent/lead-finder/handoff';
 
 // GET /api/events — List user's events
 export async function GET(request: NextRequest) {
@@ -15,6 +16,25 @@ export async function GET(request: NextRequest) {
     const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : undefined;
 
     const result = await dbGetAllEvents(userId, { limit, offset });
+
+    try {
+        const queuedLeads = await dbGetHandoffQueue(userId);
+        const existingEventOrgs = new Set(result.data.map(e => e.org));
+
+        for (const lead of queuedLeads) {
+            if (!existingEventOrgs.has(lead.entity_name)) {
+                const handoff = generateHandoff(lead);
+                const event = leadToEvent(lead, handoff);
+                result.data.push(event);
+            }
+        }
+
+        result.data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        result.total = result.data.length;
+    } catch (err) {
+        console.error('Error merging queued leads:', err);
+    }
+
     return NextResponse.json(result);
 }
 
