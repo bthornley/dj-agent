@@ -6,8 +6,6 @@ import RefCapture from '@/components/RefCapture';
 
 export default async function LandingPage() {
   const { userId } = await auth();
-  if (userId) redirect('/dashboard');
-
   return (
     <>
       <Suspense><RefCapture /></Suspense>
@@ -23,8 +21,14 @@ export default async function LandingPage() {
           <Link href="/promo.html" className="btn btn-ghost btn-sm" target="_blank">🎬 Watch Promo</Link>
           <Link href="/guide" className="btn btn-ghost btn-sm">📖 Guide</Link>
           <Link href="/pricing" className="btn btn-ghost btn-sm">Pricing</Link>
-          <Link href="/sign-in" className="btn btn-ghost btn-sm">Sign In</Link>
-          <Link href="/sign-up" className="btn btn-primary btn-sm">Get Started Free</Link>
+          {userId ? (
+            <Link href="/dashboard" className="btn btn-primary btn-sm">Go to Dashboard</Link>
+          ) : (
+            <>
+              <Link href="/sign-in" className="btn btn-ghost btn-sm">Sign In</Link>
+              <Link href="/sign-up" className="btn btn-primary btn-sm">Get Started Free</Link>
+            </>
+          )}
         </nav>
       </header>
 

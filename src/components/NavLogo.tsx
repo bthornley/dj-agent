@@ -8,7 +8,7 @@ interface NavLogoProps {
 
 export default function NavLogo({ href = '/' }: NavLogoProps) {
     return (
-        <Link href={href} className="topbar-logo" style={{ textDecoration: 'none' }}>
+        <Link href="/" className="topbar-logo" style={{ textDecoration: 'none' }}>
             <img
                 src="/logo.png"
                 alt="GigLift"
