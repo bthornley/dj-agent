@@ -1,13 +1,14 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { getDb } from '@/lib/db';
 import { z } from 'zod';
 
 const paginationSchema = z.object({
-  limit: z.number().min(1).max(100),
-  offset: z.number().min(0)
+    limit: z.number().min(1).max(100),
+    offset: z.number().min(0)
 });
 
 export async function GET(request: NextRequest) {
+    const db = getDb();
     const searchParams = request.nextUrl.searchParams;
     const limit = parseInt(searchParams.get('limit') || '10', 10);
     const offset = parseInt(searchParams.get('offset') || '0', 10);
@@ -31,12 +32,17 @@ export async function GET(request: NextRequest) {
     console.log("Fetching leads with pagination...");
 
     try {
-        const totalQuery = db.prepare('SELECT COUNT(*) AS total FROM leads WHERE user_id = ?');
-        const totalResult = totalQuery.get(user_id);
-        const total = totalResult.total;
+        const totalQuery = await db.execute({
+            sql: 'SELECT COUNT(*) AS total FROM leads WHERE user_id = ?',
+            args: [user_id]
+        });
+        const total = Number(totalQuery.rows[0]?.total ?? 0);
 
-        const leadsQuery = db.prepare('SELECT * FROM leads WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?');
-        const allLeads = leadsQuery.all(user_id, limit, offset);
+        const leadsResult = await db.execute({
+            sql: 'SELECT * FROM leads WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
+            args: [user_id, limit, offset]
+        });
+        const allLeads = leadsResult.rows;
 
         const hasMore = offset + allLeads.length < total;
 
