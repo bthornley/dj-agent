@@ -149,17 +149,23 @@ function EventDetailInner() {
     }
 
     function handleOpenSend() {
-        const deliverable = event?.deliverables.find((d) => d.type === 'email_draft');
+        const deliverable = event?.deliverables.find((d) => d.type === activeTab);
         if (!deliverable) return;
 
         const content = editing ? editContent : deliverable.content;
 
-        // Parse To and Subject from markdown header lines
-        const toMatch = content.match(/\*\*To:\*\*\s*(.+)/);
-        const subjectMatch = content.match(/\*\*Subject:\*\*\s*(.+)/);
+        if (activeTab === 'email_draft') {
+            // Parse To and Subject from markdown header lines
+            const toMatch = content.match(/\*\*To:\*\*\s*(.+)/);
+            const subjectMatch = content.match(/\*\*Subject:\*\*\s*(.+)/);
 
-        setSendTo(toMatch?.[1]?.trim() || event?.email || '');
-        setSendSubject(subjectMatch?.[1]?.trim() || '');
+            setSendTo(toMatch?.[1]?.trim() || event?.email || '');
+            setSendSubject(subjectMatch?.[1]?.trim() || '');
+        } else if (activeTab === 'proposal') {
+            setSendTo(event?.email || '');
+            setSendSubject(`Event Proposal - ${event?.clientName || event?.org || 'GigLift'}`);
+        }
+
         setSendReplyTo('');
         setSendResult(null);
         setShowSendDialog(true);
@@ -175,18 +181,22 @@ function EventDetailInner() {
             handleSaveEdit();
         }
 
-        const deliverable = event.deliverables.find((d) => d.type === 'email_draft');
+        const deliverable = event.deliverables.find((d) => d.type === activeTab);
         if (!deliverable) return;
 
-        // Strip the To/Subject header lines from the body before sending
-        let body = (editing ? editContent : deliverable.content)
-            .replace(/\*\*To:\*\*.+\n?/, '')
-            .replace(/\*\*Subject:\*\*.+\n?/, '')
-            .replace(/^---\n?/, '')
-            .trim();
+        let body = editing ? editContent : deliverable.content;
 
-        // Remove the draft warning at the bottom
-        body = body.replace(/\n?---\n?>[\s\S]*\*\*⚠️ DRAFT[\s\S]*$/, '').trim();
+        if (activeTab === 'email_draft') {
+            // Strip the To/Subject header lines from the body before sending
+            body = body
+                .replace(/\*\*To:\*\*.+\n?/, '')
+                .replace(/\*\*Subject:\*\*.+\n?/, '')
+                .replace(/^---\n?/, '')
+                .trim();
+
+            // Remove the draft warning at the bottom
+            body = body.replace(/\n?---\n?>[\s\S]*\*\*⚠️ DRAFT[\s\S]*$/, '').trim();
+        }
 
         try {
             const result = await sendEmail({
@@ -203,7 +213,7 @@ function EventDetailInner() {
                 const updatedEvent = {
                     ...event,
                     deliverables: event.deliverables.map((d) =>
-                        d.type === 'email_draft' ? { ...d, status: 'sent' as const } : d
+                        d.type === activeTab ? { ...d, status: 'sent' as const } : d
                     ),
                 };
                 persistEvent(updatedEvent);
@@ -250,7 +260,7 @@ function EventDetailInner() {
         completed: 'badge-confirmed',
         cancelled: '',
     };
-    const isEmailTab = activeTab === 'email_draft';
+    const isEditableTab = activeTab === 'email_draft' || activeTab === 'proposal';
 
     return (
         <main className="main-content fade-in">
@@ -287,7 +297,7 @@ function EventDetailInner() {
 
                 {/* Quick details grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--glass-border)' }}>
-                    <div>
+                    <div style={{ wordBreak: 'break-all' }}>
                         <div className="form-label" style={{ marginBottom: '2px' }}>📧 Email</div>
                         <div style={{ fontSize: '14px' }}>{event.email || '—'}</div>
                     </div>
@@ -348,12 +358,12 @@ function EventDetailInner() {
                         <button className="btn btn-secondary btn-sm" onClick={() => handleRegenerate(activeTab)}>
                             🔄 Regenerate
                         </button>
-                        {isEmailTab && !editing && (
+                        {isEditableTab && !editing && (
                             <button className="btn btn-secondary btn-sm" onClick={handleStartEdit}>
                                 ✏️ Edit
                             </button>
                         )}
-                        {isEmailTab && editing && (
+                        {isEditableTab && editing && (
                             <>
                                 <button className="btn btn-success btn-sm" onClick={handleSaveEdit}>
                                     💾 Save
@@ -366,7 +376,7 @@ function EventDetailInner() {
                         <button className="btn btn-ghost btn-sm" onClick={handleCopy}>
                             {copied ? '✓ Copied!' : '📋 Copy'}
                         </button>
-                        {isEmailTab && activeDeliverable.status !== 'sent' && (
+                        {isEditableTab && activeDeliverable.status !== 'sent' && (
                             <button className="btn btn-primary btn-sm" onClick={handleOpenSend}>
                                 ✉️ Send Email
                             </button>
