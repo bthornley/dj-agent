@@ -147,7 +147,7 @@ export default function GuidePage() {
                     <h3 style={h3}>✨ Smart Pricing Proposals</h3>
                     <p style={p}>
                         When the Booking Agent drafts a proposal for a queued lead, it now utilizes our <strong>Smart Pricing Algorithm</strong>.
-                        Pricing tiers (Standard & Premium) automatically scale based on the event type (weddings/corporate cost more), estimated attendance (large crowds require more gear), and the client's stated budget.
+                        Pricing tiers (Standard & Premium) automatically scale based on the event type (weddings/corporate cost more), estimated attendance (large crowds require more gear), and the client&apos;s stated budget.
                     </p>
                     <h3 style={h3}>Calendar View</h3>
                     <p style={p}>
@@ -173,6 +173,7 @@ export default function GuidePage() {
                         and deliver enriched leads — all in about 30 seconds.
                     </p>
                     <div style={{ background: 'rgba(168,85,247,0.1)', borderLeft: '3px solid #a855f7', padding: '12px 16px', margin: '12px 0', borderRadius: '0 8px 8px 0' }}>
+                        {/* eslint-disable-next-line react/no-unescaped-entities */}
                         <strong style={{ color: '#a855f7' }}>✨ Auto-Pilot Mode:</strong> Your AI Agent automatically runs daily background scans against your active query seeds. You'll wake up to fresh leads in your dashboard without lifting a finger!
                     </div>
                     <h3 style={h3}>2. Batch URL Scan</h3>

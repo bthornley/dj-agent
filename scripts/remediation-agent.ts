@@ -115,8 +115,8 @@ Output ONLY the completely patched file contents below:`
         }
 
         return true;
-    } catch (e: any) {
-        console.error(`❌ Error calling OpenAI for ${filePath}: ${e.message}`);
+    } catch (e: unknown) {
+        console.error(`❌ Error calling OpenAI for ${filePath}: ${e instanceof Error ? e.message : String(e)}`);
         return false;
     }
 }

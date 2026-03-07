@@ -101,6 +101,7 @@ export async function GET() {
             const ghData = await ghRes.json();
 
             // For each PR run, we actually have TWO agents running sequentially: Code Review and QA (or Remediation if failed)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const ghRuns: any[] = [];
 
             for (const run of (ghData.workflow_runs || [])) {
