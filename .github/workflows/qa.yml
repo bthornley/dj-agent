@@ -9,9 +9,114 @@ on:
 env:
   NODE_VERSION: '20'
 
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
 jobs:
+  code-review:
+    name: 🤖 Code Review Agent
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Code Review Agent
+        id: run-reviewer
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set +e
+          OUTPUT=$(npx tsx scripts/code-reviewer.ts origin/${{ github.base_ref }} ${{ github.event.pull_request.head.sha }})
+          EXIT_CODE=$?
+          
+          echo "REVIEW_OUTPUT<<EOF" >> $GITHUB_ENV
+          echo "$OUTPUT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
+          if [ $EXIT_CODE -ne 0 ]; then
+             echo "Code Review failed!"
+             echo "## ❌ Code Review Agent - Failed" >> $GITHUB_STEP_SUMMARY
+             echo '```json' >> $GITHUB_STEP_SUMMARY
+             echo "$OUTPUT" >> $GITHUB_STEP_SUMMARY
+             echo '```' >> $GITHUB_STEP_SUMMARY
+             exit 1
+          else
+             echo "Code Review passed!"
+             echo "## ✅ Code Review Agent - Passed" >> $GITHUB_STEP_SUMMARY
+             exit 0
+          fi
+
+      - name: Post Comment on PR
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reviewOutput = process.env.REVIEW_OUTPUT;
+            try {
+              const result = JSON.parse(reviewOutput);
+              let body = '## ⚠️ Automated Code Review Failed\n\n';
+              body += `> ${result.summary}\n\n`;
+              body += '| File | Rule Violated | Issue | Suggestion |\n';
+              body += '|---|---|---|---|\n';
+              for (const v of result.violations) {
+                 body += `| \`${v.file}:${v.line}\` | **${v.rule}** | ${v.issue} | ${v.suggestion} |\n`;
+              }
+              body += '\n\n*The Remediation Agent is now attempting to automatically fix these issues.*';
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } catch(e) {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: "## ❌ Automated Code Review Crashed\n\nThe Code Review Agent crashed while analyzing the diff."
+              });
+            }
+
+      - name: Trigger Remediation Agent
+        if: failure()
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          echo "Starting Remediation Agent..."
+          npx tsx scripts/remediation-agent.ts "${REVIEW_OUTPUT}"
+          
+          # Check if there are modified files to commit
+          if [[ -n $(git status -s) ]]; then
+            echo "Changes detected, pushing commit..."
+            git config --global user.name "GigLift Remediation Agent"
+            git config --global user.email "bot@giglift.com"
+            git add .
+            git commit -m "🤖 auto-fix: resolved QA agent violations"
+            git push origin HEAD:${{ github.head_ref }}
+            echo "## 🛠️ Remediation Agent - Fixes pushed successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No changes were made by the Remediation Agent."
+            echo "## ⚠️ Remediation Agent - Failed to patch files" >> $GITHUB_STEP_SUMMARY
+            exit 1 # Fail the build so the user knows they have to fix it manually
+          fi
+
   qa-agent:
     name: 🛡️ QA Agent
+    needs: code-review
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: 'Production – dj-agent'
