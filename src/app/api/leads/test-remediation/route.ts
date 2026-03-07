@@ -1,18 +1,32 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-export async function GET() {
-    // VIOLATION 1: No pagination in a GET list route
-    // VIOLATION 2: No try/catch around database operations
-    // VIOLATION 3: Selects all rows blindly which triggers N+1 or massive payload warnings
-    console.log("Fetching all leads blindly without limits or offset (test payload)...");
+export async function GET(limit: number = 10, offset: number = 0) {
+    console.log("Fetching leads with pagination...");
 
-    // Inefficient query without limit
-    const allLeads = db.prepare('SELECT * FROM leads ORDER BY created_at DESC').all();
+    try {
+        const totalQuery = db.prepare('SELECT COUNT(*) AS total FROM leads');
+        const totalResult = totalQuery.get();
+        const total = totalResult.total;
 
-    return NextResponse.json({
-        success: true,
-        count: allLeads.length,
-        data: allLeads
-    });
+        const leadsQuery = db.prepare('SELECT * FROM leads ORDER BY created_at DESC LIMIT ? OFFSET ?');
+        const allLeads = leadsQuery.all(limit, offset);
+
+        const hasMore = offset + allLeads.length < total;
+
+        return NextResponse.json({
+            success: true,
+            total,
+            limit,
+            offset,
+            hasMore,
+            data: allLeads
+        });
+    } catch (error) {
+        console.error("Failed to fetch leads:", error);
+        return NextResponse.json({
+            success: false,
+            message: "Failed to fetch leads due to an internal error."
+        });
+    }
 }
