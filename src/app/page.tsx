@@ -294,8 +294,8 @@ export default async function LandingPage() {
           </div>
           <div className="feature-card">
             <div className="feature-icon">🔄</div>
-            <h3>Monthly Auto-Scan</h3>
-            <p>Set it and forget it — the agent runs monthly scans on your configured regions and artist types.</p>
+            <h3>Auto-Pilot Scans</h3>
+            <p>Set it and forget it — the background agent runs daily scans on your seeds and fills your pipeline while you sleep.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">🎵</div>
@@ -326,8 +326,8 @@ export default async function LandingPage() {
           </div>
           <div className="feature-card">
             <div className="feature-icon">🔁</div>
-            <h3>Follow-Up</h3>
-            <p>A concise follow-up email template referencing your original pitch. Don&apos;t let leads go cold.</p>
+            <h3>Automated Follow-Ups</h3>
+            <p>If a lead ghosts you for 3 days, the agent automatically drafts a personalized follow-up ready to send in one click.</p>
           </div>
         </div>
 
@@ -395,8 +395,8 @@ export default async function LandingPage() {
           </div>
           <div className="feature-card">
             <div className="feature-icon">📊</div>
-            <h3>Analytics Dashboard</h3>
-            <p>Track post performance, engagement rates, and content pillar distribution across platforms.</p>
+            <h3>Multi-Platform Analytics</h3>
+            <p>The AI Coach tracks Instagram, TikTok, and Facebook performance, delivering actionable weekly insights & recommendations.</p>
           </div>
         </div>
 
@@ -436,9 +436,9 @@ export default async function LandingPage() {
             <p>Send personalized outreach with 3 built-in templates. Track opens, manage sent history, and export your leads and emails as CSV.</p>
           </div>
           <div className="feature-card" style={{ borderColor: 'rgba(249,115,22,0.2)' }}>
-            <div className="feature-icon">📋</div>
-            <h3>Email Templates</h3>
-            <p>Cold Intro, Follow-Up, and Thank You templates with smart placeholders that auto-fill from your brand profile and lead data.</p>
+            <div className="feature-icon">💸</div>
+            <h3>Smart Pricing Proposals</h3>
+            <p>The Booking Agent dynamically scales your package pricing based on event type, attendance size, and client budget limits.</p>
           </div>
           <div className="feature-card" style={{ borderColor: 'rgba(251,191,36,0.2)' }}>
             <div className="feature-icon">📥</div>

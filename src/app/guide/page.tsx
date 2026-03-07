@@ -144,6 +144,11 @@ export default function GuidePage() {
                         <li><strong>Quick-add modal</strong> — Click &ldquo;+ New Inquiry&rdquo; to manually add a booking directly from the dashboard</li>
                         <li><strong>Quick links</strong> — One-click access to scan, leads, EPK, social, and flyer tools</li>
                     </ul>
+                    <h3 style={h3}>✨ Smart Pricing Proposals</h3>
+                    <p style={p}>
+                        When the Booking Agent drafts a proposal for a queued lead, it now utilizes our <strong>Smart Pricing Algorithm</strong>.
+                        Pricing tiers (Standard & Premium) automatically scale based on the event type (weddings/corporate cost more), estimated attendance (large crowds require more gear), and the client's stated budget.
+                    </p>
                     <h3 style={h3}>Calendar View</h3>
                     <p style={p}>
                         Toggle to calendar view for a monthly overview of your bookings. Events are color-coded by status:
@@ -167,6 +172,9 @@ export default function GuidePage() {
                         The Lead Scout agent will automatically search multiple sources, score results, deduplicate,
                         and deliver enriched leads — all in about 30 seconds.
                     </p>
+                    <div style={{ background: 'rgba(168,85,247,0.1)', borderLeft: '3px solid #a855f7', padding: '12px 16px', margin: '12px 0', borderRadius: '0 8px 8px 0' }}>
+                        <strong style={{ color: '#a855f7' }}>✨ Auto-Pilot Mode:</strong> Your AI Agent automatically runs daily background scans against your active query seeds. You'll wake up to fresh leads in your dashboard without lifting a finger!
+                    </div>
                     <h3 style={h3}>2. Batch URL Scan</h3>
                     <p style={p}>
                         Paste a list of venue/school/studio URLs (one per line). GigLift will scrape each site,
@@ -222,6 +230,10 @@ export default function GuidePage() {
                         <li>Update the lead status</li>
                         <li>View the venue on a map</li>
                     </ul>
+                    <h3 style={h3}>✨ Automated Follow-Ups</h3>
+                    <p style={p}>
+                        If a lead has been in the &ldquo;Contacted&rdquo; stage for more than 3 days without a response, our scheduled Outreach Agent automatically drafts a polite follow-up email tailored to the venue. You will see <strong>🔄 Follow-Up Ready to Send</strong> directly on the lead detail page. Just review, copy, and send!
+                    </p>
                 </Section>
 
                 {/* ── EPK ── */}
@@ -280,9 +292,12 @@ export default function GuidePage() {
                         Upload and manage your brand assets: photos, logos, promo graphics, and flyers.
                         These assets are available across the platform for EPK, social posts, and flyer creation.
                     </p>
-                    <h3 style={h3}>Analytics</h3>
+                    <h3 style={h3}>✨ Multi-Platform Analytics Dashboard</h3>
                     <p style={p}>
-                        Track your content pipeline: posts generated, scheduled, published, and engagement trends over time.
+                        Access the new <strong>Performance Analytics</strong> tab to view a unified dashboard of your reach, impressions, follower growth, and engagement across Instagram, Facebook, and TikTok.
+                    </p>
+                    <p style={p}>
+                        <strong>The Coach (AI Insights):</strong> Automatically analyzes your weekly data to summarize what worked (e.g., &ldquo;Saves outperform shares this week&rdquo;) and offers actionable Strategy Recommendations to refine your content.
                     </p>
                 </Section>
 

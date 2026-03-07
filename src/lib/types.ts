@@ -233,6 +233,13 @@ export interface Lead {
   dedupe_key: string;
   raw_snippet: string;
   agent_trace: string;
+
+  // Follow-up
+  follow_up_draft?: {
+    subject: string;
+    body: string;
+    generated_at: string;
+  };
 }
 
 export interface QuerySeed {

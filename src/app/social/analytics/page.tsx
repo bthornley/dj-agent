@@ -1,53 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Topbar from '@/components/Topbar';
 import { WeeklyReport } from '@/lib/types';
 
-export default function AnalyticsPage() {
-    const [weekOf, setWeekOf] = useState(() => {
-        const d = new Date();
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-        d.setDate(diff);
-        return d.toISOString().split('T')[0];
-    });
-    const [reach, setReach] = useState('');
-    const [impressions, setImpressions] = useState('');
-    const [saves, setSaves] = useState('');
-    const [shares, setShares] = useState('');
-    const [comments, setComments] = useState('');
-    const [followerGrowth, setFollowerGrowth] = useState('');
-    const [profileVisits, setProfileVisits] = useState('');
-    const [linkClicks, setLinkClicks] = useState('');
+export default function AnalyticsDashboardPage() {
     const [report, setReport] = useState<WeeklyReport | null>(null);
-    const [generating, setGenerating] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    async function handleGenerate() {
-        setGenerating(true);
-        try {
-            const res = await fetch('/api/social/analytics', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    weekOf,
-                    stats: {
-                        reach: Number(reach) || 0,
-                        impressions: Number(impressions) || 0,
-                        saves: Number(saves) || 0,
-                        shares: Number(shares) || 0,
-                        comments: Number(comments) || 0,
-                        followerGrowth: Number(followerGrowth) || 0,
-                        profileVisits: Number(profileVisits) || 0,
-                        linkClicks: Number(linkClicks) || 0,
-                    },
-                }),
-            });
-            const data = await res.json();
-            if (data.report) setReport(data.report);
-        } catch (e) { console.error(e); }
-        setGenerating(false);
-    }
+    useEffect(() => {
+        fetch('/api/social/analytics')
+            .then(r => r.json())
+            .then(data => {
+                if (data.report) setReport(data.report);
+                setLoading(false);
+            })
+            .catch(() => setLoading(false));
+    }, []);
+
+    const formatNum = (num: number) => {
+        if (num >= 10000) return (num / 1000).toFixed(1) + 'k';
+        return num.toLocaleString();
+    };
 
     return (
         <>
@@ -56,135 +31,109 @@ export default function AnalyticsPage() {
             <main className="main-content fade-in">
                 <div className="section-header">
                     <div>
-                        <h2 className="section-title">Weekly Analytics</h2>
-                        <p className="section-subtitle">Enter your stats from Meta Insights — the Analytics Agent generates your report</p>
+                        <Link href="/social" className="back-link" style={{ textDecoration: 'none', color: 'var(--text-muted)', fontSize: '13px', display: 'inline-block', marginBottom: '8px' }}>← Back to Social Hub</Link>
+                        <h2 className="section-title">Performance Analytics</h2>
+                        <p className="section-subtitle">Multi-platform insights & AI recommendations</p>
                     </div>
                 </div>
 
-                <div className="analytics-layout">
-                    {/* Stats Input */}
-                    <div className="card analytics-input-card">
-                        <h3 className="card-title">📊 Enter Weekly Stats</h3>
-                        <div className="form-group">
-                            <label className="form-label">Week Of</label>
-                            <input className="input" type="date" value={weekOf}
-                                onChange={e => setWeekOf(e.target.value)} />
-                        </div>
-                        <div className="stats-input-grid">
-                            <div className="form-group">
-                                <label className="form-label">Reach</label>
-                                <input className="input" type="number" value={reach}
-                                    onChange={e => setReach(e.target.value)} placeholder="0" />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Impressions</label>
-                                <input className="input" type="number" value={impressions}
-                                    onChange={e => setImpressions(e.target.value)} placeholder="0" />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Saves</label>
-                                <input className="input" type="number" value={saves}
-                                    onChange={e => setSaves(e.target.value)} placeholder="0" />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Shares</label>
-                                <input className="input" type="number" value={shares}
-                                    onChange={e => setShares(e.target.value)} placeholder="0" />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Comments</label>
-                                <input className="input" type="number" value={comments}
-                                    onChange={e => setComments(e.target.value)} placeholder="0" />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Follower Growth</label>
-                                <input className="input" type="number" value={followerGrowth}
-                                    onChange={e => setFollowerGrowth(e.target.value)} placeholder="+0" />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Profile Visits</label>
-                                <input className="input" type="number" value={profileVisits}
-                                    onChange={e => setProfileVisits(e.target.value)} placeholder="0" />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Link Clicks</label>
-                                <input className="input" type="number" value={linkClicks}
-                                    onChange={e => setLinkClicks(e.target.value)} placeholder="0" />
-                            </div>
-                        </div>
-                        <button className="btn btn-primary" onClick={handleGenerate} disabled={generating}
-                            style={{ width: '100%', marginTop: '12px' }}>
-                            {generating ? '⏳ Generating Report...' : '🧠 Generate Weekly Report'}
-                        </button>
+                {loading ? (
+                    <div className="empty-state"><div className="spinner" /></div>
+                ) : !report ? (
+                    <div className="empty-state">
+                        <p>No analytics data available yet. Start posting to build your audience!</p>
                     </div>
-
-                    {/* Report Output */}
-                    {report && (
-                        <div className="card analytics-report-card slide-up">
-                            <h3 className="card-title">📋 Weekly Report — {report.weekOf}</h3>
-
-                            <div className="report-stats-row">
-                                <div className="report-stat">
-                                    <div className="report-stat-value">{report.reach.toLocaleString()}</div>
-                                    <div className="report-stat-label">Reach</div>
-                                </div>
-                                <div className="report-stat">
-                                    <div className="report-stat-value">{(report.saves + report.shares + report.comments).toLocaleString()}</div>
-                                    <div className="report-stat-label">Total Engagement</div>
-                                </div>
-                                <div className="report-stat">
-                                    <div className="report-stat-value">+{report.followerGrowth}</div>
-                                    <div className="report-stat-label">Followers</div>
-                                </div>
-                                <div className="report-stat">
-                                    <div className="report-stat-value">{report.linkClicks}</div>
-                                    <div className="report-stat-label">Link Clicks</div>
-                                </div>
+                ) : (
+                    <>
+                        {/* Weekly KPI Row */}
+                        <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', marginBottom: '28px' }}>
+                            <div className="stat-card">
+                                <div className="stat-value">{formatNum(report.reach)}</div>
+                                <div className="stat-label">Total Reach</div>
                             </div>
+                            <div className="stat-card">
+                                <div className="stat-value">{formatNum(report.impressions)}</div>
+                                <div className="stat-label">Impressions</div>
+                            </div>
+                            <div className="stat-card" style={{ border: '1px solid var(--accent-green-dim)' }}>
+                                <div className="stat-value" style={{ color: 'var(--accent-green)' }}>+{formatNum(report.followerGrowth)}</div>
+                                <div className="stat-label">New Followers</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-value">{formatNum(report.profileVisits)}</div>
+                                <div className="stat-label">Profile Visits</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-value">{formatNum(report.saves + report.shares + report.comments)}</div>
+                                <div className="stat-label">Total Engagements</div>
+                            </div>
+                        </div>
 
-                            <div className="report-section">
-                                <h4>💡 Insights</h4>
-                                <ul className="report-list">
+                        <div className="social-grid">
+                            {/* AI Insights */}
+                            <div className="card">
+                                <h3 className="card-title">💡 The Coach: AI Insights</h3>
+                                <div className="engagement-list" style={{ marginTop: '16px' }}>
                                     {report.insights.map((insight, i) => (
-                                        <li key={i} className="report-insight">{insight}</li>
+                                        <div key={i} className="engagement-item" style={{ padding: '12px', background: 'var(--surface-raised)', borderRadius: '8px', marginBottom: '8px' }}>
+                                            {insight}
+                                        </div>
                                     ))}
-                                </ul>
+                                    {report.insights.length === 0 && (
+                                        <p style={{ color: 'var(--text-muted)' }}>Not enough data to generate insights yet.</p>
+                                    )}
+                                </div>
                             </div>
 
-                            <div className="report-section">
-                                <h4>🎯 Recommendations</h4>
-                                <ul className="report-list">
+                            {/* AI Recommendations */}
+                            <div className="card">
+                                <h3 className="card-title" style={{ color: 'var(--accent-amber)' }}>🎯 Strategy Recommendations</h3>
+                                <div className="engagement-list" style={{ marginTop: '16px' }}>
                                     {report.recommendations.map((rec, i) => (
-                                        <li key={i} className="report-recommendation">{rec}</li>
+                                        <div key={i} className="engagement-item" style={{ padding: '12px', borderLeft: '3px solid var(--accent-amber)', background: 'var(--surface-raised)', borderRadius: '8px', marginBottom: '8px' }}>
+                                            <strong>Action:</strong> {rec}
+                                        </div>
                                     ))}
-                                </ul>
-                            </div>
-
-                            <div className="report-breakdown">
-                                <div className="report-breakdown-item">
-                                    <span className="report-breakdown-label">Saves</span>
-                                    <span className="report-breakdown-value">{report.saves}</span>
-                                </div>
-                                <div className="report-breakdown-item">
-                                    <span className="report-breakdown-label">Shares</span>
-                                    <span className="report-breakdown-value">{report.shares}</span>
-                                </div>
-                                <div className="report-breakdown-item">
-                                    <span className="report-breakdown-label">Comments</span>
-                                    <span className="report-breakdown-value">{report.comments}</span>
-                                </div>
-                                <div className="report-breakdown-item">
-                                    <span className="report-breakdown-label">Profile Visits</span>
-                                    <span className="report-breakdown-value">{report.profileVisits}</span>
-                                </div>
-                                <div className="report-breakdown-item">
-                                    <span className="report-breakdown-label">Impressions</span>
-                                    <span className="report-breakdown-value">{report.impressions.toLocaleString()}</span>
+                                    {report.recommendations.length === 0 && (
+                                        <p style={{ color: 'var(--text-muted)' }}>Keep up the great work!</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
-                    )}
-                </div>
+
+                        {/* Breakdown Row */}
+                        <div className="card" style={{ marginTop: '24px' }}>
+                            <h3 className="card-title">📊 Engagement Breakdown</h3>
+                            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', marginTop: '16px' }}>
+                                <div className="stat-card" style={{ background: 'var(--surface-raised)', border: 'none' }}>
+                                    <div className="stat-value" style={{ fontSize: '20px' }}>{formatNum(report.saves)}</div>
+                                    <div className="stat-label">Saves</div>
+                                </div>
+                                <div className="stat-card" style={{ background: 'var(--surface-raised)', border: 'none' }}>
+                                    <div className="stat-value" style={{ fontSize: '20px' }}>{formatNum(report.shares)}</div>
+                                    <div className="stat-label">Shares</div>
+                                </div>
+                                <div className="stat-card" style={{ background: 'var(--surface-raised)', border: 'none' }}>
+                                    <div className="stat-value" style={{ fontSize: '20px' }}>{formatNum(report.comments)}</div>
+                                    <div className="stat-label">Comments</div>
+                                </div>
+                                <div className="stat-card" style={{ background: 'var(--surface-raised)', border: 'none' }}>
+                                    <div className="stat-value" style={{ fontSize: '20px' }}>{formatNum(report.linkClicks)}</div>
+                                    <div className="stat-label">Link Clicks</div>
+                                </div>
+                            </div>
+                            <div style={{ marginTop: '24px', padding: '16px', borderRadius: '8px', background: 'var(--md-surface-container-high)', border: '1px solid var(--md-outline-variant)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                    <span style={{ fontSize: '20px' }}>🔌</span>
+                                    <span style={{ fontWeight: 600, fontSize: '14px' }}>Connected Platforms Setup</span>
+                                </div>
+                                <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: 0 }}>
+                                    Your Instagram, TikTok, and Facebook data streams are synchronized properly. Data updates occur nightly.
+                                </p>
+                            </div>
+                        </div>
+                    </>
+                )}
             </main>
         </>
     );

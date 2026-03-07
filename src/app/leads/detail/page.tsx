@@ -278,6 +278,58 @@ function LeadDetailContent() {
                 </div>
             )}
 
+            {/* Follow-Up Draft */}
+            {lead.follow_up_draft && (
+                <div className="card" style={{ marginTop: '24px', border: '1px solid var(--accent-amber)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <h3 className="card-title" style={{ color: 'var(--accent-amber)' }}>🔄 Follow-Up Ready to Send</h3>
+                        <span className="badge badge-draft">Generated {new Date(lead.follow_up_draft.generated_at).toLocaleDateString()}</span>
+                    </div>
+
+                    <div style={{ background: 'var(--surface-raised)', borderRadius: '8px', padding: '16px', border: '1px solid var(--border)' }}>
+                        <div style={{ marginBottom: '12px' }}>
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Subject</span>
+                            <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                                {lead.follow_up_draft.subject}
+                            </div>
+                        </div>
+                        <div style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Body</span>
+                            <pre style={{
+                                fontFamily: 'inherit', whiteSpace: 'pre-wrap', fontSize: '14px',
+                                color: 'var(--text-secondary)', lineHeight: 1.6, margin: '8px 0 0',
+                            }}>
+                                {lead.follow_up_draft.body}
+                            </pre>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                        {lead.email && (
+                            <a
+                                className="btn btn-primary btn-sm"
+                                href={`mailto:${lead.email}?subject=${encodeURIComponent(lead.follow_up_draft.subject)}&body=${encodeURIComponent(lead.follow_up_draft.body)}`}
+                                target="_blank" rel="noopener noreferrer"
+                            >
+                                📧 Send Email
+                            </a>
+                        )}
+                        <button className="btn btn-secondary btn-sm" onClick={() => {
+                            navigator.clipboard.writeText(`Subject: ${lead.follow_up_draft!.subject}\n\n${lead.follow_up_draft!.body}`);
+                        }}>
+                            📋 Copy
+                        </button>
+                        <button className="btn btn-ghost btn-sm" onClick={async () => {
+                            // Set to undefined to remove it via API
+                            const updated = await updateLead(lead.lead_id, { follow_up_draft: undefined });
+                            setLead(updated);
+                        }}>
+                            Dismiss
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Outreach Email Preview */}
             {outreach && outreach.length > 0 && (
                 <div ref={outreachRef} className="card" style={{ marginTop: '24px' }}>

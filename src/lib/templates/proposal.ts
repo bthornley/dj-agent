@@ -57,6 +57,42 @@ const DEFAULT_PROPOSAL: Proposal = {
     ],
 };
 
+function calculateSmartPricing(event: Partial<Event>) {
+    let basePrice = 800; // Baseline fallback
+
+    if (event.eventType === 'wedding' || event.eventType === 'corporate') {
+        basePrice += 400;
+    } else if (event.eventType === 'charity' || event.eventType === 'birthday') {
+        basePrice += 100;
+    }
+
+    if (event.attendanceEstimate) {
+        if (event.attendanceEstimate > 300) {
+            basePrice *= 1.5;
+        } else if (event.attendanceEstimate > 150) {
+            basePrice *= 1.25;
+        } else if (event.attendanceEstimate < 50) {
+            basePrice *= 0.9;
+        }
+    }
+
+    if (event.budgetRange) {
+        const matches = event.budgetRange.replace(/,/g, '').match(/\d+/g);
+        if (matches && matches.length > 0) {
+            const lowEnd = parseInt(matches[0], 10);
+            if (basePrice < lowEnd) {
+                basePrice = lowEnd * 0.9; // Anchor standard package slightly below their lowest budget
+            }
+        }
+    }
+
+    basePrice = Math.round(basePrice / 50) * 50;
+    return {
+        standardPrice: basePrice,
+        premiumPrice: Math.round((basePrice * 1.6) / 50) * 50
+    };
+}
+
 export function generateProposal(event: Partial<Event>): string {
     const p = DEFAULT_PROPOSAL;
     const clientName = event.clientName || 'Valued Client';
@@ -81,9 +117,15 @@ export function generateProposal(event: Partial<Event>): string {
     doc += `**Estimated Attendance:** ${event.attendanceEstimate || '[TBD]'}\n\n`;
     doc += `---\n\n`;
 
+    const pricing = calculateSmartPricing(event);
+    const packages = [
+        { ...p.packages[0], price: pricing.standardPrice },
+        { ...p.packages[1], price: pricing.premiumPrice }
+    ];
+
     // Packages
-    doc += `## Package Options\n\n`;
-    for (const pkg of p.packages) {
+    doc += `## Package Options (Smart Pricing Applied ✨)\n\n`;
+    for (const pkg of packages) {
         doc += `### ${pkg.name} — $${pkg.price.toLocaleString()}\n`;
         doc += `*${pkg.description}*\n\n`;
         for (const item of pkg.includes) {

@@ -35,6 +35,14 @@
         {
             "path": "/api/agents/education-outreach",
             "schedule": "0 13 * * 1-5"
+        },
+        {
+            "path": "/api/agents/auto-pilot",
+            "schedule": "0 8 * * *"
+        },
+        {
+            "path": "/api/agents/follow-up",
+            "schedule": "0 9 * * *"
         }
     ]
 }

@@ -73,6 +73,7 @@ export default function SocialDashboardPage() {
                         <p className="section-subtitle">Your 4-agent social media command center</p>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
+                        <Link href="/social/analytics" className="btn btn-secondary btn-sm">📊 View Analytics</Link>
                         <button className="btn btn-primary btn-sm" onClick={handleGeneratePlan} disabled={generating}>
                             {generating ? '⏳ Generating...' : '🚀 Generate This Week\'s Plan'}
                         </button>

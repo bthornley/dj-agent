@@ -278,6 +278,25 @@ export async function dbGetHandoffQueue(userId: string): Promise<Lead[]> {
   return result.rows.map((row) => JSON.parse(row.data as string));
 }
 
+export async function dbGetFollowUpCandidates(daysAgo: number = 3): Promise<{ userId: string; lead: Lead }[]> {
+  const db = getDb();
+  const thresholdDate = new Date();
+  thresholdDate.setDate(thresholdDate.getDate() - daysAgo);
+  const thresholdIso = thresholdDate.toISOString();
+
+  const result = await db.execute({
+    sql: `SELECT user_id, data FROM leads 
+          WHERE status IN ('contacted', 'outreach_sent') 
+          AND updated_at < ?`,
+    args: [thresholdIso]
+  });
+
+  return result.rows.map(row => ({
+    userId: row.user_id as string,
+    lead: JSON.parse(row.data as string) as Lead
+  }));
+}
+
 // ---- Query Seed CRUD (user-scoped) ----
 
 export async function dbGetAllSeeds(userId: string, mode?: string, pagination?: PaginationOptions): Promise<PaginatedResult<QuerySeed>> {
@@ -300,6 +319,20 @@ export async function dbGetAllSeeds(userId: string, mode?: string, pagination?: 
   const total = Number(countResult.rows[0]?.cnt ?? 0);
   const data = result.rows.map((row) => JSON.parse(row.data as string));
   return { data, total, limit, offset, hasMore: offset + data.length < total };
+}
+
+export async function dbGetAllActiveUserSeeds(): Promise<{ userId: string; seeds: QuerySeed[] }[]> {
+  const db = getDb();
+  const result = await db.execute({ sql: `SELECT user_id, data FROM query_seeds WHERE active = 1` });
+
+  const userMap: Record<string, QuerySeed[]> = {};
+  for (const row of result.rows) {
+    const userId = row.user_id as string;
+    if (!userMap[userId]) userMap[userId] = [];
+    userMap[userId].push(JSON.parse(row.data as string));
+  }
+
+  return Object.entries(userMap).map(([userId, seeds]) => ({ userId, seeds }));
 }
 
 export async function dbSaveSeed(seed: QuerySeed, userId: string, mode: string = 'performer'): Promise<void> {
