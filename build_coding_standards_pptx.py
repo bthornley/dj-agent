@@ -258,14 +258,14 @@ add_card(s, Inches(0.6), Inches(1.4), Inches(3.8), Inches(5.5), "SERVER vs. CLIE
     "Split pages: server shell + client islands",
 ], accent=GREEN)
 
-add_card(s, Inches(4.7), Inches(1.4), Inches(3.8), Inches(5.5), "COMPONENT STANDARDS", [
-    "Max component size: ~300 lines",
-    "Extract reusable UI into src/components/",
-    "Use TypeScript interfaces for all props",
-    "Export named components (not default) from libs",
+add_card(s, Inches(4.7), Inches(1.4), Inches(3.8), Inches(5.5), "COMPONENT REUSABILITY", [
+    "Prioritize Reusability across modes/pages",
+    "Extract shared UI into src/components/",
+    "Pass data via props (events, loading, etc.)",
+    "Make components props-driven & state-agnostic",
     "",
     "Naming:",
-    "  Components: PascalCase (StatCard.tsx)",
+    "  Components: PascalCase (BookingDashboard.tsx)",
     "  Hooks: camelCase (useAppMode.ts)",
     "  Utils: camelCase (api-client.ts)",
     "",
@@ -567,13 +567,12 @@ add_card(s, Inches(4.7), Inches(1.4), Inches(3.8), Inches(5.5), "FILE STRUCTURE"
     "  domain.test.ts — tests",
 ], accent=PURPLE)
 
-add_card(s, Inches(8.8), Inches(1.4), Inches(3.8), Inches(5.5), "NAMING CONVENTIONS", [
-    "Files: kebab-case (api-client.ts)",
-    "Components: PascalCase (StatCard.tsx)",
-    "Functions: camelCase (dbGetAllLeads)",
-    "Constants: SCREAMING_SNAKE (MAX_PAGE_SIZE)",
-    "Types/Interfaces: PascalCase (LeadFilters)",
-    "DB functions prefix: db (dbSaveLead)",
+add_card(s, Inches(8.8), Inches(1.4), Inches(3.8), Inches(5.5), "DESIGN FOR REUSE", [
+    "Write code expecting it to be reused later",
+    "Separate business logic (hooks) from UI (JSX)",
+    "Avoid hardcoding page-specific titles/states",
+    "Use Generic Types for flexible functions",
+    "Export constants/config objects from central files",
     "",
     "Function prefixes:",
     "  db* — database operations",
