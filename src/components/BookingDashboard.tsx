@@ -122,11 +122,16 @@ export default function BookingDashboard({ events, loading, refreshEvents }: Boo
                                     <span className={`badge badge-${event.status}`}>{cfg2.emoji} {cfg2.label}</span>
                                 </div>
                                 <div className="event-col-name" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    {event.mode && MODE_CONFIGS[event.mode as AppMode] && (
-                                        <span title={MODE_CONFIGS[event.mode as AppMode].label} style={{ fontSize: '14px' }}>
-                                            {MODE_CONFIGS[event.mode as AppMode].icon}
-                                        </span>
-                                    )}
+                                    {(() => {
+                                        // Fallback to performer mode for legacy events missing the mode attribute
+                                        const displayMode = event.mode || 'performer';
+                                        const config = MODE_CONFIGS[displayMode as AppMode];
+                                        return config ? (
+                                            <span title={config.label} style={{ fontSize: '14px' }}>
+                                                {config.icon}
+                                            </span>
+                                        ) : null;
+                                    })()}
                                     <div>
                                         <span className="event-name-link">{event.clientName || 'Unnamed Event'}</span>
                                         <div className="event-sub">{event.venueName || 'No venue'}</div>
@@ -213,7 +218,11 @@ export default function BookingDashboard({ events, loading, refreshEvents }: Boo
                                                     borderLeft: `3px solid ${sc.color}`,
                                                 }}
                                             >
-                                                {ev.mode && MODE_CONFIGS[ev.mode as AppMode] ? MODE_CONFIGS[ev.mode as AppMode].icon + ' ' : ''}
+                                                {(() => {
+                                                    const displayMode = ev.mode || 'performer';
+                                                    const config = MODE_CONFIGS[displayMode as AppMode];
+                                                    return config ? config.icon + ' ' : '';
+                                                })()}
                                                 {ev.clientName || ev.venueName || 'Event'}
                                             </Link>
                                         );
