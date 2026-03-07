@@ -112,7 +112,12 @@ jobs:
         run: |
           echo "Starting Remediation Agent..."
           echo "DEBUG REVIEW_OUTPUT: ${REVIEW_OUTPUT}"
-          npx tsx scripts/remediation-agent.ts "${REVIEW_OUTPUT}" || exit 1
+          npx tsx scripts/remediation-agent.ts "${REVIEW_OUTPUT}" > remediation_log.txt 2>&1 || true
+          cat remediation_log.txt
+          
+          if grep -q "Error" remediation_log.txt; then
+             exit 1
+          fi
           
           # Check if there are modified files to commit
           if [[ -n $(git status -s) ]]; then
@@ -135,6 +140,13 @@ jobs:
             exit 1 # Fail the build so the user knows they have to fix it manually
           fi
 
+      - name: Upload Remediation Debug Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: remediation-logs
+          path: remediation_log.txt
+          
   qa-agent:
     name: 🛡️ QA Agent
     needs: code-review
