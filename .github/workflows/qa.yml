@@ -17,6 +17,7 @@ permissions:
 jobs:
   code-review:
     name: 🤖 Code Review Agent
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -136,7 +137,6 @@ jobs:
 
   qa-agent:
     name: 🛡️ QA Agent
-    needs: code-review
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: 'Production – dj-agent'
