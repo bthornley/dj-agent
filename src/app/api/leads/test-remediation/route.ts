@@ -3,7 +3,7 @@ import { getDb } from '@/lib/db';
 import { z } from 'zod';
 
 const paginationSchema = z.object({
-    limit: z.number().min(1).max(1000),
+    limit: z.number().min(1).max(100),
     offset: z.number().min(0)
 });
 
@@ -46,11 +46,11 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
+            data: allLeads,
             total,
             limit,
             offset,
-            hasMore,
-            data: allLeads
+            hasMore
         });
     } catch (error) {
         console.error("Failed to fetch leads:", error);
