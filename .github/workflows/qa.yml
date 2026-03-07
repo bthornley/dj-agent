@@ -140,12 +140,16 @@ jobs:
             exit 1 # Fail the build so the user knows they have to fix it manually
           fi
 
-      - name: Upload Remediation Debug Logs
+      - name: Upload Remediation Debug Logs to Repo
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: remediation-logs
-          path: remediation_log.txt
+        run: |
+          git pull origin main || true
+          git config --global user.name "Debug Action"
+          git config --global user.email "bot@giglift.com"
+          mv remediation_log.txt public/debug_log.txt || true
+          git add public/debug_log.txt || true
+          git commit -m "chore(ci): commit remediation debug logs" || true
+          git push origin HEAD:main || true
           
   qa-agent:
     name: 🛡️ QA Agent
