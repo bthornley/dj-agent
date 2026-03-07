@@ -70,16 +70,17 @@ const PIPELINE_STAGES = [
 ];
 
 const AGENT_INFO = [
-    { id: 'qa', name: 'QA Agent', emoji: '🔍', schedule: 'On Deploy', desc: 'Route audit, env check, build health checks, integration tests' },
-    { id: 'cost-guardian', name: 'Cost Guardian', emoji: '🛡️', schedule: 'Daily 5am', desc: 'Infra costs, guardrails, budget alerts' },
-    { id: 'analytics', name: 'Analytics', emoji: '📊', schedule: 'Daily 6am', desc: 'KPIs, revenue, anomalies' },
-    { id: 'growth-ops', name: 'Growth Ops', emoji: '🚀', schedule: 'Daily 7am', desc: 'Onboarding, funnel, ambassadors' },
-    { id: 'customer-success', name: 'Customer Success', emoji: '🎯', schedule: 'Daily 8am', desc: 'Health scores, churn, upgrades' },
-    { id: 'investor-pipeline', name: 'Investor Outreach', emoji: '💰', schedule: 'M-F 9am', desc: 'CRM, scoring, outreach' },
-    { id: 'content-marketing', name: 'Content Marketing', emoji: '📝', schedule: 'MWF 10am', desc: 'Blog, social, SEO' },
-    { id: 'community', name: 'Community', emoji: '🤝', schedule: 'Daily 11am', desc: 'Feedback, power users, insights' },
-    { id: 'instagram', name: 'Instagram @gigliftapp', emoji: '📸', schedule: 'Every 6h', desc: 'Brand posts, publishing, analytics' },
-    { id: 'education-outreach', name: 'Education Outreach', emoji: '🎓', schedule: 'MWF 8am', desc: 'Music school prospecting, outreach sequences' },
+    { id: 'code-review', name: 'Code Review Agent', emoji: '🤖', schedule: 'On PR', desc: 'Standards enforcement, security scan, diff review', group: 'DevOps' },
+    { id: 'qa', name: 'QA Agent', emoji: '🔍', schedule: 'On Deploy', desc: 'Route audit, env check, build health checks, integration tests', group: 'DevOps' },
+    { id: 'cost-guardian', name: 'Cost Guardian', emoji: '🛡️', schedule: 'Daily 5am', desc: 'Infra costs, guardrails, budget alerts', group: 'Business' },
+    { id: 'analytics', name: 'Analytics', emoji: '📊', schedule: 'Daily 6am', desc: 'KPIs, revenue, anomalies', group: 'Business' },
+    { id: 'growth-ops', name: 'Growth Ops', emoji: '🚀', schedule: 'Daily 7am', desc: 'Onboarding, funnel, ambassadors', group: 'Business' },
+    { id: 'customer-success', name: 'Customer Success', emoji: '🎯', schedule: 'Daily 8am', desc: 'Health scores, churn, upgrades', group: 'Business' },
+    { id: 'investor-pipeline', name: 'Investor Outreach', emoji: '💰', schedule: 'M-F 9am', desc: 'CRM, scoring, outreach', group: 'Business' },
+    { id: 'content-marketing', name: 'Content Marketing', emoji: '📝', schedule: 'MWF 10am', desc: 'Blog, social, SEO', group: 'Business' },
+    { id: 'community', name: 'Community', emoji: '🤝', schedule: 'Daily 11am', desc: 'Feedback, power users, insights', group: 'Business' },
+    { id: 'instagram', name: 'Instagram @gigliftapp', emoji: '📸', schedule: 'Every 6h', desc: 'Brand posts, publishing, analytics', group: 'Business' },
+    { id: 'education-outreach', name: 'Education Outreach', emoji: '🎓', schedule: 'MWF 8am', desc: 'Music school prospecting, outreach sequences', group: 'Business' },
 ];
 
 export default function AdminAgentsDashboard() {
@@ -262,7 +263,7 @@ export default function AdminAgentsDashboard() {
                         <p className="section-subtitle">
                             {runningAgent
                                 ? `⏳ Running ${AGENT_INFO.find(a => a.id === runningAgent)?.emoji} ${AGENT_INFO.find(a => a.id === runningAgent)?.name}...`
-                                : 'Monitor and trigger your 9 autonomous agents'}
+                                : 'Monitor and trigger your autonomous agents'}
                         </p>
                     </div>
                 </div>
@@ -846,12 +847,16 @@ export default function AdminAgentsDashboard() {
                         )}
 
                         {/* Agent Status Grid */}
-                        <h3 style={{ color: 'var(--text-primary)', marginBottom: '12px', fontSize: '16px' }}>⚡ Agent Controls</h3>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                            <h3 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '18px' }}>⚡ Agent Controls</h3>
+                        </div>
+
+                        <h4 style={{ color: 'var(--text-secondary)', marginBottom: '12px', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>👨‍💻 DevOps & CI/CD</h4>
                         <div style={{
                             display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                            gap: '12px', marginBottom: '28px',
+                            gap: '12px', marginBottom: '24px',
                         }}>
-                            {AGENT_INFO.map(agent => {
+                            {AGENT_INFO.filter(a => a.group === 'DevOps').map(agent => {
                                 const stats = data?.agentStats?.[agent.id];
                                 const statusColor = stats?.lastStatus === 'success' ? '#10b981' : stats?.lastStatus === 'warning' ? '#f97316' : stats?.lastStatus === 'failed' ? '#ef4444' : 'var(--text-muted)';
                                 return (
@@ -875,7 +880,61 @@ export default function AdminAgentsDashboard() {
                                                 {stats.lastRun && <span style={{ color: 'var(--text-muted)' }}>Last: {new Date(stats.lastRun + 'Z').toLocaleDateString()}</span>}
                                             </div>
                                         )}
-                                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                                        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                                            <button
+                                                className="btn btn-ghost btn-sm"
+                                                style={{ fontSize: '12px', flex: 1 }}
+                                                onClick={() => triggerAgent(agent.id)}
+                                                disabled={runningAgent === agent.id}
+                                            >
+                                                {runningAgent === agent.id ? '⏳ Running...' : '▶ Run Now'}
+                                            </button>
+                                            <button
+                                                className="btn btn-ghost btn-sm"
+                                                style={{ fontSize: '12px', flex: 1, color: 'var(--accent-cyan)' }}
+                                                onClick={() => {
+                                                    setSelectedAgent(selectedAgent === agent.id ? null : agent.id);
+                                                    document.getElementById('activity-log')?.scrollIntoView({ behavior: 'smooth' });
+                                                }}
+                                            >
+                                                📜 View Logs
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <h4 style={{ color: 'var(--text-secondary)', marginBottom: '12px', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>💼 Business Operations</h4>
+                        <div style={{
+                            display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                            gap: '12px', marginBottom: '28px',
+                        }}>
+                            {AGENT_INFO.filter(a => a.group === 'Business').map(agent => {
+                                const stats = data?.agentStats?.[agent.id];
+                                const statusColor = stats?.lastStatus === 'success' ? '#10b981' : stats?.lastStatus === 'warning' ? '#f97316' : stats?.lastStatus === 'failed' ? '#ef4444' : 'var(--text-muted)';
+                                return (
+                                    <div key={agent.id} style={{
+                                        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+                                        borderRadius: '12px', padding: '16px',
+                                    }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                                            <div>
+                                                <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                                                    {agent.emoji} {agent.name}
+                                                </div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{agent.desc}</div>
+                                            </div>
+                                            <span className="badge badge-draft" style={{ fontSize: '10px', flexShrink: 0 }}>{agent.schedule}</span>
+                                        </div>
+                                        {stats && (
+                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px', fontSize: '11px' }}>
+                                                <span style={{ color: statusColor, fontWeight: 600 }}>● {stats.lastStatus}</span>
+                                                <span style={{ color: 'var(--text-muted)' }}>{stats.runs} runs (7d)</span>
+                                                {stats.lastRun && <span style={{ color: 'var(--text-muted)' }}>Last: {new Date(stats.lastRun + 'Z').toLocaleDateString()}</span>}
+                                            </div>
+                                        )}
+                                        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                                             <button
                                                 className="btn btn-ghost btn-sm"
                                                 style={{ fontSize: '12px', flex: 1 }}
