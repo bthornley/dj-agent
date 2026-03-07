@@ -36,9 +36,14 @@ interface ReviewResult {
 
 let result: ReviewResult;
 try {
-    result = JSON.parse(violationsJson);
+    const jsonMatch = violationsJson.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+        throw new Error("Could not extract JSON from the provided input string.");
+    }
+    result = JSON.parse(jsonMatch[0]);
 } catch (e) {
     console.error('❌ Error: Failed to parse violations JSON.', e);
+    console.log('Raw Input:', violationsJson);
     process.exit(1);
 }
 
