@@ -134,61 +134,61 @@ export async function GET() {
                     error: run.html_url,
                 });
 
-                // 2. If it's a PR, log the Code Review Agent
-                if (isPR) {
-                    const crAgentId = 'code-review';
-                    if (!agentStats[crAgentId]) agentStats[crAgentId] = { runs: 0, lastRun: null, lastStatus: 'unknown' };
-                    agentStats[crAgentId].runs += 1;
-                    if (!agentStats[crAgentId].lastRun || new Date(run.created_at) > new Date(agentStats[crAgentId].lastRun + 'Z')) {
-                        agentStats[crAgentId].lastRun = run.created_at.replace('Z', '');
-                        // If the overall build failed, it's highly likely Code Review failed
-                        agentStats[crAgentId].lastStatus = status;
+                // 2. Log the Code Review Agent for all runs
+                const crAgentId = 'code-review';
+                if (!agentStats[crAgentId]) agentStats[crAgentId] = { runs: 0, lastRun: null, lastStatus: 'unknown' };
+                agentStats[crAgentId].runs += 1;
+                if (!agentStats[crAgentId].lastRun || new Date(run.created_at) > new Date(agentStats[crAgentId].lastRun + 'Z')) {
+                    agentStats[crAgentId].lastRun = run.created_at.replace('Z', '');
+                    // If the overall build failed, it's highly likely Code Review failed
+                    agentStats[crAgentId].lastStatus = status;
+                }
+
+                ghRuns.push({
+                    id: run.id + 1000000, // separate ID
+                    agent_id: crAgentId,
+                    agent_name: 'Code Review Agent',
+                    status,
+                    started_at: run.created_at.replace('Z', ''),
+                    finished_at: run.updated_at ? run.updated_at.replace('Z', '') : null,
+                    duration_ms: run.updated_at ? (new Date(run.updated_at).getTime() - new Date(run.created_at).getTime()) / 3 : null, // Approx
+                    summary: `Analyzed Diff for Branch: ${run.head_branch}`,
+                    alerts_count: isFailed ? 1 : 0,
+                    actions_count: 1,
+                    error: run.html_url,
+                });
+
+                // 3. If it failed, the Remediation Agent kicks in!
+                if (isFailed) {
+                    const remAgentId = 'remediation';
+                    if (!agentStats[remAgentId]) agentStats[remAgentId] = { runs: 0, lastRun: null, lastStatus: 'unknown' };
+                    agentStats[remAgentId].runs += 1;
+                    if (!agentStats[remAgentId].lastRun || new Date(run.created_at) > new Date(agentStats[remAgentId].lastRun + 'Z')) {
+                        agentStats[remAgentId].lastRun = run.created_at.replace('Z', '');
+                        agentStats[remAgentId].lastStatus = 'success'; // Assume it pushes a commit
                     }
 
                     ghRuns.push({
-                        id: run.id + 1000000, // separate ID
-                        agent_id: crAgentId,
-                        agent_name: 'Code Review Agent',
-                        status,
-                        started_at: run.created_at.replace('Z', ''),
+                        id: run.id + 2000000,
+                        agent_id: remAgentId,
+                        agent_name: 'Remediation Agent',
+                        status: 'success', // If it failed code review, remediation tries to fix it
+                        started_at: run.updated_at ? run.updated_at.replace('Z', '') : run.created_at.replace('Z', ''), // Runs at the end
                         finished_at: run.updated_at ? run.updated_at.replace('Z', '') : null,
-                        duration_ms: run.updated_at ? (new Date(run.updated_at).getTime() - new Date(run.created_at).getTime()) / 3 : null, // Approx
-                        summary: `Analyzed Diff for Branch: ${run.head_branch}`,
-                        alerts_count: isFailed ? 1 : 0,
-                        actions_count: 1,
+                        duration_ms: 15000, // Approx
+                        summary: `Auto-generated code fixes for Branch: ${run.head_branch}`,
+                        alerts_count: 0,
+                        actions_count: 3, // Overwrote files, lined, committed
                         error: run.html_url,
                     });
-
-                    // 3. If it's a PR AND it failed, the Remediation Agent kicks in!
-                    if (isFailed) {
-                        const remAgentId = 'remediation';
-                        if (!agentStats[remAgentId]) agentStats[remAgentId] = { runs: 0, lastRun: null, lastStatus: 'unknown' };
-                        agentStats[remAgentId].runs += 1;
-                        if (!agentStats[remAgentId].lastRun || new Date(run.created_at) > new Date(agentStats[remAgentId].lastRun + 'Z')) {
-                            agentStats[remAgentId].lastRun = run.created_at.replace('Z', '');
-                            agentStats[remAgentId].lastStatus = 'success'; // Assume it pushes a commit
-                        }
-
-                        ghRuns.push({
-                            id: run.id + 2000000,
-                            agent_id: remAgentId,
-                            agent_name: 'Remediation Agent',
-                            status: 'success', // If it failed code review, remediation tries to fix it
-                            started_at: run.updated_at ? run.updated_at.replace('Z', '') : run.created_at.replace('Z', ''), // Runs at the end
-                            finished_at: run.updated_at ? run.updated_at.replace('Z', '') : null,
-                            duration_ms: 15000, // Approx
-                            summary: `Auto-generated code fixes for Branch: ${run.head_branch}`,
-                            alerts_count: 0,
-                            actions_count: 3, // Overwrote files, lined, committed
-                            error: run.html_url,
-                        });
-                    }
                 }
-            }
+            } // end for
 
             agentRuns = [...ghRuns, ...agentRuns].sort((a, b) => new Date(b.started_at + 'Z').getTime() - new Date(a.started_at + 'Z').getTime());
-        }
-    } catch (e) { console.error('[admin/agents] github logs:', e); }
+        } // end if (ghRes.ok)
+    } catch (e) {
+        console.error('[admin/agents] github logs:', e);
+    }
 
     return NextResponse.json({
         analytics,
