@@ -129,7 +129,7 @@ export default function DashboardPage() {
             const res = await fetch('/api/events', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, ...newEvent }),
+                body: JSON.stringify({ id, mode: activeMode || 'performer', ...newEvent }),
             });
             if (res.ok) {
                 // Refresh events
@@ -306,9 +306,16 @@ export default function DashboardPage() {
                                     <div className="event-col-status">
                                         <span className={`badge badge-${event.status}`}>{cfg2.emoji} {cfg2.label}</span>
                                     </div>
-                                    <div className="event-col-name">
-                                        <span className="event-name-link">{event.clientName || 'Unnamed Event'}</span>
-                                        <div className="event-sub">{event.venueName || 'No venue'}</div>
+                                    <div className="event-col-name" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        {event.mode && MODE_CONFIGS[event.mode as AppMode] && (
+                                            <span title={MODE_CONFIGS[event.mode as AppMode].label} style={{ fontSize: '14px' }}>
+                                                {MODE_CONFIGS[event.mode as AppMode].icon}
+                                            </span>
+                                        )}
+                                        <div>
+                                            <span className="event-name-link">{event.clientName || 'Unnamed Event'}</span>
+                                            <div className="event-sub">{event.venueName || 'No venue'}</div>
+                                        </div>
                                     </div>
                                     <div className="event-col-date">
                                         {event.date ? new Date(event.date).toLocaleDateString() : '—'}
@@ -391,6 +398,7 @@ export default function DashboardPage() {
                                                         borderLeft: `3px solid ${sc.color}`,
                                                     }}
                                                 >
+                                                    {ev.mode && MODE_CONFIGS[ev.mode as AppMode] ? MODE_CONFIGS[ev.mode as AppMode].icon + ' ' : ''}
                                                     {ev.clientName || ev.venueName || 'Event'}
                                                 </Link>
                                             );

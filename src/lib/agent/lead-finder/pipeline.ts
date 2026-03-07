@@ -42,6 +42,7 @@ export async function runPipeline(input: {
     const partialLead: Partial<Lead> = {
         lead_id: uuid(),
         entity_name: input.entity_name || extractNameFromUrl(input.url),
+        mode: input.mode || 'performer',
         entity_type: input.entity_type as Lead['entity_type'] || enrichment.entity_type,
         city: input.city || '',
         state: input.state || 'CA',

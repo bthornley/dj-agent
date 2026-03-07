@@ -63,6 +63,7 @@ export function leadToEvent(lead: Lead, handoff: LeadHandoff): Event {
     return {
         id: uuid(),
         status: 'inquiry',
+        mode: lead.mode,
         clientName: lead.contact_name || lead.entity_name,
         org: lead.entity_name,
         phone: lead.phone || '',

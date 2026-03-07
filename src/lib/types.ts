@@ -44,6 +44,7 @@ export type EventStatus =
 export interface Event {
   id: string;
   status: EventStatus;
+  mode?: string; // e.g., 'performer', 'instructor'
 
   // Client
   clientName: string;
@@ -204,6 +205,7 @@ export interface Lead {
   source: string;  // google_maps, event_platform, instagram, venue_site, manual, etc.
   source_url: string;
   found_at: string; // ISO timestamp
+  mode?: string;    // e.g., 'performer', 'instructor'
 
   // Contact
   contact_name: string;
