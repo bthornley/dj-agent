@@ -1091,7 +1091,12 @@ export default function AdminAgentsDashboard() {
                                                                 </span>
                                                             </td>
                                                             <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-secondary)', fontSize: '13px' }}>
-                                                                {run.error || run.summary || '—'}
+                                                                {run.summary || '—'}
+                                                                {run.error && (
+                                                                    run.error.startsWith('http')
+                                                                        ? <a href={run.error} target="_blank" rel="noopener noreferrer" style={{ display: 'block', color: 'var(--accent-cyan)', fontSize: '11px', marginTop: '4px', textDecoration: 'none' }}>🔗 View on GitHub</a>
+                                                                        : <div style={{ color: '#ef4444', fontSize: '11px', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{run.error}</div>
+                                                                )}
                                                             </td>
                                                             <td style={{ textAlign: 'center' }}>
                                                                 {run.alerts_count > 0 ? (

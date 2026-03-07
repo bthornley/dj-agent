@@ -91,6 +91,49 @@ export async function GET() {
         agentStats = await getAgentRunStats();
     } catch (e) { console.error('[admin/agents] run history:', e); }
 
+    try {
+        // Fetch GitHub Actions runs for the DevOps agents
+        const ghRes = await fetch('https://api.github.com/repos/bthornley/dj-agent/actions/runs?per_page=15', {
+            headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'dj-agent-admin' },
+            next: { revalidate: 60 }
+        });
+        if (ghRes.ok) {
+            const ghData = await ghRes.json();
+            const ghRuns = (ghData.workflow_runs || []).filter((r: any) => r.name === 'QA Agent — Build Gate').map((run: any) => {
+                const isPR = run.event === 'pull_request';
+                const agentId = isPR ? 'code-review' : 'qa';
+                const isSuccess = run.conclusion === 'success';
+                const isFailed = run.conclusion === 'failure';
+                const status = isSuccess ? 'success' : isFailed ? 'failed' : run.status === 'in_progress' ? 'running' : 'warning';
+
+                // Update stats
+                if (!agentStats[agentId]) {
+                    agentStats[agentId] = { runs: 0, lastRun: null, lastStatus: 'unknown' };
+                }
+                agentStats[agentId].runs += 1;
+                if (!agentStats[agentId].lastRun || new Date(run.created_at) > new Date(agentStats[agentId].lastRun + 'Z')) {
+                    agentStats[agentId].lastRun = run.created_at.replace('Z', '');
+                    agentStats[agentId].lastStatus = status;
+                }
+
+                return {
+                    id: run.id,
+                    agent_id: agentId,
+                    agent_name: isPR ? 'Code Review Agent' : 'QA Agent',
+                    status,
+                    started_at: run.created_at.replace('Z', ''),
+                    finished_at: run.updated_at ? run.updated_at.replace('Z', '') : null,
+                    duration_ms: run.updated_at ? new Date(run.updated_at).getTime() - new Date(run.created_at).getTime() : null,
+                    summary: `Branch: ${run.head_branch} | Message: ${run.head_commit?.message?.split('\n')[0] || run.display_title || ''}`,
+                    alerts_count: isFailed ? 1 : 0,
+                    actions_count: 1,
+                    error: run.html_url,
+                };
+            });
+            agentRuns = [...ghRuns, ...agentRuns].sort((a, b) => new Date(b.started_at + 'Z').getTime() - new Date(a.started_at + 'Z').getTime());
+        }
+    } catch (e) { console.error('[admin/agents] github logs:', e); }
+
     return NextResponse.json({
         analytics,
         history,
