@@ -21,26 +21,24 @@ export async function GET(request: NextRequest) {
         });
     }
 
-    const user_id = request.headers.get('x-user-id');
-    if (!user_id) {
+    const userId = request.headers.get('x-user-id');
+    if (!userId) {
         return NextResponse.json({
             success: false,
             message: "User ID is required."
         });
     }
 
-    console.log("Fetching leads with pagination...");
-
     try {
         const totalQuery = await db.execute({
             sql: 'SELECT COUNT(*) AS total FROM leads WHERE user_id = ?',
-            args: [user_id]
+            args: [userId]
         });
         const total = Number(totalQuery.rows[0]?.total ?? 0);
 
         const leadsResult = await db.execute({
             sql: 'SELECT * FROM leads WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?',
-            args: [user_id, limit, offset]
+            args: [userId, limit, offset]
         });
         const allLeads = leadsResult.rows;
 
