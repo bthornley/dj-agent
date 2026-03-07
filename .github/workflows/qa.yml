@@ -111,7 +111,8 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           echo "Starting Remediation Agent..."
-          npx tsx scripts/remediation-agent.ts "${REVIEW_OUTPUT}"
+          echo "DEBUG REVIEW_OUTPUT: ${REVIEW_OUTPUT}"
+          npx tsx scripts/remediation-agent.ts "${REVIEW_OUTPUT}" || exit 1
           
           # Check if there are modified files to commit
           if [[ -n $(git status -s) ]]; then
