@@ -96,6 +96,14 @@ export default function TeamPage() {
                             badgeColor: '#10b981',
                         },
                         {
+                            role: 'Senior Manager, Software Development',
+                            company: 'The Active Network',
+                            period: 'Jan 2010 – Apr 2012',
+                            highlight: 'Directed global engineering teams following the Clubspaces acquisition and guided the company through its successful IPO.',
+                            badge: '📈 Post-Acquisition IPO',
+                            badgeColor: '#3b82f6',
+                        },
+                        {
                             role: 'VP, IT & Architecture',
                             company: 'Clubspaces, Inc.',
                             period: 'Apr 2007 – Jan 2010',
@@ -201,7 +209,7 @@ export default function TeamPage() {
                         Blake has built and exited <strong style={{ color: 'var(--text-primary)' }}>three SaaS companies</strong> in
                         the sports-tech vertical — the same playbook now applied to music-tech. Each company scaled from
                         founding team to acquisition: D4 Sports → Clubspaces ($1M+ revenue, 1M users, MLS contracts) →
-                        The Active Network. Most recently led a 5+ year tenure as VP Engineering overseeing SOC 2 compliance
+                        The Active Network (guiding the tech team through a successful IPO). Most recently led a 5+ year tenure as VP Engineering overseeing SOC 2 compliance
                         and enterprise security. GigLift represents a founder with a <strong style={{ color: 'var(--text-primary)' }}>
                             proven pattern of building, scaling, and exiting</strong> vertical SaaS platforms.
                     </p>
