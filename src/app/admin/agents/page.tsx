@@ -71,6 +71,7 @@ const PIPELINE_STAGES = [
 
 const AGENT_INFO = [
     { id: 'code-review', name: 'Code Review Agent', emoji: '🤖', schedule: 'On PR', desc: 'Standards enforcement, security scan, diff review', group: 'DevOps' },
+    { id: 'remediation', name: 'Remediation Agent', emoji: '🛠️', schedule: 'On PR Fail', desc: 'Auto-fixes coding standard violations', group: 'DevOps' },
     { id: 'qa', name: 'QA Agent', emoji: '🔍', schedule: 'On Deploy', desc: 'Route audit, env check, build health checks, integration tests', group: 'DevOps' },
     { id: 'cost-guardian', name: 'Cost Guardian', emoji: '🛡️', schedule: 'Daily 5am', desc: 'Infra costs, guardrails, budget alerts', group: 'Business' },
     { id: 'analytics', name: 'Analytics', emoji: '📊', schedule: 'Daily 6am', desc: 'KPIs, revenue, anomalies', group: 'Business' },
