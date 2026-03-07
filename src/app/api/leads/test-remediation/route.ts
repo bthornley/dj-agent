@@ -1,7 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 
-export async function GET(limit: number = 10, offset: number = 0) {
+export async function GET(request: NextRequest) {
+    const searchParams = request.nextUrl.searchParams;
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
+    const offset = parseInt(searchParams.get('offset') || '0', 10);
     console.log("Fetching leads with pagination...");
 
     try {
