@@ -31,7 +31,7 @@ try {
 }
 
 if (!gitDiff.trim()) {
-    console.log('No relevant code changes found to review.');
+    console.error('No relevant code changes found to review.');
     // Output empty JSON for GitHub Actions parser
     console.log(JSON.stringify({ pass: true, summary: "No code changes to review.", violations: [] }));
     process.exit(0);
