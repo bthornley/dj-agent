@@ -111,13 +111,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           echo "Starting Remediation Agent..."
-          echo "DEBUG REVIEW_OUTPUT: ${REVIEW_OUTPUT}"
-          npx tsx scripts/remediation-agent.ts "${REVIEW_OUTPUT}" > remediation_log.txt 2>&1 || true
-          cat remediation_log.txt
-          
-          if grep -q "Error" remediation_log.txt; then
-             exit 1
-          fi
+          npx tsx scripts/remediation-agent.ts "${REVIEW_OUTPUT}"
           
           # Check if there are modified files to commit
           if [[ -n $(git status -s) ]]; then
@@ -140,17 +134,6 @@ jobs:
             exit 1 # Fail the build so the user knows they have to fix it manually
           fi
 
-      - name: Upload Remediation Debug Logs to Repo
-        if: always()
-        run: |
-          git pull origin main || true
-          git config --global user.name "Debug Action"
-          git config --global user.email "bot@giglift.com"
-          mv remediation_log.txt public/debug_log.txt || true
-          git add public/debug_log.txt || true
-          git commit -m "chore(ci): commit remediation debug logs" || true
-          git push origin HEAD:main || true
-          
   qa-agent:
     name: 🛡️ QA Agent
     needs: code-review
