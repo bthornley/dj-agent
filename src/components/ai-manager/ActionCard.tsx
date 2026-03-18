@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export type ActionCardData = {
   type: "generic_text" | "draft_contract" | "gig_request" | "agenda" | "seeds_overview" | "seed_adjusted";

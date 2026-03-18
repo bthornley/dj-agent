@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import ActionCard, { ActionCardData } from "./ActionCard";
 
 export default function AIManagerFab() {
