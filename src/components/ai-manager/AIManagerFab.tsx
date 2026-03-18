@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import ActionCard, { ActionCardData } from "./ActionCard";
+import "./ai-manager.css";
 
 export default function AIManagerFab() {
   const [isRecording, setIsRecording] = useState(false);
@@ -15,7 +16,6 @@ export default function AIManagerFab() {
 
   const startRecording = async () => {
     try {
-      // Clear previous states
       setActionPayload(null);
       if (audioPlayerRef.current) {
          audioPlayerRef.current.pause();
@@ -33,9 +33,7 @@ export default function AIManagerFab() {
       };
 
       mediaRecorder.onstop = async () => {
-        // Stop all tracks to release the mic
         stream.getTracks().forEach(track => track.stop());
-        
         setIsRecording(false);
         setIsProcessing(true);
 
@@ -71,7 +69,6 @@ export default function AIManagerFab() {
         throw new Error("Failed to process audio.");
       }
 
-      // Read custom JSON header for the Action Card UI
       const actionCardHeader = response.headers.get("X-Action-Card");
       if (actionCardHeader) {
           try {
@@ -82,7 +79,6 @@ export default function AIManagerFab() {
           }
       }
 
-      // Read audio blob for playback
       const audioBuffer = await response.blob();
       const audioUrl = URL.createObjectURL(audioBuffer);
       
@@ -106,46 +102,34 @@ export default function AIManagerFab() {
     }
   };
 
+  let fabStateClass = "idle";
+  if (isRecording) fabStateClass = "recording";
+  else if (isProcessing) fabStateClass = "processing";
+
   return (
     <>
       <ActionCard payload={actionPayload} onClose={() => setActionPayload(null)} />
       
-      <div className="fixed bottom-6 right-6 z-50 flex items-center justify-center">
-        {isRecording && (
-            <div className="absolute -top-12 bg-[#a855f7] px-3 py-1 rounded-full text-xs font-bold text-white shadow shadow-[#a855f7]/50 animate-pulse">
-                Listening...
-            </div>
-        )}
-        
-        {isProcessing && (
-            <div className="absolute -top-12 bg-[#00d4e6] px-3 py-1 rounded-full text-xs font-bold text-[#0f0f23] shadow shadow-[#00d4e6]/50 animate-pulse">
-                Thinking...
-            </div>
-        )}
-
-        {isPlaying && (
-            <div className="absolute -top-12 bg-[#00e676] px-3 py-1 rounded-full text-xs font-bold text-[#0f0f23] shadow shadow-[#00e676]/50">
-                Speaking...
-            </div>
-        )}
+      <div className="ai-fab-container">
+        {isRecording && <div className="ai-fab-status listening">Listening...</div>}
+        {isProcessing && <div className="ai-fab-status thinking">Thinking...</div>}
+        {isPlaying && <div className="ai-fab-status speaking">Speaking...</div>}
 
         <button
           onPointerDown={startRecording}
           onPointerUp={stopRecording}
           onPointerLeave={stopRecording}
-          className={`relative flex items-center justify-center w-16 h-16 rounded-full shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all duration-300 ${isRecording ? 'scale-110 bg-gradient-to-r from-[#ff5555] to-[#f53d3d] shadow-[0_0_30px_rgba(255,85,85,0.6)]' : ''} ${isProcessing ? 'bg-[#333355]' : ''} ${!isRecording && !isProcessing ? 'bg-gradient-to-r from-[#a855f7] to-[#7c3aed] hover:scale-105' : ''}`}
-          style={{ touchAction: 'none' }}
+          className={`ai-fab-btn ${fabStateClass}`}
           aria-label="Push to talk to AI Manager"
         >
           {isProcessing ? (
-             <div className="w-6 h-6 border-2 border-[#a855f7] border-t-transparent rounded-full animate-spin" />
+             <div className="ai-fab-spinner" />
           ) : (
-             <span className="text-3xl filter drop-shadow-md pb-1">🎤</span>
+             <span className="ai-fab-icon">🎤</span>
           )}
 
-          {/* Ripple effect rings when idle */}
           {!isRecording && !isProcessing && !isPlaying && (
-             <span className="absolute inset-0 rounded-full border border-[#a855f7] opacity-30 animate-ping" />
+             <span className="ai-fab-ripple" />
           )}
         </button>
       </div>

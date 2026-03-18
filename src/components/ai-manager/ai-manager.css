@@ -1,0 +1,339 @@
+/* AI Manager FAB & Action Card Styles */
+.ai-fab-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-fab-status {
+    position: absolute;
+    top: -48px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    animation: ai-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.ai-fab-status.listening {
+    background-color: #a855f7;
+    color: white;
+    box-shadow: 0 4px 6px rgba(168, 85, 247, 0.5);
+}
+
+.ai-fab-status.thinking {
+    background-color: #00d4e6;
+    color: #0f0f23;
+    box-shadow: 0 4px 6px rgba(0, 212, 230, 0.5);
+}
+
+.ai-fab-status.speaking {
+    background-color: #00e676;
+    color: #0f0f23;
+    animation: none;
+    box-shadow: 0 4px 6px rgba(0, 230, 118, 0.5);
+}
+
+@keyframes ai-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+
+.ai-fab-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+    transition: all 0.3s ease;
+    touch-action: none;
+}
+
+.ai-fab-btn.idle {
+    background: linear-gradient(to right, #a855f7, #7c3aed);
+}
+
+.ai-fab-btn.idle:hover {
+    transform: scale(1.05);
+}
+
+.ai-fab-btn.recording {
+    transform: scale(1.1);
+    background: linear-gradient(to right, #ff5555, #f53d3d);
+    box-shadow: 0 0 30px rgba(255, 85, 85, 0.6);
+}
+
+.ai-fab-btn.processing {
+    background-color: #333355;
+    cursor: default;
+}
+
+.ai-fab-icon {
+    font-size: 30px;
+    filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07));
+    padding-bottom: 4px;
+}
+
+.ai-fab-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #a855f7;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: ai-spin 1s linear infinite;
+}
+
+@keyframes ai-spin {
+    to { transform: rotate(360deg); }
+}
+
+.ai-fab-ripple {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid #a855f7;
+    opacity: 0.3;
+    animation: ai-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes ai-ping {
+    75%, 100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* Action Card */
+.ai-action-card {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    width: 320px;
+    background-color: #1e1e2e;
+    border: 1px solid #333355;
+    border-radius: 12px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    z-index: 50;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: translateY(-20px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ai-action-card.visible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.ai-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #333355;
+    background-color: #14141f;
+}
+
+.ai-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #a855f7;
+}
+
+.ai-card-close {
+    background: none;
+    border: none;
+    color: #9999bb;
+    cursor: pointer;
+    font-size: 16px;
+    transition: color 0.2s;
+}
+
+.ai-card-close:hover {
+    color: white;
+}
+
+.ai-card-body {
+    padding: 16px;
+}
+
+.ai-card-text {
+    font-size: 14px;
+    color: #e0e0e8;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.ai-card-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ai-card-subtitle {
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 8px 0;
+}
+
+.ai-card-box {
+    background-color: #14141f;
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid #333355;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ai-card-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.ai-card-label {
+    color: #9999bb;
+}
+
+.ai-card-value {
+    font-weight: 500;
+    color: white;
+}
+
+.ai-card-value.highlight {
+    color: #00d4e6;
+    text-transform: uppercase;
+}
+
+.ai-card-value.success {
+    color: #00e676;
+}
+
+.ai-card-value.large {
+    font-size: 32px;
+    font-weight: 900;
+    color: #00e676;
+    margin-top: 4px;
+}
+
+.ai-card-msg {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.ai-card-btn {
+    width: 100%;
+    margin-top: 8px;
+    padding: 10px;
+    background: linear-gradient(to right, #a855f7, #7c3aed);
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.ai-card-btn:hover {
+    opacity: 0.9;
+}
+
+.ai-card-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+
+.ai-card-badge.warning {
+    background-color: rgba(234, 179, 8, 0.2);
+    color: #eab308;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.ai-card-badge.success {
+    background-color: rgba(0, 230, 118, 0.2);
+    color: #00e676;
+    border: 1px solid rgba(0, 230, 118, 0.3);
+}
+
+.ai-card-badge.active {
+    background-color: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+    margin-bottom: 0;
+}
+
+.ai-card-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.ai-card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.ai-card-stat {
+    background-color: #14141f;
+    border: 1px solid #333355;
+    border-radius: 8px;
+    padding: 16px 12px;
+    text-align: center;
+}
+
+.ai-card-stat.highlight {
+    border-color: rgba(0, 212, 230, 0.3);
+}
+
+.ai-card-stat-val {
+    font-size: 24px;
+    font-weight: 900;
+    color: white;
+}
+
+.ai-card-stat-val.highlight {
+    color: #00d4e6;
+}
+
+.ai-card-stat-label {
+    font-size: 10px;
+    color: #9999bb;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+}
+
+.ai-card-stat-label.highlight {
+    color: rgba(0, 212, 230, 0.7);
+}
+
+.ai-card-footer {
+    font-size: 11px;
+    color: #9999bb;
+    text-align: center;
+    margin-top: 12px;
+}
