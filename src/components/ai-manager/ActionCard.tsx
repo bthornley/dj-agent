@@ -78,7 +78,7 @@ export default function ActionCard({ payload, onClose }: { payload: ActionCardDa
                 onClick={handleClose}
                 className="w-full mt-2 py-2 bg-gradient-to-r from-[#a855f7] to-[#7c3aed] text-white text-sm font-bold rounded-lg hover:opacity-90 transition-opacity"
             >
-                Approve & Send
+                Approve &amp; Send
             </button>
           </div>
         )}
