@@ -211,12 +211,18 @@ export async function sendUserGuideEmail(params: {
     `;
 
     try {
-        await resend.emails.send({
+        const { error } = await resend.emails.send({
             from: FROM_EMAIL,
             to,
             subject: '📖 Your GigLift Instruction Manual',
             html,
         });
+        
+        if (error) {
+            console.error('[email] Resend API error:', error);
+            throw new Error(error.message);
+        }
+        
         console.log(`[email] User guide email sent to ${to}`);
     } catch (err) {
         console.error('[email] Failed to send user guide email:', err);

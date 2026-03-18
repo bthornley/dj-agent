@@ -255,7 +255,7 @@ export default function AdminDashboard() {
                                                 onClick={() => handleResendGuide(user.email, user.firstName, user.id)}
                                                 disabled={resendingIds[user.id]}
                                             >
-                                                {resendingIds[user.id] ? '⏳' : '📧 Guide'}
+                                                {resendingIds[user.id] ? '⏳' : '📧 Send Guide ↗'}
                                             </button>
                                             <Link href={`/admin/users/${user.id}`} className="btn btn-ghost btn-sm" style={{ fontSize: '12px' }}>
                                                 View →
