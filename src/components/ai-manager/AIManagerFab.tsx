@@ -133,7 +133,7 @@ export default function AIManagerFab() {
           onPointerDown={startRecording}
           onPointerUp={stopRecording}
           onPointerLeave={stopRecording}
-          className={\`relative flex items-center justify-center w-16 h-16 rounded-full shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all duration-300 \${isRecording ? 'scale-110 bg-gradient-to-r from-[#ff5555] to-[#f53d3d] shadow-[0_0_30px_rgba(255,85,85,0.6)]' : ''} \${isProcessing ? 'bg-[#333355]' : ''} \${!isRecording && !isProcessing ? 'bg-gradient-to-r from-[#a855f7] to-[#7c3aed] hover:scale-105' : ''}\`}
+          className={`relative flex items-center justify-center w-16 h-16 rounded-full shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all duration-300 ${isRecording ? 'scale-110 bg-gradient-to-r from-[#ff5555] to-[#f53d3d] shadow-[0_0_30px_rgba(255,85,85,0.6)]' : ''} ${isProcessing ? 'bg-[#333355]' : ''} ${!isRecording && !isProcessing ? 'bg-gradient-to-r from-[#a855f7] to-[#7c3aed] hover:scale-105' : ''}`}
           style={{ touchAction: 'none' }}
           aria-label="Push to talk to AI Manager"
         >
