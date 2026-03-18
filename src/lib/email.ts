@@ -217,7 +217,7 @@ export async function sendUserGuideEmail(params: {
             subject: '📖 Your GigLift Instruction Manual',
             html,
         });
-        console.log(\`[email] User guide email sent to \${to}\`);
+        console.log(`[email] User guide email sent to ${to}`);
     } catch (err) {
         console.error('[email] Failed to send user guide email:', err);
     }

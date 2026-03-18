@@ -96,7 +96,7 @@ export default function AdminDashboard() {
             } else {
                 toast(`Error: ${data.error}`, 'error');
             }
-        } catch (e: any) {
+        } catch (e) {
             toast('Failed to send user guide', 'error');
         } finally {
             setResendingIds(prev => ({ ...prev, [id]: false }));
