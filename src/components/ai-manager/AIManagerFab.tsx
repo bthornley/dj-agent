@@ -9,6 +9,7 @@ export default function AIManagerFab() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [actionPayload, setActionPayload] = useState<ActionCardData | null>(null);
+  const [hasMicError, setHasMicError] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -45,7 +46,7 @@ export default function AIManagerFab() {
       setIsRecording(true);
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      alert("Microphone access is required to use the AI Manager.");
+      setHasMicError(true);
     }
   };
 
@@ -133,6 +134,21 @@ export default function AIManagerFab() {
           )}
         </button>
       </div>
+
+      {hasMicError && (
+          <div className="ai-mic-helper-overlay">
+              <div className="ai-mic-helper-modal">
+                  <span className="ai-mic-helper-icon">🎙️</span>
+                  <h3 className="ai-mic-helper-title">Microphone Access Needed</h3>
+                  <p className="ai-mic-helper-text">
+                      To talk to the AI Manager, please allow microphone access across your device settings or browser preferences.
+                  </p>
+                  <button className="ai-mic-helper-btn" onClick={() => setHasMicError(false)}>
+                      Okay, I'll check settings
+                  </button>
+              </div>
+          </div>
+      )}
     </>
   );
 }

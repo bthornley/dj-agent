@@ -337,3 +337,64 @@
     text-align: center;
     margin-top: 12px;
 }
+
+/* Mic Helper Overlay */
+.ai-mic-helper-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background-color: rgba(15, 13, 19, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.ai-mic-helper-modal {
+    background-color: #1e1e2e;
+    border: 1px solid #333355;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+.ai-mic-helper-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: inline-block;
+}
+
+.ai-mic-helper-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 12px 0;
+}
+
+.ai-mic-helper-text {
+    font-size: 14px;
+    color: #9999bb;
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+}
+
+.ai-mic-helper-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(to right, #a855f7, #7c3aed);
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.ai-mic-helper-btn:hover {
+    opacity: 0.9;
+}
