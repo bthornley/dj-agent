@@ -140,9 +140,13 @@ export default function AIManagerFab() {
               <div className="ai-mic-helper-modal">
                   <span className="ai-mic-helper-icon">🎙️</span>
                   <h3 className="ai-mic-helper-title">Microphone Access Needed</h3>
-                  <p className="ai-mic-helper-text">
-                      To talk to the AI Manager, please allow microphone access across your device settings or browser preferences.
-                  </p>
+                  <div className="ai-mic-helper-text" style={{ textAlign: "left", fontSize: "13px" }}>
+                      <p style={{ marginTop: 0 }}>To talk to the AI Manager, you need to allow microphone access:</p>
+                      <ul style={{ paddingLeft: "20px", margin: "12px 0", color: "#e0e0e8" }}>
+                          <li style={{ marginBottom: "8px" }}><b>iOS (Safari):</b> Go to Settings App → Safari → Microphone → set to <i>Allow</i>. Then refresh this page.</li>
+                          <li><b>Android (Chrome):</b> Tap the padlock 🔒 icon in the URL bar → Permissions → Microphone → set to <i>Allow</i>.</li>
+                      </ul>
+                  </div>
                   <button className="ai-mic-helper-btn" onClick={() => setHasMicError(false)}>
                       Okay, I'll check settings
                   </button>
