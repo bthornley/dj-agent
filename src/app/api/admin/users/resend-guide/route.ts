@@ -1,20 +1,11 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { requireAdmin } from '@/lib/admin-guard';
 import { sendUserGuideEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
     try {
-        const session = await auth();
-        const userId = session.userId;
-        const role = (session.sessionClaims?.metadata as { role?: string })?.role;
-
-        if (!userId) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        if (role !== 'admin') {
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-        }
+        const guard = await requireAdmin();
+        if (guard instanceof NextResponse) return guard;
 
         const body = await request.json().catch(() => ({}));
 
