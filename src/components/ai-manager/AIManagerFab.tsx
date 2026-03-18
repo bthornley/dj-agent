@@ -49,8 +49,13 @@ export default function AIManagerFab() {
       mediaRecorder.start();
       setIsRecording(true);
       setHasMicError(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error accessing microphone:", err);
+      if (!window.isSecureContext) {
+        alert("Microphone access requires a secure connection (HTTPS or localhost). Please ensure the site is loaded securely.");
+      } else {
+        alert("Microphone Error: " + err.name + " - " + err.message);
+      }
       setHasMicError(true);
     }
   };
