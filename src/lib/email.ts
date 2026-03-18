@@ -12,7 +12,7 @@ function getResend(): Resend | null {
     return _resend;
 }
 
-const FROM_EMAIL = process.env.EMAIL_FROM || 'GigLift <noreply@giglift.app>';
+const FROM_EMAIL = process.env.EMAIL_FROM || 'GigLift <noreply@giglift.com>';
 
 // ---- Plan Upgrade / Downgrade Email ----
 
@@ -333,7 +333,7 @@ export async function sendOutreachEmail(params: {
 
     try {
         const result = await resend.emails.send({
-            from: process.env.EMAIL_OUTREACH_FROM || 'GigLift <outreach@giglift.app>',
+            from: process.env.EMAIL_OUTREACH_FROM || 'GigLift <outreach@giglift.com>',
             to,
             subject,
             html,
