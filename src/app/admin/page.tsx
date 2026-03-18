@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Topbar from '@/components/Topbar';
 import Link from 'next/link';
+import { useToast } from '@/components/ToastProvider';
 
 interface UserRow {
     id: string;
@@ -42,6 +43,8 @@ export default function AdminDashboard() {
     const [search, setSearch] = useState('');
     const [searchTimer, setSearchTimer] = useState<NodeJS.Timeout | null>(null);
     const [error, setError] = useState('');
+    const [resendingIds, setResendingIds] = useState<Record<string, boolean>>({});
+    const { toast } = useToast();
 
     async function fetchStats() {
         try {
@@ -77,6 +80,27 @@ export default function AdminDashboard() {
         setSearch(value);
         if (searchTimer) clearTimeout(searchTimer);
         setSearchTimer(setTimeout(() => fetchUsers(value), 400));
+    }
+
+    async function handleResendGuide(email: string, firstName: string, id: string) {
+        setResendingIds(prev => ({ ...prev, [id]: true }));
+        try {
+            const res = await fetch('/api/admin/users/resend-guide', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, firstName }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                toast(`User guide sent to ${email}`, 'success');
+            } else {
+                toast(`Error: ${data.error}`, 'error');
+            }
+        } catch (e: any) {
+            toast('Failed to send user guide', 'error');
+        } finally {
+            setResendingIds(prev => ({ ...prev, [id]: false }));
+        }
     }
 
     const formatDate = (ts: number | null) => {
@@ -225,6 +249,14 @@ export default function AdminDashboard() {
                                         <td>{user.stats.posts}</td>
                                         <td>{user.stats.hasBrand ? '✅' : '—'}</td>
                                         <td>
+                                            <button 
+                                                className="btn btn-ghost btn-sm" 
+                                                style={{ fontSize: '12px', marginRight: '6px' }}
+                                                onClick={() => handleResendGuide(user.email, user.firstName, user.id)}
+                                                disabled={resendingIds[user.id]}
+                                            >
+                                                {resendingIds[user.id] ? '⏳' : '📧 Guide'}
+                                            </button>
                                             <Link href={`/admin/users/${user.id}`} className="btn btn-ghost btn-sm" style={{ fontSize: '12px' }}>
                                                 View →
                                             </Link>

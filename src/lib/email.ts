@@ -165,6 +165,64 @@ export async function sendAmbassadorAcceptedEmail(params: {
     }
 }
 
+// ---- User Guide Resend Email ----
+
+export async function sendUserGuideEmail(params: {
+    to: string;
+    firstName: string;
+}): Promise<void> {
+    const resend = getResend();
+    if (!resend) {
+        console.log('[email] Resend not configured — skipping user guide email');
+        return;
+    }
+
+    const { to, firstName } = params;
+
+    const html = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px; background: #0f0f23; color: #e2e8f0; border-radius: 16px;">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <img src="https://giglift.com/logo.png" alt="GigLift" style="width: 64px; height: 64px; border-radius: 12px;" />
+            </div>
+            <h1 style="color: #a78bfa; font-size: 24px; text-align: center; margin-bottom: 8px;">
+                Your GigLift User Guide is Here! 📖
+            </h1>
+            <p style="color: #94a3b8; text-align: center; font-size: 15px; margin-bottom: 24px;">
+                Hey ${firstName}, we put together a detailed, step-by-step instruction manual to help you get the most out of your 7 AI agents.
+            </p>
+            <div style="background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <p style="color: #e2e8f0; font-size: 14px; font-weight: 600; margin: 0 0 12px 0;">Inside the Guide:</p>
+                <ul style="color: #e2e8f0; font-size: 13px; line-height: 1.8; padding-left: 20px; margin: 0;">
+                    <li>How the 4 Discovery Modes change your Leads</li>
+                    <li>How to dial in your Query Seeds</li>
+                    <li>Building your EPK and ordering sections</li>
+                    <li>Using the AI Flyer Creator to make promo art</li>
+                </ul>
+            </div>
+            <div style="text-align: center;">
+                <a href="https://giglift.com/instructions" style="display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #a78bfa, #8b5cf6); color: white; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px;">
+                    Read the Guide →
+                </a>
+            </div>
+            <p style="color: #64748b; font-size: 12px; text-align: center; margin-top: 24px;">
+                Questions? Reply to this email or reach us at hello@giglift.app
+            </p>
+        </div>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: FROM_EMAIL,
+            to,
+            subject: '📖 Your GigLift Instruction Manual',
+            html,
+        });
+        console.log(\`[email] User guide email sent to \${to}\`);
+    } catch (err) {
+        console.error('[email] Failed to send user guide email:', err);
+    }
+}
+
 // ---- Helpers ----
 
 function getPlanRank(plan: string): number {

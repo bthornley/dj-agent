@@ -22,7 +22,7 @@ const NAV_ITEMS = [
     { href: '/epk/builder', label: 'EPK', emoji: '📋' },
     { href: '/flyer/create', label: 'Flyer', emoji: '🎨' },
     { href: '/emails', label: 'Emails', emoji: '📧' },
-    { href: '/guide', label: 'Guide', emoji: '📖' },
+    { href: '/instructions', label: 'Guide', emoji: '📖' },
     { href: '/account', label: 'Account', emoji: '⚙️' },
 ];
 
