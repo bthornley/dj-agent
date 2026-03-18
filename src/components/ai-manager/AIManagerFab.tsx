@@ -157,7 +157,7 @@ export default function AIManagerFab() {
                       <p style={{ marginTop: 0 }}>To talk to the AI Manager, you need to allow microphone access. If you opened this link from an app (like Instagram), please open it in Safari or Chrome instead.</p>
                       <ul style={{ paddingLeft: "16px", margin: "12px 0", color: "#e0e0e8" }}>
                           <li style={{ marginBottom: "12px" }}><b>iOS (Safari):</b> Tap the <b>aA</b> icon in the address bar → Website Settings → Microphone → <i>Allow</i>.</li>
-                          <li><b>Android (Chrome):</b> Tap the <b>Site Info icon</b> (left of URL) → Permissions → Microphone → <i>Allow</i>.</li>
+                          <li><b>Android (Chrome):</b> Tap the <b>Site Info icon</b> (left of URL) → Permissions → Microphone → <i>Allow</i>. <br/><span style={{ fontSize: '11px', color: '#a1a1aa' }}>(If missing: Android Settings → Apps → Chrome → Permissions → Allow Mic)</span></li>
                       </ul>
                   </div>
                   <button className="ai-mic-helper-btn" onClick={() => setHasMicError(false)}>
