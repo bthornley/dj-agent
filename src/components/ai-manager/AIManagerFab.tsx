@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import ActionCard, { ActionCardData } from "./ActionCard";
 import "./ai-manager.css";
 
@@ -10,41 +10,20 @@ export default function AIManagerFab() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [actionPayload, setActionPayload] = useState<ActionCardData | null>(null);
   const [hasMicError, setHasMicError] = useState(false);
-  const [hasPermission, setHasPermission] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    if (navigator.permissions && navigator.permissions.query) {
-      navigator.permissions.query({ name: 'microphone' as PermissionName })
-        .then((permissionStatus) => {
-          if (permissionStatus.state === 'granted') {
-            setHasPermission(true);
-          }
-        })
-        .catch(console.error);
-    }
-  }, []);
-
-  const requestPermission = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach(track => track.stop());
-      setHasPermission(true);
-      setHasMicError(false);
-    } catch (err) {
-      console.error("Microphone permission denied:", err);
-      setHasMicError(true);
-    }
-  };
 
   const startRecording = async () => {
     try {
       setActionPayload(null);
       if (audioPlayerRef.current) {
          audioPlayerRef.current.pause();
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Microphone API not supported");
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -63,12 +42,13 @@ export default function AIManagerFab() {
         setIsRecording(false);
         setIsProcessing(true);
 
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorder.mimeType || "audio/webm" });
         await processAudio(audioBlob);
       };
 
       mediaRecorder.start();
       setIsRecording(true);
+      setHasMicError(false);
     } catch (err) {
       console.error("Error accessing microphone:", err);
       setHasMicError(true);
@@ -78,6 +58,14 @@ export default function AIManagerFab() {
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop();
+    }
+  };
+
+  const toggleRecording = async () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      await startRecording();
     }
   };
 
@@ -141,34 +129,23 @@ export default function AIManagerFab() {
         {isProcessing && <div className="ai-fab-status thinking">Thinking...</div>}
         {isPlaying && <div className="ai-fab-status speaking">Speaking...</div>}
 
-        {!hasPermission ? (
-          <button
-            onClick={requestPermission}
-            className="ai-fab-btn idle"
-            aria-label="Allow Microphone"
-          >
-             <span className="ai-fab-icon">🎙️</span>
-             <span className="ai-fab-ripple" />
-          </button>
-        ) : (
-          <button
-            onPointerDown={startRecording}
-            onPointerUp={stopRecording}
-            onPointerLeave={stopRecording}
-            className={`ai-fab-btn ${fabStateClass}`}
-            aria-label="Push to talk to AI Manager"
-          >
-            {isProcessing ? (
-               <div className="ai-fab-spinner" />
-            ) : (
-               <span className="ai-fab-icon">🎤</span>
-            )}
+        <button
+          onClick={toggleRecording}
+          className={`ai-fab-btn ${fabStateClass}`}
+          aria-label={isRecording ? "Stop recording" : "Tap to talk to AI Manager"}
+        >
+          {isProcessing ? (
+             <div className="ai-fab-spinner" />
+          ) : isRecording ? (
+             <span className="ai-fab-icon" style={{ fontSize: "20px" }}>⏹️</span>
+          ) : (
+             <span className="ai-fab-icon">🎤</span>
+          )}
 
-            {!isRecording && !isProcessing && !isPlaying && (
-               <span className="ai-fab-ripple" />
-            )}
-          </button>
-        )}
+          {!isRecording && !isProcessing && !isPlaying && (
+             <span className="ai-fab-ripple" />
+          )}
+        </button>
       </div>
 
       {hasMicError && (
@@ -177,8 +154,8 @@ export default function AIManagerFab() {
                   <span className="ai-mic-helper-icon">🎙️</span>
                   <h3 className="ai-mic-helper-title">Microphone Access Needed</h3>
                   <div className="ai-mic-helper-text" style={{ textAlign: "left", fontSize: "13px" }}>
-                      <p style={{ marginTop: 0 }}>To talk to the AI Manager, you need to allow microphone access:</p>
-                      <ul style={{ paddingLeft: "20px", margin: "12px 0", color: "#e0e0e8" }}>
+                      <p style={{ marginTop: 0 }}>To talk to the AI Manager, you need to allow microphone access. If you opened this link from an app (like Instagram), please open it in Safari or Chrome instead.</p>
+                      <ul style={{ paddingLeft: "16px", margin: "12px 0", color: "#e0e0e8" }}>
                           <li style={{ marginBottom: "8px" }}><b>iOS (Safari):</b> Tap the <b>aA</b> icon in the address bar → Website Settings → Microphone → <i>Allow</i>.</li>
                           <li><b>Android (Chrome):</b> Tap the site info icon (tune/settings) in the address bar → Permissions → Microphone → <i>Allow</i>.</li>
                       </ul>
