@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
                 { role: "system", content: `${SYSTEM_PROMPT}\n\n${context}` },
                 { role: "user", content: userText },
             ],
-            tools: TOOLS,
+            tools: TOOLS as any,
             tool_choice: "auto",
         });
 

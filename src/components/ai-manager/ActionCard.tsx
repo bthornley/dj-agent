@@ -16,14 +16,15 @@ export default function ActionCard({ payload, onClose }: { payload: ActionCardDa
       // Auto dismiss after 10 seconds generic text
       if (payload.type === "generic_text") {
         const timer = setTimeout(() => {
-           handleClose();
+           setIsVisible(false);
+           setTimeout(onClose, 300);
         }, 8000);
         return () => clearTimeout(timer);
       }
     } else {
         setIsVisible(false);
     }
-  }, [payload]);
+  }, [payload, onClose]);
 
   const handleClose = () => {
       setIsVisible(false);
