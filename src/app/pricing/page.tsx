@@ -35,7 +35,7 @@ const plans = [
         name: 'Pro',
         price: 33,
         period: '/mo',
-        description: 'For working musicians',
+        description: 'Start with a 30-Day Free Trial',
         features: [
             '50 auto-scans per month',
             'Unlimited lead storage',
@@ -55,7 +55,7 @@ const plans = [
             'Media library (2GB)',
             'Engagement copilot',
         ],
-        cta: 'Upgrade to Pro',
+        cta: 'Start 30-Day Free Trial',
         highlighted: true,
     },
     {

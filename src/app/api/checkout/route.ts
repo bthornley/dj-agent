@@ -61,6 +61,7 @@ export async function POST(request: Request) {
             cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/pricing`,
             metadata: { userId, planId },
             subscription_data: {
+                ...(planId === 'pro' && { trial_period_days: 30 }),
                 metadata: { userId, planId },
             },
         });
