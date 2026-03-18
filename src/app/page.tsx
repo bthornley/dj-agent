@@ -34,7 +34,7 @@ export default async function LandingPage() {
 
       <main className="landing-hero">
         <div className="hero-content">
-          <div className="hero-badge">🤖 7 AI Agents Working While You Sleep</div>
+          <div className="hero-badge">🤖 8 AI Agents Working While You Sleep</div>
           <h1 className="hero-title">
             Your AI Agent Team That <span className="hero-accent">Finds, Books &amp; Promotes</span> Your Gigs
           </h1>
@@ -70,7 +70,7 @@ export default async function LandingPage() {
 
           <div className="hero-stats">
             <div className="hero-stat">
-              <div className="hero-stat-value">7 Agents</div>
+              <div className="hero-stat-value">8 Agents</div>
               <div className="hero-stat-label">Working For You 24/7</div>
             </div>
             <div className="hero-stat">
@@ -401,6 +401,33 @@ export default async function LandingPage() {
             <div className="feature-icon">📊</div>
             <h3>Multi-Platform Analytics</h3>
             <p>The AI Coach tracks Instagram, TikTok, and Facebook performance, delivering actionable weekly insights & recommendations.</p>
+          </div>
+        </div>
+
+        {/* Agent 6: Voice-Activated AI Manager */}
+        <div style={{ textAlign: 'center', marginBottom: '12px', marginTop: '48px' }}>
+          <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+            🎙️ Agent 6 — Voice-Activated AI Manager
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+            Your personal booking agent and assistant, available 24/7 with just a tap
+          </p>
+        </div>
+        <div className="feature-grid">
+          <div className="feature-card">
+            <div className="feature-icon">🎧</div>
+            <h3>Natural Interactions</h3>
+            <p>Tap the mic, talk naturally, and the AI agent processes complex requests, reads you your leads, and displays visual summaries instantly.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">✍️</div>
+            <h3>Contract Drafting</h3>
+            <p>Ask the manager to draft a contract with specific deposit percentages or amounts, and they will prepare it for approval immediately.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">📅</div>
+            <h3>Schedule Lookup</h3>
+            <p>Ask about upcoming load-in times, availability, or conflicting dates without leaving your current screen.</p>
           </div>
         </div>
 

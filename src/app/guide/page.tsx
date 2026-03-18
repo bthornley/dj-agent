@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: 'User Guide — GigLift',
-    description: 'Complete guide to using GigLift: 7 AI agents, 4 modes, lead discovery, EPK builder, social media hub, flyer creator, booking calendar, and more.',
+    description: 'Complete guide to using GigLift: 8 AI agents, 4 modes, lead discovery, EPK builder, social media hub, flyer creator, booking calendar, and more.',
 };
 
 export default function GuidePage() {
@@ -34,7 +34,7 @@ export default function GuidePage() {
                         <span style={{ background: 'linear-gradient(135deg, #a855f7, #00d4e6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>GigLift</span>
                     </h1>
                     <p style={{ fontSize: 18, color: '#888', maxWidth: 600, margin: '0 auto', lineHeight: 1.6 }}>
-                        Everything you need to know to get the most out of your 7 AI agents, 4 discovery modes, and complete booking toolkit.
+                        Everything you need to know to get the most out of your 8 AI agents, 4 discovery modes, and complete booking toolkit.
                     </p>
                 </div>
 
@@ -45,18 +45,19 @@ export default function GuidePage() {
                         {[
                             ['#getting-started', '1. Getting Started'],
                             ['#modes', '2. Four Discovery Modes'],
-                            ['#agents', '3. Your 7 AI Agents'],
+                            ['#agents', '3. Your 8 AI Agents'],
                             ['#dashboard', '4. Booking Agent Dashboard'],
-                            ['#scanning', '5. Scanning for Leads'],
-                            ['#seeds', '6. Query Seeds'],
-                            ['#leads', '7. Managing Leads'],
-                            ['#epk', '8. EPK Builder'],
-                            ['#social', '9. Social Media Hub'],
-                            ['#flyer', '10. AI Flyer Creator'],
-                            ['#emails', '11. Email System'],
-                            ['#booking', '12. Booking Calendar'],
-                            ['#ambassador', '13. Ambassador Program'],
-                            ['#plans', '14. Plans & Billing'],
+                            ['#ai-manager', '5. Voice AI Manager'],
+                            ['#scanning', '6. Scanning for Leads'],
+                            ['#seeds', '7. Query Seeds'],
+                            ['#leads', '8. Managing Leads'],
+                            ['#epk', '9. EPK Builder'],
+                            ['#social', '10. Social Media Hub'],
+                            ['#flyer', '11. AI Flyer Creator'],
+                            ['#emails', '12. Email System'],
+                            ['#booking', '13. Booking Calendar'],
+                            ['#ambassador', '14. Ambassador Program'],
+                            ['#plans', '15. Plans & Billing'],
                         ].map(([href, label]) => (
                             <a key={href} href={href} style={{ color: '#ccc', textDecoration: 'none', padding: '6px 0', fontSize: 15, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                                 {label}
@@ -110,9 +111,10 @@ export default function GuidePage() {
                 </Section>
 
                 {/* ── Agents ── */}
-                <Section id="agents" icon="🤖" title="Your 7 AI Agents" num={3}>
-                    <p style={p}>Every GigLift account comes with 7 specialized AI agents working behind the scenes:</p>
+                <Section id="agents" icon="🤖" title="Your 8 AI Agents" num={3}>
+                    <p style={p}>Every GigLift account comes with 8 specialized AI agents working behind the scenes:</p>
                     {[
+                        { emoji: '🎧', name: 'Voice AI Manager', desc: 'Your personal booking assistant, available 24/7 with just a tap. Ask it to read your leads out loud, draft contracts, or check your schedule.' },
                         { emoji: '🔍', name: 'Lead Scout', desc: 'Discovers venues, schools, studios, and festivals across 10+ data sources. Uses Google Places, Yelp, Eventbrite, and web scraping to find opportunities that match your profile, genre, and location.' },
                         { emoji: '✉️', name: 'Outreach Writer', desc: 'Drafts mode-aware emails personalized to each lead. Booking requests for performers, lesson proposals for instructors, session pitches for studios. Every email reflects your brand voice and bio.' },
                         { emoji: '📋', name: 'EPK Architect', desc: 'Generates a complete Electronic Press Kit with AI-crafted bio, theme selection, social links, embedded media, and a shareable public URL. Updates automatically as your brand profile evolves.' },
@@ -161,8 +163,25 @@ export default function GuidePage() {
                     </ul>
                 </Section>
 
+                {/* ── AI Manager ── */}
+                <Section id="ai-manager" icon="🎙️" title="Voice-Activated AI Manager" num={5}>
+                    <p style={p}>
+                        Your subscription includes a personal, voice-activated AI Manager available 24/7 on any device.
+                    </p>
+                    <h3 style={h3}>Tap-to-Talk</h3>
+                    <p style={p}>
+                        Tap the floating microphone button (🎤) in the bottom right corner of the app to wake your AI Manager. Tap it again when you're done speaking.
+                    </p>
+                    <h3 style={h3}>What Can the AI Manager Do?</h3>
+                    <ul style={ul}>
+                        <li><strong>Review Leads:</strong> Ask "Read me my newest leads," and it will read the top matches to you while displaying a visual summary.</li>
+                        <li><strong>Draft Contracts:</strong> Say "Draft an acceptance offer with a 20% deposit," and it will immediately prepare the contract for your approval.</li>
+                        <li><strong>Check Schedule:</strong> Ask about your upcoming gigs, load-in times, or availability, and it will pull up your agenda.</li>
+                    </ul>
+                </Section>
+
                 {/* ── Scanning ── */}
-                <Section id="scanning" icon="🔍" title="Scanning for Leads" num={5}>
+                <Section id="scanning" icon="🔍" title="Scanning for Leads" num={6}>
                     <p style={p}>
                         Navigate to <strong>Scan for Leads</strong> from the dashboard. GigLift offers three scan methods:
                     </p>
@@ -191,7 +210,7 @@ export default function GuidePage() {
                 </Section>
 
                 {/* ── Seeds ── */}
-                <Section id="seeds" icon="🌱" title="Query Seeds" num={6}>
+                <Section id="seeds" icon="🌱" title="Query Seeds" num={7}>
                     <p style={p}>
                         Seeds are pre-configured search templates that tell your AI agents <em>where</em> and <em>what</em> to look for.
                         Navigate to <strong>Query Seeds</strong> from the dashboard.
@@ -207,7 +226,7 @@ export default function GuidePage() {
                 </Section>
 
                 {/* ── Leads ── */}
-                <Section id="leads" icon="📋" title="Managing Leads" num={7}>
+                <Section id="leads" icon="📋" title="Managing Leads" num={8}>
                     <p style={p}>
                         The <strong>Leads</strong> page is your pipeline. Every lead discovered by the Lead Scout is organized here with quality scores,
                         status tracking, and one-click actions.
@@ -238,7 +257,7 @@ export default function GuidePage() {
                 </Section>
 
                 {/* ── EPK ── */}
-                <Section id="epk" icon="📋" title="EPK Builder" num={8}>
+                <Section id="epk" icon="📋" title="EPK Builder" num={9}>
                     <p style={p}>
                         The <strong>Electronic Press Kit</strong> is your digital resume for venues and promoters.
                         Navigate to <strong>EPK Builder</strong> from the sidebar.
@@ -265,7 +284,7 @@ export default function GuidePage() {
                 </Section>
 
                 {/* ── Social ── */}
-                <Section id="social" icon="📱" title="Social Media Hub" num={9}>
+                <Section id="social" icon="📱" title="Social Media Hub" num={10}>
                     <p style={p}>
                         Your complete social media command center. Access it from <strong>Social</strong> in the nav.
                     </p>
@@ -303,7 +322,7 @@ export default function GuidePage() {
                 </Section>
 
                 {/* ── Flyer ── */}
-                <Section id="flyer" icon="🎨" title="AI Flyer Creator" num={10}>
+                <Section id="flyer" icon="🎨" title="AI Flyer Creator" num={11}>
                     <p style={p}>
                         Create professional event flyers in minutes. Navigate to <strong>Create Flyer</strong> from the dashboard.
                     </p>
@@ -323,7 +342,7 @@ export default function GuidePage() {
                 </Section>
 
                 {/* ── Emails ── */}
-                <Section id="emails" icon="✉️" title="Email System" num={11}>
+                <Section id="emails" icon="✉️" title="Email System" num={12}>
                     <p style={p}>
                         GigLift&apos;s email system is powered by the Outreach Writer agent and Resend for reliable delivery.
                     </p>
@@ -346,7 +365,7 @@ export default function GuidePage() {
                 </Section>
 
                 {/* ── Booking Calendar ── */}
-                <Section id="booking" icon="📅" title="Booking Calendar" num={12}>
+                <Section id="booking" icon="📅" title="Booking Calendar" num={13}>
                     <p style={p}>
                         Manage all your bookings from the dashboard calendar view.
                     </p>
@@ -365,7 +384,7 @@ export default function GuidePage() {
                 </Section>
 
                 {/* ── Ambassador ── */}
-                <Section id="ambassador" icon="🤝" title="Ambassador Program" num={13}>
+                <Section id="ambassador" icon="🤝" title="Ambassador Program" num={14}>
                     <p style={p}>
                         Earn money and free access by sharing GigLift with other musicians.
                     </p>
@@ -384,7 +403,7 @@ export default function GuidePage() {
                 </Section>
 
                 {/* ── Plans ── */}
-                <Section id="plans" icon="💰" title="Plans & Billing" num={14}>
+                <Section id="plans" icon="💰" title="Plans & Billing" num={15}>
                     <p style={p}>
                         GigLift offers four plans to fit every stage of your career:
                     </p>
@@ -412,7 +431,7 @@ export default function GuidePage() {
                 {/* Footer CTA */}
                 <div style={{ textAlign: 'center', marginTop: 64, padding: '48px 32px', borderRadius: 20, background: 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(0,212,230,0.05))', border: '1px solid rgba(168,85,247,0.15)' }}>
                     <h2 style={{ fontSize: 32, fontWeight: 800, margin: '0 0 12px' }}>Ready to Get Started?</h2>
-                    <p style={{ color: '#888', fontSize: 16, marginBottom: 24 }}>Deploy your 7 AI agents and start finding gigs today.</p>
+                    <p style={{ color: '#888', fontSize: 16, marginBottom: 24 }}>Deploy your 8 AI agents and start finding gigs today.</p>
                     <Link href="/sign-up" style={{
                         display: 'inline-block', padding: '16px 40px', borderRadius: 12,
                         background: 'linear-gradient(135deg, #a855f7, #7c3aed)', color: '#fff',
