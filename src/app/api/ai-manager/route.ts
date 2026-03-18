@@ -89,6 +89,14 @@ const TOOLS = [
     {
         type: "function" as const,
         function: {
+            name: "read_new_leads",
+            description: "Reads the current list of new leads out loud to the user.",
+            parameters: { type: "object", properties: {} },
+        },
+    },
+    {
+        type: "function" as const,
+        function: {
             name: "add_query_seed",
             description: "Creates a new seed configuration for the Lead Finder agent. Use when user wants to search a new city, region, or keywords.",
             parameters: {
@@ -163,7 +171,9 @@ export async function POST(req: NextRequest) {
         const context = `Current Context: 
 - User Name: ${userFirstName}
 - Tenant/User ID: ${userId}
-- Pending Requests: 1 (Tilly's Golf Tournament, May 12th, $800 offer)`;
+- Pending Requests: 1 (Tilly's Golf Tournament, May 12th, $800 offer)
+- Active Leads Overview: 3 active seeds, 42 total leads.
+- Top New Leads: Knitting Factory (Los Angeles), The Roxy (West Hollywood)`;
 
         const completion = await openai.chat.completions.create({
             model: "gpt-4o",
@@ -215,10 +225,21 @@ export async function POST(req: NextRequest) {
                     data: { date: functionArgs.date || "Upcoming" }
                 };
             } else if (functionName === "review_leads_overview") {
-                aiSpokenText = "I've pulled up your lead finder overview. You currently have 3 active seeds which have generated 42 potential leads this week.";
+                aiSpokenText = "You currently have 3 active seeds which have generated 42 potential leads this week. Would you like me to read the newest ones to you?";
                 actionCardPayload = {
                     type: "seeds_overview",
                     data: { activeSeeds: 3, totalLeads: 42 }
+                };
+            } else if (functionName === "read_new_leads") {
+                aiSpokenText = "Your top new leads in Los Angeles are the Knitting Factory and The Roxy. I've put them on your screen so you can track them.";
+                actionCardPayload = {
+                    type: "read_leads",
+                    data: { 
+                        leads: [
+                            { name: "Knitting Factory", location: "Los Angeles", match: "98%" },
+                            { name: "The Roxy", location: "West Hollywood", match: "95%" }
+                        ] 
+                    }
                 };
             } else if (functionName === "add_query_seed") {
                 aiSpokenText = `Got it. I've added a new seed for ${functionArgs.region} searching for ${functionArgs.keywords.join(" and ")}. The lead finder agent will start scanning shortly.`;

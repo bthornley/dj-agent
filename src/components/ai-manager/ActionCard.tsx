@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import "./ai-manager.css";
 
 export type ActionCardData = {
-  type: "generic_text" | "draft_contract" | "gig_request" | "agenda" | "seeds_overview" | "seed_adjusted";
+  type: "generic_text" | "draft_contract" | "gig_request" | "agenda" | "seeds_overview" | "seed_adjusted" | "read_leads";
   data: any;
 };
 
@@ -112,6 +112,23 @@ export default function ActionCard({ payload, onClose }: { payload: ActionCardDa
                     </div>
                 </div>
                 <div className="ai-card-footer">To change your focus, ask me to add or modify a seed.</div>
+            </div>
+        )}
+
+        {payload?.type === "read_leads" && (
+            <div className="ai-card-section">
+                <div className="ai-card-badge success" style={{width: 'fit-content', marginBottom: '12px'}}>Top New Leads</div>
+                <div className="ai-card-box list-container">
+                    {payload.data.leads.map((lead: any, i: number) => (
+                        <div key={i} className="ai-card-row" style={{ padding: '8px 0', borderBottom: i !== payload.data.leads.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <span className="ai-card-value highlight" style={{ textTransform: 'none', fontSize: '15px' }}>{lead.name}</span>
+                                <span className="ai-card-label" style={{ fontSize: '12px' }}>{lead.location}</span>
+                            </div>
+                            <span className="ai-card-badge" style={{ background: 'rgba(168,85,247,0.15)', color: '#a855f7' }}>{lead.match} Match</span>
+                        </div>
+                    ))}
+                </div>
             </div>
         )}
 
