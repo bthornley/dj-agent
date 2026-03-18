@@ -1195,6 +1195,14 @@ a:hover {
     height: 30px !important;
   }
 
+  .topbar-tagline {
+    display: none !important;
+  }
+
+  .hide-on-mobile {
+    display: none !important;
+  }
+
   .stats-grid {
     grid-template-columns: 1fr;
   }

@@ -172,10 +172,8 @@ export async function POST(req: NextRequest) {
         // Handle Function Calling (if the LLM determined an action is necessary)
         if (responseMsg.tool_calls && responseMsg.tool_calls.length > 0) {
             const toolCall = responseMsg.tool_calls[0];
-            // @ts-ignore
-            const functionName = toolCall.function?.name;
-            // @ts-ignore
-            const functionArgs = JSON.parse(toolCall.function?.arguments || "{}");
+            const functionName = (toolCall as any).function?.name;
+            const functionArgs = JSON.parse((toolCall as any).function?.arguments || "{}");
 
             console.log(`🛠️ LLM Tool Call: ${functionName}`, functionArgs);
 

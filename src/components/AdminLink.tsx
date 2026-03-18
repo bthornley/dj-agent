@@ -29,9 +29,16 @@ export default function AdminLink() {
             style={{
                 borderColor: isOnAdmin ? 'rgba(251,191,36,0.3)' : undefined,
                 color: isOnAdmin ? '#fbbf24' : undefined,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
             }}
         >
-            {isOnAdmin ? '📊 App' : '🛡️ Admin'}
+            {isOnAdmin ? (
+                <><span style={{ fontSize: '14px' }}>📊</span> <span className="hide-on-mobile">App</span></>
+            ) : (
+                <><span style={{ fontSize: '14px' }}>🛡️</span> <span className="hide-on-mobile">Admin</span></>
+            )}
         </Link>
     );
 }

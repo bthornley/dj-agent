@@ -1,0 +1,32 @@
+# GigLift AI Coding Guidelines
+
+You are an expert AI assistant helping to build GigLift. You MUST adhere to the following `GigLift_Coding_Standards.md` rules when generating or modifying code in this repository.
+
+## Core Directives
+1. **API Routes & Security**:
+   - ALL routes must be safe and validated.
+   - Always validate request bodies using `Zod` or type guards.
+   - Use `pickFields()` to protect against mass-assignment.
+   - Always return a consistent `{ data, error }` JSON shape. Use `safeErrorResponse()` for errors, never leaking stack traces.
+   - All protected routes MUST use Clerk's `auth()` or `currentUser()` to extract `userId`. Never trust a client-provided `userId` in the body. Admin routes must check `role === 'admin'`.
+
+2. **Database & Queries**:
+   - Pagination is MANDATORY. Every list query MUST accept `limit` and `offset` and return `{ data, total, limit, offset, hasMore }`.
+   - Force tenant isolation: Use `user_id` in EVERY WHERE clause.
+   - NEVER use string concatenation for SQL; always use parameterized queries. Use `escapeLikeQuery()` for LIKE searches.
+   - Avoid N+1 queries by using `Promise.all()` outside of loops.
+
+3. **React Components & Architecture**:
+   - Default to React Server Components (RSC). Only use `'use client'` when browser APIs, state, or effects are strictly required.
+   - Components should be max ~300 lines, props-driven, and state-agnostic to prioritize reusability. Pass data via props.
+
+4. **Data Fetching & State**:
+   - All client-side fetch calls must use `fetchWithRetry()` from `api-client.ts`. Add timeouts (default 15s).
+   - Show skeleton/loading states and never block the UI. Evaluate data in parallel with `Promise.all()` where possible.
+
+5. **TypeScript Enforcement**:
+   - Maintain `strict: true`. The `'any'` type and `@ts-ignore` are STRICTLY FORBIDDEN. Write proper interfaces/types.
+   - Use Generic Types for flexible functions.
+
+## Final Reminder
+If an external API fails, or an AI agent fails, fallback gracefully (e.g., to a manual form). Wrap your logic in `try/catch` and wrap pages in `<ErrorBoundary>`. Do not break the user experience.

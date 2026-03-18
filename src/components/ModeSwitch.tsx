@@ -66,7 +66,7 @@ export default function ModeSwitch() {
                 }}
             >
                 <span style={{ fontSize: '14px' }}>{cfg.icon}</span>
-                {cfg.label}
+                <span className="hide-on-mobile">{cfg.label}</span>
                 <span style={{ fontSize: '10px', marginLeft: '2px', opacity: 0.6 }}>▾</span>
             </button>
 
