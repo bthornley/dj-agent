@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { OpenAI } from "openai";
 
 // Edge runtime isn't totally required, but good for stream performance if Vercel supports it here.
@@ -128,6 +129,14 @@ const TOOLS = [
 
 export async function POST(req: NextRequest) {
     try {
+        // Enforce Server-Side Tenant Isolation
+        const { userId } = await auth();
+        if (!userId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        const user = await currentUser();
+        const userFirstName = user?.firstName || "User";
+
         const formData = await req.formData();
         const audioFile = formData.get("audio") as File;
 
@@ -150,9 +159,10 @@ export async function POST(req: NextRequest) {
         }
 
         // 2. LLM: Process intent with GPT-4o
-        // We inject generic context for the demo MVP
+        // We inject strict tenant context to ensure the AI only acts on this user's data
         const context = `Current Context: 
-- User Name: Blake
+- User Name: ${userFirstName}
+- Tenant/User ID: ${userId}
 - Pending Requests: 1 (Tilly's Golf Tournament, May 12th, $800 offer)`;
 
         const completion = await openai.chat.completions.create({
