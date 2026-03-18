@@ -154,6 +154,78 @@ const TOOLS = [
                 required: ["event_name"],
             },
         },
+    },
+    {
+        type: "function" as const,
+        function: {
+            name: "manage_finances",
+            description: "Handles invoicing, deposits, and revenue forecasting.",
+            parameters: {
+                type: "object",
+                properties: {
+                    action: { type: "string", enum: ["check_deposit", "send_reminder", "forecast_revenue"] },
+                    client_name: { type: "string" }
+                },
+                required: ["action"],
+            },
+        },
+    },
+    {
+        type: "function" as const,
+        function: {
+            name: "manage_logistics",
+            description: "Handles travel time, load-in instructions, and packing lists.",
+            parameters: {
+                type: "object",
+                properties: {
+                    action: { type: "string", enum: ["get_departure_time", "read_load_in", "update_packing_list"] },
+                    item: { type: "string", description: "Item to pack" }
+                },
+                required: ["action"],
+            },
+        },
+    },
+    {
+        type: "function" as const,
+        function: {
+            name: "manage_music",
+            description: "Handles setlists and trending tracks.",
+            parameters: {
+                type: "object",
+                properties: {
+                    action: { type: "string", enum: ["create_setlist", "get_trending", "get_top_requested"] }
+                },
+                required: ["action"],
+            },
+        },
+    },
+    {
+        type: "function" as const,
+        function: {
+            name: "manage_communications",
+            description: "Handles email threads and replies.",
+            parameters: {
+                type: "object",
+                properties: {
+                    action: { type: "string", enum: ["draft_reply", "summarize_thread"] }
+                },
+                required: ["action"],
+            },
+        },
+    },
+    {
+        type: "function" as const,
+        function: {
+            name: "analyze_socials",
+            description: "Handles social media performance and boosting.",
+            parameters: {
+                type: "object",
+                properties: {
+                    action: { type: "string", enum: ["check_post_performance", "boost_post"] }
+                },
+                required: ["action"],
+            },
+        },
     }
 ];
 
@@ -287,6 +359,29 @@ export async function POST(req: NextRequest) {
                     type: "generic_text",
                     data: { text: `Social Hype Crew activated for: ${functionArgs.event_name || 'upcoming event'}.` }
                 };
+            } else if (functionName === "manage_finances") {
+                if (functionArgs.action === "check_deposit") aiSpokenText = `Checking deposit for ${functionArgs.client_name || 'the client'}. They have paid their 20% deposit.`;
+                else if (functionArgs.action === "send_reminder") aiSpokenText = `I've sent an invoice reminder to ${functionArgs.client_name || 'the client'}.`;
+                else aiSpokenText = "You are forecasted to make $3,200 next month based on confirmed bookings.";
+                actionCardPayload = { type: "generic_text", data: { text: aiSpokenText } };
+            } else if (functionName === "manage_logistics") {
+                if (functionArgs.action === "get_departure_time") aiSpokenText = "With current traffic, you should leave at 8:15 PM to arrive for your load-in.";
+                else if (functionArgs.action === "update_packing_list") aiSpokenText = `I've added ${functionArgs.item || 'the item'} to your gig packing list.`;
+                else aiSpokenText = "Load-in instructions: Enter through the back alley door. Security has your name on the list.";
+                actionCardPayload = { type: "generic_text", data: { text: aiSpokenText } };
+            } else if (functionName === "manage_music") {
+                if (functionArgs.action === "create_setlist") aiSpokenText = "I've created a new blank setlist folder for your upcoming gig.";
+                else if (functionArgs.action === "get_trending") aiSpokenText = "The Social Hype Crew says Tech House edits are trending on TikTok right now. I've saved a playlist for you.";
+                else aiSpokenText = "Your top requested songs here last time were Mr. Brightside and Yeah by Usher.";
+                actionCardPayload = { type: "generic_text", data: { text: aiSpokenText } };
+            } else if (functionName === "manage_communications") {
+                if (functionArgs.action === "draft_reply") aiSpokenText = "I've drafted an email stating your $150 hourly rate. It's in your outbox for review.";
+                else aiSpokenText = "The club promoter is asking if you can supply your own CDJs for tomorrow night's event.";
+                actionCardPayload = { type: "generic_text", data: { text: aiSpokenText } };
+            } else if (functionName === "analyze_socials") {
+                if (functionArgs.action === "check_post_performance") aiSpokenText = "Your Paddy's Pregame reel has 4,000 views and a high engagement rate.";
+                else aiSpokenText = "I've instructed the Social Hype Crew to boost that post with the remaining ad budget.";
+                actionCardPayload = { type: "generic_text", data: { text: aiSpokenText } };
             }
         }
 
