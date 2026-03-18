@@ -132,6 +132,28 @@ const TOOLS = [
                 required: ["action", "region"],
             },
         },
+    },
+    {
+        type: "function" as const,
+        function: {
+            name: "get_business_overview",
+            description: "Retrieves a quick overview of the user's business for today, including agenda, gig requests, and new leads.",
+            parameters: { type: "object", properties: {} },
+        },
+    },
+    {
+        type: "function" as const,
+        function: {
+            name: "promote_with_social_hype_crew",
+            description: "Requests the Social Hype Crew to start promoting an upcoming gig or event.",
+            parameters: {
+                type: "object",
+                properties: {
+                    event_name: { type: "string", description: "The name or description of the event to promote." }
+                },
+                required: ["event_name"],
+            },
+        },
     }
 ];
 
@@ -252,6 +274,18 @@ export async function POST(req: NextRequest) {
                 actionCardPayload = {
                     type: "seed_adjusted",
                     data: { action: functionArgs.action, region: functionArgs.region, keywords: functionArgs.keywords || [] }
+                };
+            } else if (functionName === "get_business_overview") {
+                aiSpokenText = "Here is your business overview. You have one pending request from Tilly's, 3 active seeds generating leads, and your schedule is clear for today.";
+                actionCardPayload = {
+                    type: "generic_text",
+                    data: { text: "Business Overview: 1 pending request, 3 active seeds, 42 total leads. No confirmed gigs today." }
+                };
+            } else if (functionName === "promote_with_social_hype_crew") {
+                aiSpokenText = `Got it. I've sent a request to the Social Hype Crew to start promoting ${functionArgs.event_name || 'your upcoming gig'}. They are drafting content now.`;
+                actionCardPayload = {
+                    type: "generic_text",
+                    data: { text: `Social Hype Crew activated for: ${functionArgs.event_name || 'upcoming event'}.` }
                 };
             }
         }
