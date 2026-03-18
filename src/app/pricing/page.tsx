@@ -116,12 +116,13 @@ export default function PricingPage() {
     const currentPlan = user ? ((user.publicMetadata?.planId as string) || 'free') : null;
     const compSource = (user?.publicMetadata as Record<string, unknown>)?.compSource as string | undefined;
     const [loading, setLoading] = useState('');
+    const [showAgencyForm, setShowAgencyForm] = useState(false);
 
     const handleUpgrade = async (planId: string) => {
         if (planId === currentPlan) return;
         if (planId === 'free' && user) return;
         if (planId === 'agency') {
-            window.location.href = 'mailto:hello@giglift.app?subject=Agency%20Tier%20Inquiry&body=Hi%2C%20I%27m%20interested%20in%20the%20Agency%20tier.';
+            setShowAgencyForm(true);
             return;
         }
         if (!user) {
@@ -205,6 +206,42 @@ export default function PricingPage() {
                         </div>
                     ))}
                 </div>
+
+                {showAgencyForm && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
+                    }}>
+                        <div style={{
+                            background: 'var(--bg-card, #1c1c24)', border: '1px solid rgba(255,255,255,0.1)',
+                            padding: '40px', borderRadius: '16px', maxWidth: '400px', width: '100%', position: 'relative'
+                        }}>
+                            <button onClick={() => setShowAgencyForm(false)} style={{
+                                position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none',
+                                color: 'rgba(255,255,255,0.5)', fontSize: '20px', cursor: 'pointer'
+                            }}>✕</button>
+                            <h2 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>Agency Partnership</h2>
+                            <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '25px', fontSize: '0.95rem' }}>Tell us about your team and we'll build a custom plan for you.</p>
+
+                            <form onSubmit={(e) => { e.preventDefault(); alert("Thanks! We'll reach out shortly."); setShowAgencyForm(false); }} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                <input required type="text" placeholder="Your Name" style={{
+                                    width: '100%', padding: '12px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)',
+                                    border: '1px solid rgba(255,255,255,0.1)', color: 'white'
+                                }} />
+                                <input required type="email" placeholder="Work Email" style={{
+                                    width: '100%', padding: '12px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)',
+                                    border: '1px solid rgba(255,255,255,0.1)', color: 'white'
+                                }} />
+                                <input required type="text" placeholder="Agency Name" style={{
+                                    width: '100%', padding: '12px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)',
+                                    border: '1px solid rgba(255,255,255,0.1)', color: 'white'
+                                }} />
+                                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '10px' }}>Submit Inquiry</button>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </main>
         </>
     );

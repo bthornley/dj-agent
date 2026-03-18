@@ -63,9 +63,29 @@ export default async function LandingPage() {
             ))}
           </div>
 
-          <div className="hero-actions" style={{ marginTop: '12px' }}>
+          <div className="hero-actions" style={{ marginTop: '12px', marginBottom: '24px' }}>
             <Link href="/sign-up" className="btn btn-primary btn-xl">Deploy Your Agents Free</Link>
             <Link href="/promo.html" className="btn btn-secondary btn-xl" target="_blank">🎬 Watch the Promo</Link>
+          </div>
+
+          {/* 🎙️ Beta Program Banner */}
+          <div style={{
+            maxWidth: '650px', margin: '0 auto 32px auto', padding: '16px 24px',
+            borderRadius: '16px', background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(168,85,247,0.15))',
+            border: '1px solid rgba(168, 85, 247, 0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', textDecoration: 'none'
+          }}>
+            <div style={{ textAlign: 'left', flex: 1 }}>
+              <div style={{ fontSize: '12px', color: '#c084fc', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                🚀 Private Beta Now Open
+              </div>
+              <div style={{ fontSize: '15px', color: 'white', fontWeight: 600, marginTop: '4px' }}>
+                Run your music business with your voice. Request early access to our integrated AI Manager.
+              </div>
+            </div>
+            <Link href="/sign-up" className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
+              Request Access
+            </Link>
           </div>
 
           <div className="hero-stats">
@@ -406,6 +426,14 @@ export default async function LandingPage() {
 
         {/* Agent 6: Voice-Activated AI Manager */}
         <div style={{ textAlign: 'center', marginBottom: '12px', marginTop: '48px' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '8px',
+            padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700,
+            background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.3)',
+            color: '#c084fc', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px'
+          }}>
+            New Beta Program ✨
+          </div>
           <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
             🎙️ Agent 6 — Voice-Activated AI Manager
           </h2>
