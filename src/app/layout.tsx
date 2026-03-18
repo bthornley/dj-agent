@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import ToastProvider from "@/components/ToastProvider";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AppModeProvider } from "@/hooks/useAppMode";
+import AIManagerLayout from "@/components/ai-manager/AIManagerLayout";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -146,6 +147,7 @@ export default function RootLayout({
               `,
             }}
           />
+          <AIManagerLayout />
         </body>
       </html>
     </ClerkProvider>

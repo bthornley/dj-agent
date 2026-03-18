@@ -9,7 +9,13 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix"
+    ]
   },
   "dependencies": {
     "@clerk/nextjs": "^6.38.3",
@@ -35,7 +41,9 @@
     "@types/uuid": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "husky": "^9.0.11",
     "jsdom": "^28.1.0",
+    "lint-staged": "^15.2.2",
     "typescript": "^5",
     "vitest": "^3.2.4"
   }
