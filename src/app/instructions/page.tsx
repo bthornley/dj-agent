@@ -158,6 +158,31 @@ export default function InstructionsPage() {
                     </ul>
                 </div>
 
+                <div style={styles.sectionCard}>
+                    <h2 style={styles.sectionTitle}>📱 Social Hype Crew</h2>
+                    <p style={styles.paragraph}>Agents 4 and 5 act as your dedicated social media strategist and copywriter duo. They generate cohesive weekly content plans, write your captions, and provide engagement suggestions to grow your following.</p>
+
+                    <h3 style={styles.subHeading}>Building Your Brand Presence</h3>
+                    <ul style={styles.stepList}>
+                        <li style={styles.stepItem}>
+                            <div style={styles.stepNumber}>1</div>
+                            <div style={styles.stepContent}><p style={{ margin: 0, fontSize: '1rem' }}>Define your genre and tone. The AI learns your specific brand voice to ensure generated captions sound authentic to you.</p></div>
+                        </li>
+                        <li style={styles.stepItem}>
+                            <div style={styles.stepNumber}>2</div>
+                            <div style={styles.stepContent}><p style={{ margin: 0, fontSize: '1rem' }}>Upload event photos or clips to the <strong>Media Library</strong>. The agents will automatically suggest which assets to pair with different upcoming posts.</p></div>
+                        </li>
+                        <li style={styles.stepItem}>
+                            <div style={styles.stepNumber}>3</div>
+                            <div style={styles.stepContent}><p style={{ margin: 0, fontSize: '1rem' }}>Generate a <strong>Weekly Plan</strong>. The system creates a full 7-day schedule with suggestions for Reels, Stories, and highly-engaging post hooks.</p></div>
+                        </li>
+                        <li style={styles.stepItem}>
+                            <div style={styles.stepNumber}>4</div>
+                            <div style={styles.stepContent}><p style={{ margin: 0, fontSize: '1rem' }}>Use the <strong>Engagement Copilot</strong> daily. The agent will recommend actionable tasks (like replying to DMs or commenting on specific venue pages) to actively boost your algorithm reach.</p></div>
+                        </li>
+                    </ul>
+                </div>
+
             </main>
         </div>
     );
