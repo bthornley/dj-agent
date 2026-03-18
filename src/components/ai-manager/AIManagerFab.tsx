@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ActionCard, { ActionCardData } from "./ActionCard";
 import "./ai-manager.css";
 
@@ -10,10 +10,35 @@ export default function AIManagerFab() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [actionPayload, setActionPayload] = useState<ActionCardData | null>(null);
   const [hasMicError, setHasMicError] = useState(false);
+  const [hasPermission, setHasPermission] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'microphone' as PermissionName })
+        .then((permissionStatus) => {
+          if (permissionStatus.state === 'granted') {
+            setHasPermission(true);
+          }
+        })
+        .catch(console.error);
+    }
+  }, []);
+
+  const requestPermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+      setHasPermission(true);
+      setHasMicError(false);
+    } catch (err) {
+      console.error("Microphone permission denied:", err);
+      setHasMicError(true);
+    }
+  };
 
   const startRecording = async () => {
     try {
@@ -116,23 +141,34 @@ export default function AIManagerFab() {
         {isProcessing && <div className="ai-fab-status thinking">Thinking...</div>}
         {isPlaying && <div className="ai-fab-status speaking">Speaking...</div>}
 
-        <button
-          onPointerDown={startRecording}
-          onPointerUp={stopRecording}
-          onPointerLeave={stopRecording}
-          className={`ai-fab-btn ${fabStateClass}`}
-          aria-label="Push to talk to AI Manager"
-        >
-          {isProcessing ? (
-             <div className="ai-fab-spinner" />
-          ) : (
-             <span className="ai-fab-icon">🎤</span>
-          )}
-
-          {!isRecording && !isProcessing && !isPlaying && (
+        {!hasPermission ? (
+          <button
+            onClick={requestPermission}
+            className="ai-fab-btn idle"
+            aria-label="Allow Microphone"
+          >
+             <span className="ai-fab-icon">🎙️</span>
              <span className="ai-fab-ripple" />
-          )}
-        </button>
+          </button>
+        ) : (
+          <button
+            onPointerDown={startRecording}
+            onPointerUp={stopRecording}
+            onPointerLeave={stopRecording}
+            className={`ai-fab-btn ${fabStateClass}`}
+            aria-label="Push to talk to AI Manager"
+          >
+            {isProcessing ? (
+               <div className="ai-fab-spinner" />
+            ) : (
+               <span className="ai-fab-icon">🎤</span>
+            )}
+
+            {!isRecording && !isProcessing && !isPlaying && (
+               <span className="ai-fab-ripple" />
+            )}
+          </button>
+        )}
       </div>
 
       {hasMicError && (
@@ -143,8 +179,8 @@ export default function AIManagerFab() {
                   <div className="ai-mic-helper-text" style={{ textAlign: "left", fontSize: "13px" }}>
                       <p style={{ marginTop: 0 }}>To talk to the AI Manager, you need to allow microphone access:</p>
                       <ul style={{ paddingLeft: "20px", margin: "12px 0", color: "#e0e0e8" }}>
-                          <li style={{ marginBottom: "8px" }}><b>iOS (Safari):</b> Go to Settings App → Safari → Microphone → set to <i>Allow</i>. Then refresh this page.</li>
-                          <li><b>Android (Chrome):</b> Tap the padlock 🔒 icon in the URL bar → Permissions → Microphone → set to <i>Allow</i>.</li>
+                          <li style={{ marginBottom: "8px" }}><b>iOS (Safari):</b> Tap the <b>aA</b> icon in the address bar → Website Settings → Microphone → <i>Allow</i>.</li>
+                          <li><b>Android (Chrome):</b> Tap the site info icon (tune/settings) in the address bar → Permissions → Microphone → <i>Allow</i>.</li>
                       </ul>
                   </div>
                   <button className="ai-mic-helper-btn" onClick={() => setHasMicError(false)}>
