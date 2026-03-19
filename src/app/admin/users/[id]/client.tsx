@@ -55,6 +55,7 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
     const [roleUpdating, setRoleUpdating] = useState(false);
     const [planUpdating, setPlanUpdating] = useState(false);
     const [ambassadorUpdating, setAmbassadorUpdating] = useState(false);
+    const [betaUpdating, setBetaUpdating] = useState(false);
     const [activeTab, setActiveTab] = useState<'events' | 'leads' | 'posts'>('events');
 
 
@@ -145,6 +146,39 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
             }
         } catch (e) { console.error(e); }
         setPlanUpdating(false);
+    }
+
+    function isBeta(): boolean {
+        return Boolean(data?.user?.publicMetadata?.beta);
+    }
+
+    async function toggleBeta() {
+        if (!data || !userId) return;
+        const newValue = !isBeta();
+        const action = newValue ? 'grant' : 'revoke';
+        if (!confirm(`Are you sure you want to ${action} Beta access for this user?`)) return;
+
+        setBetaUpdating(true);
+        try {
+            const res = await fetch(`/api/admin/users/${userId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ beta: newValue }),
+            });
+            if (res.ok) {
+                setData(prev => prev ? {
+                    ...prev,
+                    user: {
+                        ...prev.user,
+                        publicMetadata: {
+                            ...prev.user.publicMetadata,
+                            beta: newValue,
+                        },
+                    },
+                } : null);
+            }
+        } catch (e) { console.error(e); }
+        setBetaUpdating(false);
     }
 
     function isAmbassador(): boolean {
@@ -239,6 +273,13 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
                                             color: '#fbbf24', fontSize: '11px',
                                         }}>🌟 Ambassador</span>
                                     )}
+                                    {isBeta() && (
+                                        <span className="badge" style={{
+                                            background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(139,92,246,0.1))',
+                                            border: '1px solid rgba(168,85,247,0.3)',
+                                            color: '#c084fc', fontSize: '11px',
+                                        }}>🎙️ Beta Access</span>
+                                    )}
                                 </div>
                             </div>
                             <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -283,6 +324,60 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
                                     {planUpdating && <span style={{ marginLeft: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Saving...</span>}
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Beta Program Management */}
+                        <div className="card" style={{
+                            marginTop: '16px', padding: '20px',
+                            ...(isBeta() ? {
+                                borderColor: 'rgba(168,85,247,0.3)',
+                                background: 'linear-gradient(135deg, rgba(168,85,247,0.04), rgba(139,92,246,0.02))',
+                            } : {}),
+                        }}>
+                            <h3 className="card-title" style={{ marginBottom: '12px' }}>🎙️ Voice AI Beta Program</h3>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                                <div>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Status</div>
+                                    {isBeta() ? (
+                                        <span className="badge" style={{
+                                            background: 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(139,92,246,0.1))',
+                                            border: '1px solid rgba(168,85,247,0.3)',
+                                            color: '#c084fc', fontSize: '13px', padding: '6px 12px',
+                                        }}>🎙️ Active Beta Tester</span>
+                                    ) : (
+                                        <span className="badge badge-draft" style={{ fontSize: '13px', padding: '6px 12px' }}>No Beta Access</span>
+                                    )}
+                                </div>
+                                <div style={{ marginLeft: 'auto' }}>
+                                    <button
+                                        className={`btn ${isBeta() ? 'btn-ghost' : 'btn-primary'} btn-sm`}
+                                        onClick={toggleBeta}
+                                        disabled={betaUpdating}
+                                        style={!isBeta() ? {
+                                            background: 'linear-gradient(135deg, #a855f7, #8b5cf6)',
+                                            color: '#fff', fontWeight: 700,
+                                        } : { color: 'var(--text-muted)' }}
+                                    >
+                                        {betaUpdating ? '⏳ Updating...' : isBeta() ? '✕ Revoke Access' : '🎙️ Grant Beta Access'}
+                                    </button>
+                                </div>
+                            </div>
+                            {data.user.publicMetadata?.betaRole && (
+                                <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px' }}>
+                                        <div>
+                                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Primary Role</div>
+                                            <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{data.user.publicMetadata?.betaRole as string}</div>
+                                        </div>
+                                        {data.user.publicMetadata?.betaReason && (
+                                            <div>
+                                                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Application Reason</div>
+                                                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{data.user.publicMetadata?.betaReason as string}</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Ambassador Program */}

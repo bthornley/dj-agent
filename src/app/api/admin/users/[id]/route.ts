@@ -70,6 +70,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             });
         }
 
+        if (body.beta !== undefined) {
+            const isBeta = Boolean(body.beta);
+            await client.users.updateUserMetadata(userId, {
+                publicMetadata: { beta: isBeta },
+            });
+            console.log(`[admin] Toggled beta access for user ${userId} -> ${isBeta}`);
+        }
+
         // Manual plan change by admin (comped — no Stripe charge)
         if (body.planId !== undefined) {
             const validPlans = ['free', 'pro', 'unlimited', 'agency'];
