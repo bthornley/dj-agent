@@ -83,7 +83,7 @@ export default async function LandingPage() {
                 Run your music business with your voice. Request early access to our integrated AI Manager.
               </div>
             </div>
-            <Link href="/sign-up" className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
+            <Link href="/beta" className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>
               Request Access
             </Link>
           </div>
