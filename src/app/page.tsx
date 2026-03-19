@@ -564,7 +564,7 @@ export default async function LandingPage() {
                 Free Pro Access
               </h3>
               <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                Full Pro tier ($33/mo) free for the duration of your ambassadorship
+                Full Pro tier ($19.99/mo) free for the duration of your ambassadorship
               </p>
             </div>
 

@@ -113,9 +113,9 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
 
     const planLabels: Record<string, string> = {
         free: '🆓 Free',
-        pro: '⭐ Pro ($19/mo)',
-        unlimited: '🚀 Unlimited ($49/mo)',
-        agency: '🏢 Agency ($149/mo)',
+        pro: '⭐ Pro ($19.99/mo)',
+        unlimited: '🚀 Unlimited ($49.99/mo)',
+        agency: '🏢 Agency (Custom)',
     };
 
     function getCurrentPlanId(): string {
@@ -317,9 +317,9 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
                                         }}
                                     >
                                         <option value="free">🆓 Free</option>
-                                        <option value="pro">⭐ Pro ($19/mo)</option>
-                                        <option value="unlimited">🚀 Unlimited ($49/mo)</option>
-                                        <option value="agency">🏢 Agency ($149/mo)</option>
+                                        <option value="pro">⭐ Pro ($19.99/mo)</option>
+                                        <option value="unlimited">🚀 Unlimited ($49.99/mo)</option>
+                                        <option value="agency">🏢 Agency (Custom)</option>
                                     </select>
                                     {planUpdating && <span style={{ marginLeft: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>Saving...</span>}
                                 </div>

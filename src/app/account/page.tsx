@@ -479,7 +479,7 @@ export default function AccountPage() {
                     <h3 style={{ marginBottom: '12px' }}>💳 Billing</h3>
                     <p style={{ color: 'var(--text-muted)', marginBottom: '16px' }}>
                         Current plan: <span className="badge badge-confirmed" style={{ marginLeft: '6px' }}>
-                            {currentPlan === 'free' ? 'Free' : currentPlan === 'pro' ? 'Pro — $19/mo' : currentPlan === 'unlimited' ? 'Unlimited — $39/mo' : currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}
+                            {currentPlan === 'free' ? 'Free' : currentPlan === 'pro' ? 'Pro — $19.99/mo' : currentPlan === 'unlimited' ? 'Unlimited — $49.99/mo' : currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)}
                         </span>
                     </p>
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>

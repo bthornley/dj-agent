@@ -128,7 +128,7 @@ export async function sendAmbassadorAcceptedEmail(params: {
             <div style="background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(245,158,11,0.04)); border: 1px solid rgba(251,191,36,0.2); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
                 <p style="color: #fbbf24; font-size: 14px; font-weight: 700; margin: 0 0 12px 0;">🎁 Your Ambassador Perks:</p>
                 <ul style="color: #e2e8f0; font-size: 14px; line-height: 1.8; padding-left: 20px; margin: 0;">
-                    <li><strong style="color: #fbbf24;">Free Pro plan</strong> ($19/mo value) — active immediately</li>
+                    <li><strong style="color: #fbbf24;">Free Pro plan</strong> ($19.99/mo value) — active immediately</li>
                     <li>100 auto-scans per month</li>
                     <li>Unlimited lead storage</li>
                     <li>Auto-discovery from seeds</li>

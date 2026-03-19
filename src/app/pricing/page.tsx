@@ -33,7 +33,7 @@ const plans = [
     {
         id: 'pro',
         name: 'Pro',
-        price: 33,
+        price: 19.99,
         period: '/mo',
         description: 'Start with a 30-Day Free Trial',
         features: [
@@ -61,7 +61,7 @@ const plans = [
     {
         id: 'unlimited',
         name: 'Unlimited',
-        price: 79,
+        price: 49.99,
         period: '/mo',
         description: 'Full power',
         features: [
@@ -89,8 +89,8 @@ const plans = [
     {
         id: 'agency',
         name: 'Agency',
-        price: 149,
-        period: '/mo',
+        price: 'Custom',
+        period: '',
         description: 'For agencies & teams',
         features: [
             '5 artist profiles',
@@ -177,8 +177,14 @@ export default function PricingPage() {
                             <p className="pricing-plan-desc">{plan.description}</p>
 
                             <div className="pricing-price">
-                                <span className="pricing-amount">${plan.price}</span>
-                                {plan.period && <span className="pricing-period">{plan.period}</span>}
+                                {typeof plan.price === 'number' ? (
+                                    <>
+                                        <span className="pricing-amount">${plan.price}</span>
+                                        {plan.period && <span className="pricing-period">{plan.period}</span>}
+                                    </>
+                                ) : (
+                                    <span className="pricing-amount" style={{ fontSize: '2.5rem' }}>{plan.price}</span>
+                                )}
                             </div>
 
                             <ul className="pricing-features">
