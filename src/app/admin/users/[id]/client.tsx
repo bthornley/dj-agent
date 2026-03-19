@@ -362,17 +362,17 @@ export default function AdminUserDetailClient({ userId }: { userId: string }) {
                                     </button>
                                 </div>
                             </div>
-                            {data.user.publicMetadata?.betaRole && (
+                            {Boolean(data.user.publicMetadata?.betaRole) && (
                                 <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px' }}>
                                         <div>
                                             <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Primary Role</div>
-                                            <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{data.user.publicMetadata?.betaRole as string}</div>
+                                            <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>{String(data.user.publicMetadata?.betaRole || '')}</div>
                                         </div>
-                                        {data.user.publicMetadata?.betaReason && (
+                                        {Boolean(data.user.publicMetadata?.betaReason) && (
                                             <div>
                                                 <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Application Reason</div>
-                                                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{data.user.publicMetadata?.betaReason as string}</div>
+                                                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{String(data.user.publicMetadata?.betaReason || '')}</div>
                                             </div>
                                         )}
                                     </div>
