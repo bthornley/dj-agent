@@ -5,11 +5,11 @@ import { usePathname } from "next/navigation";
 import AIManagerFab from "./AIManagerFab";
 
 export default function AIManagerLayout() {
-  const { isLoaded, isSignedIn } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
   const pathname = usePathname();
 
   // Don't render if Clerk hasn't loaded or if the user isn't logged in
-  if (!isLoaded || !isSignedIn) {
+  if (!isLoaded || !isSignedIn || !user) {
     return null;
   }
 
@@ -18,6 +18,12 @@ export default function AIManagerLayout() {
     return null;
   }
 
-  // If logged in and in the correct area, mount the FAB
+  // Gate feature strictly to approved Beta users
+  const hasBetaAccess = user.publicMetadata?.beta === true;
+  if (!hasBetaAccess) {
+    return null;
+  }
+
+  // If logged in, authorized, and in the correct area, mount the FAB
   return <AIManagerFab />;
 }
