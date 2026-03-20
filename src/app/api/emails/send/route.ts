@@ -4,6 +4,7 @@ import { sendOutreachEmail } from '@/lib/email';
 import { dbSaveSentEmail, dbGetEvent, dbSaveEvent } from '@/lib/db';
 import { SentEmail } from '@/lib/types';
 import { v4 as uuid } from 'uuid';
+import { safeErrorResponse } from '@/lib/security';
 
 // POST /api/emails/send — Send an outreach email draft
 export async function POST(request: NextRequest) {
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
         const { eventId, to, subject, emailBody, replyTo } = body;
 
         if (!to || !subject || !emailBody) {
-            return NextResponse.json({ error: 'Missing required fields: to, subject, emailBody' }, { status: 400 });
+            return safeErrorResponse('Missing required fields: to, subject, emailBody', 400);
         }
 
         // Send via Resend
@@ -60,12 +61,12 @@ export async function POST(request: NextRequest) {
         }
 
         if (!result.success) {
-            return NextResponse.json({ error: result.error || 'Send failed', emailId: sentEmail.id }, { status: 500 });
+            return safeErrorResponse(result.error || 'Send failed', 500);
         }
 
         return NextResponse.json({ success: true, emailId: sentEmail.id, resendId: result.resendId });
     } catch (err) {
         console.error('[emails/send] Error:', err);
-        return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
+        return safeErrorResponse('Failed to send email', 500);
     }
 }
