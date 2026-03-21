@@ -12,15 +12,17 @@ const openai = new OpenAI({
 });
 
 // The persona prompt we defined earlier
-const SYSTEM_PROMPT = `You are strictly professional, formal, and highly efficient. Think of a top-tier, seasoned booking agent or a highly organized executive assistant. You do not use slang, emojis, or overly casual language.
-*Tone:* Confident, concise, polite, and strictly business-oriented.
-*Vocabulary:* Understand industry terminology (rider, load-in, deposit, backline, flat fee vs. rev share). Always use proper terms.
-*Pacing:* Because you are a voice assistant, your spoken responses must be extremely brief and to the point. Never read out long lists or full contracts. Summarize the key points and direct the user to the visual "Action Card" on their screen for details.
+const SYSTEM_PROMPT = `You are a dedicated, professional music manager for a DJ. Your goal is to be completely conversational, seamless, and proactive.
+*Tone:* Reassuring, organized, and focused on business growth. Professional yet supportive.
+*Pacing:* Concise and conversational. Anticipate the user's needs and always offer logical follow-ups (e.g., "Should I send the contract?", "Should I follow up?").
+*Context:* You remember previous parts of the conversation. If a user says "Send them a reminder", refer to the most recently discussed client or gig.
 
-Core Rules & Constraints
-1. Never commit without approval: You can draft counter-offers, acceptances, or emails, but you must ask for final confirmation before executing a binding action.
-2. Speak for the screen: Assume the user is looking at their phone. Use phrases like, "I've put the details on your screen," or "Tap approve when you're ready."
-3. No hallucinations: If you don't know the answer based on the context provided, say "I don't have that information right now," rather than guessing.`;
+Core Rules & Constraints:
+1. IMPORTANT: If you invoke a tool, you MUST ALSO write a conversational, spoken reply in your standard message 'content'. This spoken reply will be read aloud to the user. Do not rely entirely on tool arguments to communicate.
+2. When receiving inquiries or listing information, summarize and highlight high-value items instead of reading robotic lists.
+3. Use natural affirmations like "Got it," or "Consider it done."
+4. Never commit binding actions without explicit verbal approval.
+5. Speak for the screen: mention when you put visual details on their screen.`;
 
 // Define the tools/functions the LLM can use to interact with the GigLift backend.
 const TOOLS = [
@@ -241,6 +243,8 @@ export async function POST(req: NextRequest) {
 
         const formData = await req.formData();
         const audioFile = formData.get("audio") as File;
+        const contextStr = formData.get("context") as string;
+        const dialogueHistory = contextStr ? JSON.parse(contextStr) : [];
 
         if (!audioFile) {
             return NextResponse.json({ error: "No audio file provided" }, { status: 400 });
@@ -262,19 +266,22 @@ export async function POST(req: NextRequest) {
 
         // 2. LLM: Process intent with GPT-4o
         // We inject strict tenant context to ensure the AI only acts on this user's data
-        const context = `Current Context: 
+        const uiContext = `Current Context: 
 - User Name: ${userFirstName}
 - Tenant/User ID: ${userId}
 - Pending Requests: 1 (Tilly's Golf Tournament, May 12th, $800 offer)
 - Active Leads Overview: 3 active seeds, 42 total leads.
 - Top New Leads: Knitting Factory (Los Angeles), The Roxy (West Hollywood)`;
 
+        const messages: any[] = [
+            { role: "system", content: `${SYSTEM_PROMPT}\n\n${uiContext}` },
+            ...dialogueHistory,
+            { role: "user", content: userText },
+        ];
+
         const completion = await openai.chat.completions.create({
             model: "gpt-4o",
-            messages: [
-                { role: "system", content: `${SYSTEM_PROMPT}\n\n${context}` },
-                { role: "user", content: userText },
-            ],
+            messages,
             tools: TOOLS as any,
             tool_choice: "auto",
         });
@@ -296,7 +303,7 @@ export async function POST(req: NextRequest) {
             
             if (functionName === "draft_offer_response") {
                 // Generate the spoken response summarizing the action
-                aiSpokenText = `Got it. I'm drafting a ${functionArgs.action} for ${functionArgs.amount ? '$'+functionArgs.amount : 'the gig'}${functionArgs.deposit_percentage ? ' with a ' + functionArgs.deposit_percentage + '% deposit' : ''}. Ready to send?`;
+                if (!aiSpokenText) aiSpokenText = `Got it. I'm drafting a ${functionArgs.action} for ${functionArgs.amount ? '$'+functionArgs.amount : 'the gig'}${functionArgs.deposit_percentage ? ' with a ' + functionArgs.deposit_percentage + '% deposit' : ''}. Ready to send?`;
                 actionCardPayload = {
                     type: "draft_contract",
                     data: {
@@ -307,25 +314,25 @@ export async function POST(req: NextRequest) {
                     }
                 };
             } else if (functionName === "get_pending_requests") {
-                aiSpokenText = "You have one new request. Tilly's wants you for a golf tournament on May 12th for 800 dollars. I've put the details on your screen.";
+                if (!aiSpokenText) aiSpokenText = "You have one new request. Tilly's wants you for a golf tournament on May 12th for 800 dollars. I've put the details on your screen.";
                 actionCardPayload = {
                     type: "gig_request",
                     data: { client: "Tilly's", date: "May 12th", amount: 800, type: "Golf Tournament" }
                 };
             } else if (functionName === "get_agenda") {
-                aiSpokenText = "Looking at your schedule. I've pulled up your agenda on the screen.";
+                if (!aiSpokenText) aiSpokenText = "Looking at your schedule. I've pulled up your agenda on the screen.";
                 actionCardPayload = {
                     type: "agenda",
                     data: { date: functionArgs.date || "Upcoming" }
                 };
             } else if (functionName === "review_leads_overview") {
-                aiSpokenText = "You currently have 3 active seeds which have generated 42 potential leads this week. Would you like me to read the newest ones to you?";
+                if (!aiSpokenText) aiSpokenText = "You currently have 3 active seeds which have generated 42 potential leads this week. Would you like me to read the newest ones to you?";
                 actionCardPayload = {
                     type: "seeds_overview",
                     data: { activeSeeds: 3, totalLeads: 42 }
                 };
             } else if (functionName === "read_new_leads") {
-                aiSpokenText = "Your top new leads in Los Angeles are the Knitting Factory and The Roxy. I've put them on your screen so you can track them.";
+                if (!aiSpokenText) aiSpokenText = "Your top new leads in Los Angeles are the Knitting Factory and The Roxy. I've put them on your screen so you can track them.";
                 actionCardPayload = {
                     type: "read_leads",
                     data: { 
@@ -336,51 +343,61 @@ export async function POST(req: NextRequest) {
                     }
                 };
             } else if (functionName === "add_query_seed") {
-                aiSpokenText = `Got it. I've added a new seed for ${functionArgs.region} searching for ${functionArgs.keywords.join(" and ")}. The lead finder agent will start scanning shortly.`;
+                if (!aiSpokenText) aiSpokenText = `Got it. I've added a new seed for ${functionArgs.region} searching for ${functionArgs.keywords.join(" and ")}. The lead finder agent will start scanning shortly.`;
                 actionCardPayload = {
                     type: "seed_adjusted",
                     data: { action: "added", region: functionArgs.region, keywords: functionArgs.keywords }
                 };
             } else if (functionName === "adjust_query_seed") {
-                aiSpokenText = `I've ${functionArgs.action}d the seed for ${functionArgs.region}.`;
+                if (!aiSpokenText) aiSpokenText = `I've ${functionArgs.action}d the seed for ${functionArgs.region}.`;
                 actionCardPayload = {
                     type: "seed_adjusted",
                     data: { action: functionArgs.action, region: functionArgs.region, keywords: functionArgs.keywords || [] }
                 };
             } else if (functionName === "get_business_overview") {
-                aiSpokenText = "Here is your business overview. You have one pending request from Tilly's, 3 active seeds generating leads, and your schedule is clear for today.";
+                if (!aiSpokenText) aiSpokenText = "Here is your business overview. You have one pending request from Tilly's, 3 active seeds generating leads, and your schedule is clear for today.";
                 actionCardPayload = {
                     type: "generic_text",
                     data: { text: "Business Overview: 1 pending request, 3 active seeds, 42 total leads. No confirmed gigs today." }
                 };
             } else if (functionName === "promote_with_social_hype_crew") {
-                aiSpokenText = `Got it. I've sent a request to the Social Hype Crew to start promoting ${functionArgs.event_name || 'your upcoming gig'}. They are drafting content now.`;
+                if (!aiSpokenText) aiSpokenText = `Got it. I've sent a request to the Social Hype Crew to start promoting ${functionArgs.event_name || 'your upcoming gig'}. They are drafting content now.`;
                 actionCardPayload = {
                     type: "generic_text",
                     data: { text: `Social Hype Crew activated for: ${functionArgs.event_name || 'upcoming event'}.` }
                 };
             } else if (functionName === "manage_finances") {
-                if (functionArgs.action === "check_deposit") aiSpokenText = `Checking deposit for ${functionArgs.client_name || 'the client'}. They have paid their 20% deposit.`;
-                else if (functionArgs.action === "send_reminder") aiSpokenText = `I've sent an invoice reminder to ${functionArgs.client_name || 'the client'}.`;
-                else aiSpokenText = "You are forecasted to make $3,200 next month based on confirmed bookings.";
+                if (!aiSpokenText) {
+                    if (functionArgs.action === "check_deposit") aiSpokenText = `Checking deposit for ${functionArgs.client_name || 'the client'}. They have paid their 20% deposit.`;
+                    else if (functionArgs.action === "send_reminder") aiSpokenText = `I've sent an invoice reminder to ${functionArgs.client_name || 'the client'}.`;
+                    else aiSpokenText = "You are forecasted to make $3,200 next month based on confirmed bookings.";
+                }
                 actionCardPayload = { type: "generic_text", data: { text: aiSpokenText } };
             } else if (functionName === "manage_logistics") {
-                if (functionArgs.action === "get_departure_time") aiSpokenText = "With current traffic, you should leave at 8:15 PM to arrive for your load-in.";
-                else if (functionArgs.action === "update_packing_list") aiSpokenText = `I've added ${functionArgs.item || 'the item'} to your gig packing list.`;
-                else aiSpokenText = "Load-in instructions: Enter through the back alley door. Security has your name on the list.";
+                if (!aiSpokenText) {
+                    if (functionArgs.action === "get_departure_time") aiSpokenText = "With current traffic, you should leave at 8:15 PM to arrive for your load-in.";
+                    else if (functionArgs.action === "update_packing_list") aiSpokenText = `I've added ${functionArgs.item || 'the item'} to your gig packing list.`;
+                    else aiSpokenText = "Load-in instructions: Enter through the back alley door. Security has your name on the list.";
+                }
                 actionCardPayload = { type: "generic_text", data: { text: aiSpokenText } };
             } else if (functionName === "manage_music") {
-                if (functionArgs.action === "create_setlist") aiSpokenText = "I've created a new blank setlist folder for your upcoming gig.";
-                else if (functionArgs.action === "get_trending") aiSpokenText = "The Social Hype Crew says Tech House edits are trending on TikTok right now. I've saved a playlist for you.";
-                else aiSpokenText = "Your top requested songs here last time were Mr. Brightside and Yeah by Usher.";
+                if (!aiSpokenText) {
+                    if (functionArgs.action === "create_setlist") aiSpokenText = "I've created a new blank setlist folder for your upcoming gig.";
+                    else if (functionArgs.action === "get_trending") aiSpokenText = "The Social Hype Crew says Tech House edits are trending on TikTok right now. I've saved a playlist for you.";
+                    else aiSpokenText = "Your top requested songs here last time were Mr. Brightside and Yeah by Usher.";
+                }
                 actionCardPayload = { type: "generic_text", data: { text: aiSpokenText } };
             } else if (functionName === "manage_communications") {
-                if (functionArgs.action === "draft_reply") aiSpokenText = "I've drafted an email stating your $150 hourly rate. It's in your outbox for review.";
-                else aiSpokenText = "The club promoter is asking if you can supply your own CDJs for tomorrow night's event.";
+                if (!aiSpokenText) {
+                    if (functionArgs.action === "draft_reply") aiSpokenText = "I've drafted an email stating your $150 hourly rate. It's in your outbox for review.";
+                    else aiSpokenText = "The club promoter is asking if you can supply your own CDJs for tomorrow night's event.";
+                }
                 actionCardPayload = { type: "generic_text", data: { text: aiSpokenText } };
             } else if (functionName === "analyze_socials") {
-                if (functionArgs.action === "check_post_performance") aiSpokenText = "Your Paddy's Pregame reel has 4,000 views and a high engagement rate.";
-                else aiSpokenText = "I've instructed the Social Hype Crew to boost that post with the remaining ad budget.";
+                if (!aiSpokenText) {
+                    if (functionArgs.action === "check_post_performance") aiSpokenText = "Your Paddy's Pregame reel has 4,000 views and a high engagement rate.";
+                    else aiSpokenText = "I've instructed the Social Hype Crew to boost that post with the remaining ad budget.";
+                }
                 actionCardPayload = { type: "generic_text", data: { text: aiSpokenText } };
             }
         }
@@ -409,6 +426,8 @@ export async function POST(req: NextRequest) {
             headers: {
                 "Content-Type": "audio/mpeg",
                 "X-Action-Card": JSON.stringify(actionCardPayload),
+                "X-User-Text": encodeURIComponent(userText.trim()),
+                "X-AI-Text": encodeURIComponent(aiSpokenText.trim()),
             },
         });
 

@@ -10,6 +10,7 @@ export default function AIManagerFab() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [actionPayload, setActionPayload] = useState<ActionCardData | null>(null);
   const [hasMicError, setHasMicError] = useState(false);
+  const [dialogueHistory, setDialogueHistory] = useState<{role: string, content: string}[]>([]);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -78,6 +79,7 @@ export default function AIManagerFab() {
     try {
       const formData = new FormData();
       formData.append("audio", blob, "user-input.webm");
+      formData.append("context", JSON.stringify(dialogueHistory));
 
       const response = await fetch("/api/ai-manager", {
         method: "POST",
@@ -96,6 +98,21 @@ export default function AIManagerFab() {
           } catch (e) {
               console.error("Failed to parse Action Card JSON", e);
           }
+      }
+
+      const xUserText = response.headers.get("X-User-Text");
+      const xAiText = response.headers.get("X-AI-Text");
+      if (xUserText && xAiText) {
+          const decodedUserText = decodeURIComponent(xUserText);
+          const decodedAiText = decodeURIComponent(xAiText);
+          setDialogueHistory(prev => {
+              const newHistory = [
+                  ...prev, 
+                  { role: "user", content: decodedUserText }, 
+                  { role: "assistant", content: decodedAiText }
+              ];
+              return newHistory.slice(-10); // keep last 10 messages
+          });
       }
 
       const audioBuffer = await response.blob();
