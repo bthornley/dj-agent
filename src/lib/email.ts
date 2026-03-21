@@ -346,3 +346,65 @@ export async function sendOutreachEmail(params: {
         return { success: false, error: String(err) };
     }
 }
+
+// ---- Beta Welcome Email ----
+
+export async function sendBetaWelcomeEmail(params: {
+    to: string;
+    firstName: string;
+}): Promise<void> {
+    const resend = getResend();
+    if (!resend) {
+        console.log('[email] Resend not configured — skipping beta welcome email');
+        return;
+    }
+
+    const { to, firstName } = params;
+
+    const html = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 32px; background: #0f0f23; color: #e2e8f0; border-radius: 16px;">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <img src="https://giglift.com/logo.png" alt="GigLift" style="width: 64px; height: 64px; border-radius: 12px;" />
+            </div>
+            <h1 style="color: #a78bfa; font-size: 24px; text-align: center; margin-bottom: 8px;">
+                Welcome to the GigLift Beta! 🚀
+            </h1>
+            <p style="color: #94a3b8; text-align: center; font-size: 15px; margin-bottom: 24px;">
+                Hey ${firstName}, you've been granted exclusive access to our newest feature: the <strong>AI Manager</strong>.
+            </p>
+            <div style="background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <p style="color: #e2e8f0; font-size: 14px; font-weight: 600; margin: 0 0 12px 0;">🎙️ Quick Start Guide:</p>
+                <p style="color: #94a3b8; font-size: 13px; margin: 0 0 16px 0;">
+                    Your AI Manager is an intelligent, voice-activated booking agent. To activate it, look for the microphone icon in the bottom corner of your dashboard. Tap it and start speaking!
+                </p>
+                <p style="color: #e2e8f0; font-size: 13px; font-weight: 600; margin: 0 0 8px 0;">Try asking:</p>
+                <ul style="color: #a78bfa; font-size: 13px; line-height: 1.8; padding-left: 20px; margin: 0;">
+                    <li>"What does my weekend schedule look like?"</li>
+                    <li>"Did Tilly's pay their deposit?"</li>
+                    <li>"Read me my newest leads."</li>
+                    <li>"Draft a contract for the wedding gig for $1500."</li>
+                </ul>
+            </div>
+            <div style="text-align: center;">
+                <a href="https://giglift.com/dashboard" style="display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #a78bfa, #8b5cf6); color: white; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px;">
+                    Go to Dashboard →
+                </a>
+            </div>
+            <p style="color: #64748b; font-size: 12px; text-align: center; margin-top: 24px;">
+                Feedback? Reply to this email! We'd love to hear how the AI Manager is working for you.
+            </p>
+        </div>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: FROM_EMAIL,
+            to,
+            subject: '🚀 Welcome to the GigLift Beta (AI Manager Access)',
+            html,
+        });
+        console.log(`[email] Beta welcome email sent to ${to}`);
+    } catch (err) {
+        console.error('[email] Failed to send beta welcome email:', err);
+    }
+}

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-guard';
 import { dbGetUserStats, dbGetAllEvents, dbGetAllLeads, dbGetAllSocialPosts, dbGetBrandProfile } from '@/lib/db';
 import { clerkClient } from '@clerk/nextjs/server';
-import { sendPlanChangeEmail, sendAmbassadorAcceptedEmail } from '@/lib/email';
+import { sendPlanChangeEmail, sendAmbassadorAcceptedEmail, sendBetaWelcomeEmail } from '@/lib/email';
 
 // GET /api/admin/users/[id] — Get user detail with all data
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -72,10 +72,26 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
         if (body.beta !== undefined) {
             const isBeta = Boolean(body.beta);
+            
+            // Fetch current state to check if we are *granting* it anew
+            const user = await client.users.getUser(userId);
+            const currentBeta = Boolean((user.publicMetadata as Record<string, unknown>)?.beta);
+            
             await client.users.updateUserMetadata(userId, {
                 publicMetadata: { beta: isBeta },
             });
             console.log(`[admin] Toggled beta access for user ${userId} -> ${isBeta}`);
+            
+            // Only send the welcome email if they transitioned from false to true
+            if (isBeta && !currentBeta) {
+                const email = user.emailAddresses[0]?.emailAddress;
+                if (email) {
+                    sendBetaWelcomeEmail({
+                        to: email,
+                        firstName: user.firstName || 'there',
+                    }).catch(err => console.error('[admin] Beta email error:', err));
+                }
+            }
         }
 
         // Manual plan change by admin (comped — no Stripe charge)
