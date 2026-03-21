@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
                     planId: (user.publicMetadata as Record<string, unknown>)?.planId || 'free',
                     ambassador: Boolean((user.publicMetadata as Record<string, unknown>)?.ambassador),
                     ambassadorPending: Boolean((user.publicMetadata as Record<string, unknown>)?.ambassadorPending),
+                    beta: Boolean((user.publicMetadata as Record<string, unknown>)?.beta),
                     stats,
                 };
             })

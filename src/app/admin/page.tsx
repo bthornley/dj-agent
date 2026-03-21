@@ -17,6 +17,7 @@ interface UserRow {
     planId: string;
     ambassador: boolean;
     ambassadorPending: boolean;
+    beta: boolean;
     stats: {
         events: number;
         leads: number;
@@ -227,6 +228,12 @@ export default function AdminDashboard() {
                                                 <span className={`badge ${user.role === 'admin' ? 'badge-approved' : 'badge-draft'}`}>
                                                     {user.role}
                                                 </span>
+                                                {user.beta && (
+                                                    <span className="badge" style={{
+                                                        background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)',
+                                                        color: '#a78bfa', fontSize: '10px'
+                                                    }}>🚀 Beta</span>
+                                                )}
                                                 {user.ambassadorPending && !user.ambassador && (
                                                     <span className="badge" style={{
                                                         background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)',
